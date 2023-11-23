@@ -3,8 +3,11 @@ import numpy
 import os
 import Equations as eq
 import matplotlib.pyplot as plt
+import plot as plot
+import file as f
 
-filepath = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\top directory\sub directory 1\testfile.txt"
+#filepath = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\top directory\sub directory 1\testfile.txt"
+filepath = r"C:\Users\Craig-Desktop\Desktop\test folder for py\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\forthesis.txt"
 
 def set_pandas_display_options() -> None:
     """Set pandas display options."""
@@ -54,10 +57,14 @@ def split_iv_sweep(filepath):
         return None
     return v_data_array, c_data_array
 
-
 v_data, c_data = split_iv_sweep(filepath)
 v_data_ps, c_data_ps = eq.filter_positive_values(v_data, c_data)
 v_data_ng, c_data_ng = eq.filter_negative_values(v_data, c_data)
+
+
+# i will need to add into here sample number that's extracted from sample_name
+
+
 
 # # check arrays printing
 # for i in range(len(v_data)):
@@ -79,30 +86,49 @@ v_data_ng, c_data_ng = eq.filter_negative_values(v_data, c_data)
 #todo find a way to call the dataframe the name of the file and then save it appropratly
 
 # data frame
-data = {'Voltage': v_data,
-        'Current': c_data,
-        'Abs_Current': eq.absolute_val(c_data),
-        'Resistance': eq.resistance(v_data, c_data),
-        'Voltage_ps': v_data_ps,
-        'Current_ps': c_data_ps,
-        'Voltage_ng': v_data_ng,
-        'Current_ng': c_data_ng,
+data = {'voltage': v_data,
+        'current': c_data,
+        'abs_current': eq.absolute_val(c_data),
+        'resistance': eq.resistance(v_data, c_data),
+        'voltage_ps': v_data_ps,
+        'current_ps': c_data_ps,
+        'voltage_ng': v_data_ng,
+        'current_ng': c_data_ng,
         'log_Resistance': eq.log_value(eq.resistance(v_data, c_data)),
-        'Abs_Current_Ps': eq.absolute_val(c_data_ps),
-        'Abs_Current_ng': eq.absolute_val(c_data_ng),
-        'Current_Density_Ps': eq.current_density_eq(v_data_ps, c_data_ps),
-        'Current_Density_Ng': eq.current_density_eq(v_data_ng, c_data_ng),
-        'Electric_field_Ps': eq.electric_field_eq(v_data_ps),
-        'Electric_field_Ng': eq.electric_field_eq(v_data_ng),
-        'Inverse_resistance_ps': eq.inverse_resistance_eq(v_data_ps, c_data_ps),
-        'Inverse_resistance_ng': eq.inverse_resistance_eq(v_data_ng, c_data_ng),
-        'Sqrt_Voltage': eq.sqrt_array(v_data),
+        'abs_Current_ps': eq.absolute_val(c_data_ps),
+        'abs_Current_ng': eq.absolute_val(c_data_ng),
+        'current_Density_ps': eq.current_density_eq(v_data_ps, c_data_ps),
+        'current_Density_ng': eq.current_density_eq(v_data_ng, c_data_ng),
+        'electric_field_ps': eq.electric_field_eq(v_data_ps),
+        'electric_field_ng': eq.electric_field_eq(v_data_ng),
+        'inverse_resistance_ps': eq.inverse_resistance_eq(v_data_ps, c_data_ps),
+        'inverse_resistance_ng': eq.inverse_resistance_eq(v_data_ng, c_data_ng),
+        'sqrt_Voltage': eq.sqrt_array(v_data),
         'on_off_ratio': eq.statistics}
 
+# materials = {'test':f.name}
 
 
+file_info = f.extract_folder_names(filepath)
+for variable_name, folder_name in file_info.items():
+    print(f"{variable_name} = '{folder_name}'")
+print(file_info)
 
 df = pd.DataFrame(data)
 #display(df)
-print(df)
+#print(df)
+
+print(df.get("Voltage"))
+
+# plt.plot(df.get("Voltage"), df.get("Current"), color='blue')
+# # Add labels and a title
+# plt.ylabel('Current')
+# # plt.yscale("log")
+# plt.xlabel('Voltage')
+# plt.title('Voltage vs. Current Graph')
+# plt.show()
+#
+
+p = plot.plot(df,file_info)
+p.main_plot()
 

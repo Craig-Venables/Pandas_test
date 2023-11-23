@@ -19,8 +19,7 @@ class plot():
                  electric_field_ps='', electric_field_ng='', current_over_voltage_ps='', current_over_voltage_ng='',
                  voltage_to_the_half_ps='', voltage_to_the_half_ng='', resistance_on_value='', resistance_off_value='',
                  voltage_on_value='', voltage_off_value='', filename='', device_number='', section_name='',
-                 device_name='',
-                 polymer_name='', np_materials='', full_path='',
+                 device_name='', polymer_name='', np_materials='', full_path='',
                  on_off_ratio='') -> None:
 
         # data parsed through from instance class was ran
