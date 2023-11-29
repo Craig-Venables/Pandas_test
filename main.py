@@ -84,7 +84,7 @@ v_data_ng, c_data_ng = eq.filter_negative_values(v_data, c_data)
 
 
 #todo find a way to call the dataframe the name of the file and then save it appropratly
-
+# add in the device name and polymer etc into the graphs when they get saved
 # data frame
 data = {'voltage': v_data,
         'current': c_data,
