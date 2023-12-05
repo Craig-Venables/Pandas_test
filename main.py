@@ -1,91 +1,37 @@
 import pandas as pd
 import numpy
 import os
-import Equations as eq
+import Data as eq
 import matplotlib.pyplot as plt
 import plot as plot
 import file as f
 
-#filepath = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\top directory\sub directory 1\testfile.txt"
+# filepath = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\top directory\sub directory 1\testfile.txt"
 filepath = r"C:\Users\Craig-Desktop\Desktop\test folder for py\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\forthesis.txt"
+save_df = True
+plot_graph = True
+eq.set_pandas_display_options()
 
-def set_pandas_display_options() -> None:
-    """Set pandas display options."""
-    # Ref: https://stackoverflow.com/a/52432757/
-    display = pd.options.display
+# Pull sample and material name
+file_info = f.extract_folder_names(filepath)
+save_name_half = file_info.get('sample_name') + " - " + file_info.get('section') + ' - ' + file_info.get(
+    'device_number') + " - " + 'filename'
 
-    display.max_columns = 1000
-    display.max_rows = 1000
-    display.max_colwidth = 199
-    display.width = 1000
-    # display.precision = 2  # set as needed
-    # display.float_format = lambda x: '{:,.2f}'.format(x)  # set as needed
-set_pandas_display_options()
-
-# For dealing with the file
-
-def filereader(filepath):
-    with open(filepath, "r") as f:  # open the file as read only
-        fread = f.readlines()
-        fread.pop(0)
-        return fread
+save_name_full = file_info.get('type') + " - " + file_info.get('polymer') + " - " + \
+                 file_info.get('sample_name') + " - " + file_info.get('section') + ' - ' + file_info.get(
+    'device_number') + " - " + 'filename'
 
 
-def split_iv_sweep(filepath):
-    # print(f"{filepath_for_single_sweep}")
-    with open(filepath, "r") as f:  # open the file as read only
-        fread = f.readlines()
-        fread.pop(0)
-    # B = self.filereader()
-    # B = fm.directory(self.filepath_for_single_sweep).filereader()
-    Data = []
-    for i, line in enumerate(fread):
-        C = (line.split('\t'))
-        D = []
-        for value in C:
-            if value != '':
-                D.append(float(value))
-        Data.append(D)
-    v_data_array = []
-    c_data_array = []
-    for value in Data:
-        if value:
-            v_data_array.append(value[0])
-            c_data_array.append(value[1])
-    if len(v_data_array) == 0 or len(v_data_array) < 10:
-        print('not enough data', filepath)
-        return None
-    return v_data_array, c_data_array
 
-v_data, c_data = split_iv_sweep(filepath)
+
+# Pull voltage and current data from file
+v_data, c_data = eq.split_iv_sweep(filepath)
+# get positive and negative vlaues of voltage and current data for equations later
 v_data_ps, c_data_ps = eq.filter_positive_values(v_data, c_data)
 v_data_ng, c_data_ng = eq.filter_negative_values(v_data, c_data)
+# create dataframe for device
 
-
-# i will need to add into here sample number that's extracted from sample_name
-
-
-
-# # check arrays printing
-# for i in range(len(v_data)):
-#     print(v_data[i],c_data[i])
-
-
-# # plot graph
-# plt.plot(v_data, c_data, color='blue')
-# # Add labels and a title
-# plt.ylabel('Current')
-# # plt.yscale("log")
-# plt.xlabel('Voltage')
-# plt.title('Voltage vs. Current Graph')
-# plt.show()
-
-# print(eq.current_density_eq(v_data,c_data))
-
-
-#todo find a way to call the dataframe the name of the file and then save it appropratly
-# add in the device name and polymer etc into the graphs when they get saved
-# data frame
+# Data frame
 data = {'voltage': v_data,
         'current': c_data,
         'abs_current': eq.absolute_val(c_data),
@@ -106,29 +52,29 @@ data = {'voltage': v_data,
         'sqrt_Voltage': eq.sqrt_array(v_data),
         'on_off_ratio': eq.statistics}
 
-# materials = {'test':f.name}
 
 
-file_info = f.extract_folder_names(filepath)
-for variable_name, folder_name in file_info.items():
-    print(f"{variable_name} = '{folder_name}'")
-print(file_info)
+# todo find a way to call the dataframe the name of the file and then save it appropratly
+# add in the device name and polymer etc into the graphs when they get saved
+
 
 df = pd.DataFrame(data)
-#display(df)
-#print(df)
 
-print(df.get("Voltage"))
+# print variable names for the folders and add too dataframe
+for variable_name, folder_name in file_info.items():
+    print(f"{variable_name} = '{folder_name}'")
+    df[variable_name] = folder_name
+print(file_info)
 
-# plt.plot(df.get("Voltage"), df.get("Current"), color='blue')
-# # Add labels and a title
-# plt.ylabel('Current')
-# # plt.yscale("log")
-# plt.xlabel('Voltage')
-# plt.title('Voltage vs. Current Graph')
-# plt.show()
-#
 
-p = plot.plot(df,file_info)
-p.main_plot()
+print(df)
 
+
+
+if plot_graph:
+    p = plot.plot(df, file_info)
+    p.main_plot()
+if save_df:
+    # save the sada frame
+    print(save_name_full)
+    df.to_csv(save_name_half, index=False)

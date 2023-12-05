@@ -1,4 +1,36 @@
 import numpy as np
+import pandas as pd
+filepath = r"C:\Users\Craig-Desktop\Desktop\test folder for py\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\forthesis.txt"
+
+''' all the data manipulation goes here including any dataframe manipulation 
+ '''
+
+def split_iv_sweep(filepath):
+    # print(f"{filepath_for_single_sweep}")
+    with open(filepath, "r") as f:  # open the file as read only
+        fread = f.readlines()
+        fread.pop(0)
+    # B = self.filereader()
+    # B = fm.directory(self.filepath_for_single_sweep).filereader()
+    Data = []
+    for i, line in enumerate(fread):
+        C = (line.split('\t'))
+        D = []
+        for value in C:
+            if value != '':
+                D.append(float(value))
+        Data.append(D)
+    v_data_array = []
+    c_data_array = []
+    for value in Data:
+        if value:
+            v_data_array.append(value[0])
+            c_data_array.append(value[1])
+    if len(v_data_array) == 0 or len(v_data_array) < 10:
+        print('not enough data', filepath)
+        return None
+    return v_data_array, c_data_array
+
 
 
 # Equations for manipulating data
@@ -176,3 +208,16 @@ def statistics(self):
 
     # print (resistance_on_value, resistance_off_value, voltage_on_value , voltage_off_value)
     return resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value
+
+
+def set_pandas_display_options() -> None:
+    """Set pandas display options."""
+    # Ref: https://stackoverflow.com/a/52432757/
+    display = pd.options.display
+
+    display.max_columns = 1000
+    display.max_rows = 1000
+    display.max_colwidth = 199
+    display.width = 1000
+    # display.precision = 2  # set as needed
+    # display.float_format = lambda x: '{:,.2f}'.format(x)  # set as needed

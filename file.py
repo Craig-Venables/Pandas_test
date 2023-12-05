@@ -1,3 +1,14 @@
+
+
+def filereader(filepath):
+    with open(filepath, "r") as f:  # open the file as read only
+        fread = f.readlines()
+        fread.pop(0)
+        return fread
+
+
+
+
 def extract_folder_names(file_path, base_folder="Memristors", folder_structure=None):
     # Set default folder structure if not provided
     if folder_structure is None:
