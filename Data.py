@@ -1,9 +1,121 @@
 import numpy as np
 import pandas as pd
-filepath = r"C:\Users\Craig-Desktop\Desktop\test folder for py\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\forthesis.txt"
+from file import filepath
+import matplotlib.pyplot as plt
+
 
 ''' all the data manipulation goes here including any dataframe manipulation 
  '''
+
+
+
+def area_under_curves(v_data,c_data):
+    """
+    only run this for an individual sweep
+    :return:
+    """
+    v_max,v_min = bounds(v_data)
+    print("Voltage max and min", v_max,v_min)
+    # creates dataframe of the sweep in sections
+    df_sections = split_data_in_sect(v_data,c_data,v_max,v_min)
+    print(df_sections)
+    df_sections.get('voltage_ps_sect1')
+
+    #calculate the area under the curve for each section
+    sect1_area = area_under_curve(df_sections.get('voltage_ps_sect1'),df_sections.get('current_ps_sect1'))
+    sect2_area = area_under_curve(df_sections.get('voltage_ps_sect2'), df_sections.get('current_ps_sect2'))
+    sect3_area = area_under_curve(df_sections.get('voltage_ng_sect1'), df_sections.get('current_ng_sect1'))
+    sect4_area = area_under_curve(df_sections.get('voltage_ng_sect2'), df_sections.get('current_ng_sect2'))
+
+    plt.plot(df_sections.get('voltage_ps_sect1'), df_sections.get('current_ps_sect1'))
+    plt.plot(df_sections.get('voltage_ps_sect2'), df_sections.get('current_ps_sect2'))
+    plt.show()
+
+    print("sect1 area",sect1_area)
+    print("sect2 area",sect2_area)
+    print("sect3 area", sect3_area)
+    print("sect4 area", sect4_area)
+    print("Area under the curve = ",sect2_area-sect1_area)
+
+
+def split_data_in_sect(voltage, current,v_max,v_min):
+    positive = [(v, c) for v, c in zip(voltage, current) if 0 <= v <= v_max]
+    negative = [(v, c) for v, c in zip(voltage, current) if v_min <= v <= 0]
+
+    # there is a better way of doing this for sure
+    positive1 = list(zip(*positive[:len(positive)//2]))
+    positive2 = list(zip(*positive[len(positive)//2:]))
+
+    negative1 = list(zip(*negative[:len(negative)//2]))
+    negative2 = list(zip(*negative[len(negative)//2:]))
+    # his dosnt work wshen there is an uneven number for v/c data
+    # create dataframe for device
+    sections = {'voltage_ps_sect1': positive1[0],
+                'current_ps_sect1': positive1[1],
+                'voltage_ps_sect2': positive2[0],
+                'current_ps_sect2': positive2[1],
+                'voltage_ng_sect1': negative1[0],
+                'current_ng_sect1': negative1[1],
+                'voltage_ng_sect2': negative2[0],
+                'current_ng_sect2': negative2[1]}
+
+    print("Negative1:", negative1)
+    print(len(negative1[0]))
+    print("Negative2:", negative2)
+    print(len(negative2[0]))
+    print("Positive1:", positive1)
+    print(len(positive1[0]))
+    print("Positive2:", positive2)
+    print(len(positive2[0]))
+
+    df_sections = pd.DataFrame(sections)
+    return df_sections
+    #for debugging
+
+
+
+
+def area_under_curve (voltage,current):
+    """
+    Calculate the area under the curve given voltage and current data.
+    """
+    voltage = np.array(voltage)
+    current = np.array(current)
+    # Calculate the area under the curve using the trapezoidal rule
+    area = np.trapz(current, voltage)
+    return area
+
+
+def bounds(data):
+    """
+    :param data:
+    :return: max and min values of given array max,min
+    """
+    max = np.max(data)
+    min = np.min(data)
+    return max,min
+
+def check_for_loops(v_data):
+    """
+    :param v_data:
+    :return: number of loops for given data set
+    """
+    # looks at max voltage and min voltage if they are seen more than twice
+    # it classes it as a loop
+    num = 0
+    max_v, min_v = bounds(v_data)
+    for value in v_data:
+        if value == max_v:
+            num += 1
+    if num <= 2:
+        print("Single sweep")
+        return 1
+
+    else:
+        loops = num/2
+        print ("There are ", loops , " loops within this data")
+        return loops
+
 
 def split_iv_sweep(filepath):
     # print(f"{filepath_for_single_sweep}")

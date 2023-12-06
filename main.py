@@ -5,23 +5,19 @@ import Data as eq
 import matplotlib.pyplot as plt
 import plot as plot
 import file as f
+from file import filepath
 
-# filepath = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\top directory\sub directory 1\testfile.txt"
-filepath = r"C:\Users\Craig-Desktop\Desktop\test folder for py\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\forthesis.txt"
-save_df = True
+save_df = False
 plot_graph = True
 eq.set_pandas_display_options()
-
-# Pull sample and material name
 file_info = f.extract_folder_names(filepath)
-save_name_half = file_info.get('sample_name') + " - " + file_info.get('section') + ' - ' + file_info.get(
-    'device_number') + " - " + 'filename'
+short_name = f.short_name()
+long_name = f.long_name()
 
-save_name_full = file_info.get('type') + " - " + file_info.get('polymer') + " - " + \
-                 file_info.get('sample_name') + " - " + file_info.get('section') + ' - ' + file_info.get(
-    'device_number') + " - " + 'filename'
-
-
+print ("Currently working on -", file_info.get('file_name'))
+print ('Information on file below:')
+for variable_name, folder_name in file_info.items():
+    print(f"{variable_name} = '{folder_name}'")
 
 
 # Pull voltage and current data from file
@@ -29,9 +25,11 @@ v_data, c_data = eq.split_iv_sweep(filepath)
 # get positive and negative vlaues of voltage and current data for equations later
 v_data_ps, c_data_ps = eq.filter_positive_values(v_data, c_data)
 v_data_ng, c_data_ng = eq.filter_negative_values(v_data, c_data)
-# create dataframe for device
 
-# Data frame
+num_sweeps = eq.check_for_loops(v_data)
+eq.area_under_curves(v_data,c_data)
+
+# create dataframe for device
 data = {'voltage': v_data,
         'current': c_data,
         'abs_current': eq.absolute_val(c_data),
@@ -53,7 +51,6 @@ data = {'voltage': v_data,
         'on_off_ratio': eq.statistics}
 
 
-
 # todo find a way to call the dataframe the name of the file and then save it appropratly
 # add in the device name and polymer etc into the graphs when they get saved
 
@@ -62,12 +59,11 @@ df = pd.DataFrame(data)
 
 # print variable names for the folders and add too dataframe
 for variable_name, folder_name in file_info.items():
-    print(f"{variable_name} = '{folder_name}'")
     df[variable_name] = folder_name
-print(file_info)
 
 
-print(df)
+
+#print(df)
 
 
 
@@ -76,5 +72,5 @@ if plot_graph:
     p.main_plot()
 if save_df:
     # save the sada frame
-    print(save_name_full)
-    df.to_csv(save_name_half, index=False)
+    print(long_name)
+    df.to_csv(long_name, index=False)
