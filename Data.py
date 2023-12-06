@@ -1,9 +1,125 @@
 import numpy as np
 import pandas as pd
-filepath = r"C:\Users\Craig-Desktop\Desktop\test folder for py\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\forthesis.txt"
+from file import filepath
+import matplotlib.pyplot as plt
+from itertools import zip_longest
+debugging = False
+
 
 ''' all the data manipulation goes here including any dataframe manipulation 
  '''
+
+
+
+def area_under_curves(v_data,c_data):
+    """
+    only run this for an individual sweep
+    :return: ps_area_enclosed,ng_area_enclosed,total_area_enclosed
+    """
+    # finds v max and min
+    v_max,v_min = bounds(v_data)
+    print("Voltage max and min", v_max,v_min)
+    # creates dataframe of the sweep in sections
+    df_sections = split_data_in_sect(v_data,c_data,v_max,v_min)
+
+    #calculate the area under the curve for each section
+    sect1_area = abs(area_under_curve(df_sections.get('voltage_ps_sect1'),df_sections.get('current_ps_sect1')))
+    sect2_area = abs(area_under_curve(df_sections.get('voltage_ps_sect2'), df_sections.get('current_ps_sect2')))
+    sect3_area = abs(area_under_curve(df_sections.get('voltage_ng_sect1'), df_sections.get('current_ng_sect1')))
+    sect4_area = abs(area_under_curve(df_sections.get('voltage_ng_sect2'), df_sections.get('current_ng_sect2')))
+
+    # plot to show where each section is on the hysteresis
+    # plt.plot(df_sections.get('voltage_ps_sect1'), df_sections.get('current_ps_sect1'),color="blue" )
+    # plt.plot(df_sections.get('voltage_ps_sect2'), df_sections.get('current_ps_sect2'),color="green")
+    # plt.plot(df_sections.get('voltage_ng_sect1'), df_sections.get('current_ng_sect1'),color="red")
+    # plt.plot(df_sections.get('voltage_ng_sect2'), df_sections.get('current_ng_sect2'),color="yellow")
+    # plt.legend()
+    # plt.show()
+    # plt.pause(0.1)
+
+    #blue - green
+    #red - yellow
+
+    ps_area_enclosed = sect1_area - sect2_area
+    ng_area_enclosed = sect3_area - sect4_area
+    total_area_enclosed = (sect1_area - sect2_area) + (sect3_area - sect4_area)
+    return ps_area_enclosed,ng_area_enclosed,total_area_enclosed
+
+def split_data_in_sect(voltage, current,v_max,v_min):
+    positive = [(v, c) for v, c in zip(voltage, current) if 0 <= v <= v_max]
+    negative = [(v, c) for v, c in zip(voltage, current) if v_min <= v <= 0]
+
+    # this makes sure that the arrays positive and negative are of the same length if not
+    # it repeats the last value , this shouldn't have too much of an effect on the result
+    len_positive, len_negative = len(positive), len(negative)
+    if len_positive < len_negative:
+        final_positive_value = positive[-1]
+        positive += [final_positive_value] * (len_negative - len_positive)
+    elif len_negative < len_positive:
+        final_negative_value = negative[-1]
+        negative += [final_negative_value] * (len_positive - len_negative)
+
+    positive1 = list(zip(*positive[:len(positive)//2]))
+    positive2 = list(zip(*positive[len(positive)//2:]))
+
+    negative1 = list(zip(*negative[:len(negative)//2]))
+    negative2 = list(zip(*negative[len(negative)//2:]))
+
+    # create dataframe for device
+    sections = {'voltage_ps_sect1': positive1[0],
+                'current_ps_sect1': positive1[1],
+                'voltage_ps_sect2': positive2[0],
+                'current_ps_sect2': positive2[1],
+                'voltage_ng_sect1': negative1[0],
+                'current_ng_sect1': negative1[1],
+                'voltage_ng_sect2': negative2[0],
+                'current_ng_sect2': negative2[1]}
+
+    df_sections = pd.DataFrame(sections)
+    return df_sections
+
+def area_under_curve (voltage,current):
+    """
+    Calculate the area under the curve given voltage and current data.
+    """
+    voltage = np.array(voltage)
+    current = np.array(current)
+    # Calculate the area under the curve using the trapezoidal rule
+    area = np.trapz(current, voltage)
+    # which ever is in np.trapz(y,x), Using a decreasing x corresponds to integrating in reverse: ie negative value?
+    return area
+
+
+def bounds(data):
+    """
+    :param data:
+    :return: max and min values of given array max,min
+    """
+    max = np.max(data)
+    min = np.min(data)
+    return max,min
+
+def check_for_loops(v_data):
+    """
+    :param v_data:
+    :return: number of loops for given data set
+    """
+    # looks at max voltage and min voltage if they are seen more than twice
+    # it classes it as a loop
+    num = 0
+    max_v, min_v = bounds(v_data)
+    for value in v_data:
+        if value == max_v:
+            num += 1
+    if num <= 2:
+        print("Single sweep")
+        return 1
+
+    else:
+        loops = num/2
+        print ("There are ", loops , " loops within this data")
+        return loops
+
 
 def split_iv_sweep(filepath):
     # print(f"{filepath_for_single_sweep}")

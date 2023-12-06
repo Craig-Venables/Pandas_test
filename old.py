@@ -1,3 +1,79 @@
+# def split_data_in_sect(voltage, current,v_max,v_min):
+#     positive = [(v, c) for v, c in zip(voltage, current) if 0 <= v <= v_max]
+#     negative = [(v, c) for v, c in zip(voltage, current) if v_min <= v <= 0]
+#
+#     # there is a better way of doing this for sure
+#     positive1 = list(zip(*positive[:len(positive)//2]))
+#     positive2 = list(zip(*positive[len(positive)//2:]))
+#
+#     negative1 = list(zip(*negative[:len(negative)//2]))
+#     negative2 = list(zip(*negative[len(negative)//2:]))
+#     # his dosnt work wshen there is an uneven number for v/c data
+#     # create dataframe for device
+#     sections = {'voltage_ps_sect1': positive1[0],
+#                 'current_ps_sect1': positive1[1],
+#                 'voltage_ps_sect2': positive2[0],
+#                 'current_ps_sect2': positive2[1],
+#                 'voltage_ng_sect1': negative1[0],
+#                 'current_ng_sect1': negative1[1],
+#                 'voltage_ng_sect2': negative2[0],
+#                 'current_ng_sect2': negative2[1]}
+#
+#     print("Negative1:", negative1)
+#     print(len(negative1[0]))
+#     print("Negative2:", negative2)
+#     print(len(negative2[0]))
+#     print("Positive1:", positive1)
+#     print(len(positive1[0]))
+#     print("Positive2:", positive2)
+#     print(len(positive2[0]))
+#
+#     df_sections = pd.DataFrame(sections)
+#     return df_sections
+#     #for debugging
+
+
+# def split_data_in_sect(voltage, current,v_max,v_min):
+#     positive = [(v, c) for v, c in zip(voltage, current) if 0 <= v <= v_max]
+#     negative = [(v, c) for v, c in zip(voltage, current) if v_min <= v <= 0]
+#
+#     # Pad the shorter sections with NaN
+#     positive1 = list(zip_longest(*positive[:len(positive) // 2], fillvalue=np.nan))
+#     positive2 = list(zip_longest(*positive[len(positive) // 2:], fillvalue=np.nan))
+#
+#     negative1 = list(zip_longest(*negative[:len(negative) // 2], fillvalue=np.nan))
+#     negative2 = list(zip_longest(*negative[len(negative) // 2:], fillvalue=np.nan))
+#
+#     # Create a dictionary for DataFrame
+#
+#     # his dosnt work wshen there is an uneven number for v/c data
+#     # create dataframe for device
+#     sections = {'voltage_ps_sect1': positive1[0],
+#                 'current_ps_sect1': positive1[1],
+#                 'voltage_ps_sect2': positive2[0],
+#                 'current_ps_sect2': positive2[1],
+#                 'voltage_ng_sect1': negative1[0],
+#                 'current_ng_sect1': negative1[1],
+#                 'voltage_ng_sect2': negative2[0],
+#                 'current_ng_sect2': negative2[1]}
+#
+#     print("Negative1:", negative1)
+#     print(len(negative1[0]))
+#     print("Negative2:", negative2)
+#     print(len(negative2[0]))
+#     print("Positive1:", positive1)
+#     print(len(positive1[0]))
+#     print("Positive2:", positive2)
+#     print(len(positive2[0]))
+#
+#     df_sections = pd.DataFrame(sections)
+#     return df_sections
+#     #for debugging
+
+
+
+
+
 # def extract_components(file_path):
 #     # Find the index of "Memristors" (case insensitive)
 #     index_of_memristors = file_path.lower().find('1) Memristors')

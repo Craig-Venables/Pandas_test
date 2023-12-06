@@ -1,5 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from file import filepath
+import file as f
+
 
 class plot():
     '''
@@ -16,6 +19,11 @@ class plot():
         self.sample_name = file_info.get('sample_name')
         self.section = file_info.get('section')
         self.device_number = file_info.get('device_number')
+        self.filename = file_info.get('file_name')
+
+        file_info = f.extract_folder_names(filepath)
+        short_name = f.short_name()
+        long_name = f.long_name()
 
         self.fig = None
         print(self.section)
@@ -48,8 +56,9 @@ class plot():
         plt.ioff()
 
         # add subplot title
-        #plt.suptitle(
-        #    f'{self.polymer_name} -' + f'{self.device_name} -' + ' ' + f'{self.section_name} -' + ' ' + f'{self.filename}')
+        plt.suptitle(
+            f'{self.polymer} -' + f'{self.sample_name} -' + ' ' + f'{self.section} -' + ' '
+            + f'{self.device_number} -' + ' ' + self.filename)
 
         # add label underneath plots for on-off ratio
         #self.fig.text(0.5, 0.01, " ON/OFF Ratio @0.2v - " + f'{round(self.on_off_ratio, 4)}', ha='center', fontsize=10)
@@ -57,7 +66,7 @@ class plot():
         #plt.pause(0.01)
         #plt.show(block=False)
         plt.show()
-        #plt.pause(0.01)
+        plt.pause(0.01)
 
 
     def plot_iv(self):
