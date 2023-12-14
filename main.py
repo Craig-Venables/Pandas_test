@@ -5,14 +5,17 @@ import Data as eq
 import matplotlib.pyplot as plt
 import plot as plot
 import file as f
-from file import filepath,excell_path
+from file import filepath, excell_path
 import excell as ex
 
 # to add
-# Statistics - add section that counts the number of sweeps each device has completed
-            #- pull data from the statisitcs sheet i fill out when measuring the devices
-            #- histogram all the data
-            #-
+# Statistics
+# - add a section that counts the number of sweeps each device has completed
+# - pull data from the statistics sheet i fill out when measuring the devices
+# - histogram all the data
+# - for sweeps what's the internal area of each sweep and how does it compare to the previous?
+#   list these in a table for printing after and the amount they have reduced from the previous and
+#   the first value in percentage?
 
 
 save_df = False
@@ -22,11 +25,10 @@ file_info = f.extract_folder_names(filepath)
 short_name = f.short_name()
 long_name = f.long_name()
 
-print ("Currently working on -", file_info.get('file_name'))
-print ('Information on file below:')
+print("Currently working on -", file_info.get('file_name'))
+print('Information on file below:')
 for variable_name, folder_name in file_info.items():
     print(f"{variable_name} = '{folder_name}'")
-
 
 # Pull voltage and current data from file
 v_data, c_data = eq.split_iv_sweep(filepath)
@@ -35,11 +37,11 @@ v_data_ps, c_data_ps = eq.filter_positive_values(v_data, c_data)
 v_data_ng, c_data_ng = eq.filter_negative_values(v_data, c_data)
 
 num_sweeps = eq.check_for_loops(v_data)
-ps_area_enclosed,ng_area_enclosed,total_area_enclosed = eq.area_under_curves(v_data,c_data)
+ps_area_enclosed, ng_area_enclosed, total_area_enclosed = eq.area_under_curves(v_data, c_data)
 # print("Area enclosed by the curve ps = ",ps_area_enclosed)
 # print("Area enclosed by the curve ng = ", ng_area_enclosed)
 print("total area enclosed within the hysteresis = ", total_area_enclosed)
-#todo normalise this area acroding to voltage as curerently it preferences higher voltages as they give a larger area.
+# todo normalise this area acroding to voltage as curerently it preferences higher voltages as they give a larger area.
 
 # create dataframe for device
 data = {'voltage': v_data,
@@ -62,7 +64,6 @@ data = {'voltage': v_data,
         'sqrt_Voltage': eq.sqrt_array(v_data),
         'on_off_ratio': eq.statistics}
 
-
 # todo find a way to call the dataframe the name of the file and then save it appropratly
 # add in the device name and polymer etc into the graphs when they get saved
 
@@ -73,13 +74,11 @@ df = pd.DataFrame(data)
 for variable_name, folder_name in file_info.items():
     df[variable_name] = folder_name
 
-
 # Get information
-#ex.save_info(file_info.get('sample_name'),excell_path,savelocation)
-print("short name",short_name)
+# ex.save_info(file_info.get('sample_name'),excell_path,savelocation)
+print("short name", short_name)
 
-#print(df)
-
+# print(df)
 
 
 if plot_graph:
