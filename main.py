@@ -5,7 +5,15 @@ import Data as eq
 import matplotlib.pyplot as plt
 import plot as plot
 import file as f
-from file import filepath
+from file import filepath,excell_path
+import excell as ex
+
+# to add
+# Statistics - add section that counts the number of sweeps each device has completed
+            #- pull data from the statisitcs sheet i fill out when measuring the devices
+            #- histogram all the data
+            #-
+
 
 save_df = False
 plot_graph = True
@@ -31,6 +39,7 @@ ps_area_enclosed,ng_area_enclosed,total_area_enclosed = eq.area_under_curves(v_d
 # print("Area enclosed by the curve ps = ",ps_area_enclosed)
 # print("Area enclosed by the curve ng = ", ng_area_enclosed)
 print("total area enclosed within the hysteresis = ", total_area_enclosed)
+#todo normalise this area acroding to voltage as curerently it preferences higher voltages as they give a larger area.
 
 # create dataframe for device
 data = {'voltage': v_data,
@@ -60,11 +69,14 @@ data = {'voltage': v_data,
 
 df = pd.DataFrame(data)
 
-# print variable names for the folders and add too dataframe
+# print variable names dd too dataframe
 for variable_name, folder_name in file_info.items():
     df[variable_name] = folder_name
 
 
+# Get information
+#ex.save_info(file_info.get('sample_name'),excell_path,savelocation)
+print("short name",short_name)
 
 #print(df)
 
