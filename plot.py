@@ -25,6 +25,7 @@ class plot():
         short_name = f.short_name()
         long_name = f.long_name()
 
+
         self.fig = None
         print(self.section)
 
@@ -52,6 +53,7 @@ class plot():
 
         plt.subplot(2, 2, 4)
         #self.information()
+        #self.plot_array_changes()
 
         plt.ioff()
 
@@ -145,6 +147,20 @@ class plot():
         plt.legend()
         plt.grid(True)
 
+    # def plot_array_changes(self,vall):
+    #     # Create a range for the x-axis (indices of the array)
+    #     x = range(len(vall))
+    #
+    #     # Plot the array values
+    #     plt.plot(x, vall, marker='o', linestyle='-')
+    #
+    #     # Set labels and title
+    #     plt.xlabel('Index')
+    #     plt.ylabel('Value')
+    #     plt.title('Change of Values in the Array')
+    #
+    #     # Show the plot
+    #     plt.show()
 
     # def information(self):
     #     '''

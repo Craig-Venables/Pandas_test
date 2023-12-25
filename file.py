@@ -4,7 +4,7 @@
 #1a 0.7 0.05 1 memristive af
 
 # notts computers
-filepath = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\1a 0.7 0.05 1 memristive af.txt"
+filepath = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\13-Fs-1.8v-0.01sv-100ua repeat 5 loops.txt"
 excell_path = r""
 # home pc
 #filepath = r"C:\Users\Craig-Desktop\Desktop\test folder for py\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\forthesis.txt"

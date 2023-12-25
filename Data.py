@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import math
 from file import filepath
 import matplotlib.pyplot as plt
 from itertools import zip_longest
@@ -9,7 +10,113 @@ debugging = False
 ''' all the data manipulation goes here including any dataframe manipulation 
  '''
 
+def split_loops(v_data,c_data,num_loops):
+    """ splits the looped data and outputs each sweep as another array"""
+    total_length = len(v_data)  # Assuming both v_data and c_data have the same length
+    size = total_length // num_loops  # Calculate the size based on the number of loops
 
+    # Convert size to integer
+    size = int(size)
+
+    # Handle the case when the division leaves a remainder
+    if total_length % num_loops != 0:
+        size += 1
+
+    split_v_data = [v_data[i:i + size] for i in range(0, total_length, size)]
+    split_c_data = [c_data[i:i + size] for i in range(0, total_length, size)]
+
+    # Print the number of arrays and their lengths
+    # for idx, (sub_v_array, sub_c_array) in enumerate(zip(split_v_data, split_c_data)):
+    #     print(f"Split Array {idx + 1}:")
+    #     print(f"v_data Length: {len(sub_v_array)}")
+    #     print(f"c_data Length: {len(sub_c_array)}")
+    #     print("------")
+
+    # # Print each split array in split_v_data
+    # print("Split Arrays for v_data:")
+    # for idx, array in enumerate(split_v_data):
+    #     print(f"Split Array {idx + 1}: {array}")
+
+    # Print a separator
+    print("\n" + "-" * 40 + "\n")
+
+    # Print each split array in split_c_data
+    print("Split Arrays for c_data:")
+    for idx, array in enumerate(split_c_data):
+        print(f"Split Array {idx + 1}: {array}")
+
+    return split_v_data, split_c_data
+
+
+def analyze_array_changes(arr):
+    ''' calculate the array changes for each of the values of enclosed area'''
+
+    # Calculate the percentage change over the length
+    percent_change = ((arr[-1] - arr[0]) / arr[0]) * 100
+
+    # Calculate the average change over time
+    avg_change = (arr[-1] - arr[0]) / (len(arr) - 1)
+
+    # Compute relative changes between consecutive elements
+    relative_changes = np.diff(arr) / arr[:-1]
+
+    # Calculate statistics
+    avg_relative_change = np.mean(relative_changes)
+    std_relative_change = np.std(relative_changes)
+
+    return percent_change, avg_change,avg_relative_change, std_relative_change
+
+def calculate_metrics_for_loops(split_v_data, split_c_data):
+    '''
+    Calculate various metrics for each split array of voltage and current data.
+
+    Parameters:
+    - split_v_data (list of lists): List containing split voltage arrays
+    - split_c_data (list of lists): List containing split current arrays
+
+    Returns:
+    - ps_areas (list): List of PS areas for each split array
+    - ng_areas (list): List of NG areas for each split array
+    - areas (list): List of total areas for each split array
+    - normalized_areas (list): List of normalized areas for each split array
+    '''
+
+    # Initialize lists to store the values for each metric
+    ps_areas = []
+    ng_areas = []
+    areas = []
+    normalized_areas = []
+
+    # Loop through each split array
+    for idx in range(len(split_v_data)):
+        sub_v_array = split_v_data[idx]
+        sub_c_array = split_c_data[idx]
+
+        # Call the area_under_curves function for the current split arrays
+        ps_area, ng_area, area, norm_area = area_under_curves(sub_v_array, sub_c_array)
+
+        # Append the values to their respective lists
+        ps_areas.append(ps_area)
+        ng_areas.append(ng_area)
+        areas.append(area)
+        normalized_areas.append(norm_area)
+
+        # Print the values for the current split array
+        # print(f"Metrics for split array {idx + 1}:")
+        # print(f"PS Area Enclosed: {ps_area}")
+        # print(f"NG Area Enclosed: {ng_area}")
+        # print(f"Total Area Enclosed: {area}")
+        # print(f"Normalized Area Enclosed: {norm_area}")
+        # print("------")
+
+    # Print the lists of values
+    # print("\nList of PS Areas:", ps_areas)
+    # print("List of NG Areas:", ng_areas)
+    # print("List of Total Areas:", areas)
+    print("List of Normalized Areas:", normalized_areas)
+
+    # Return the calculated metrics
+    return ps_areas, ng_areas, areas, normalized_areas
 
 def area_under_curves(v_data,c_data):
     """
@@ -22,66 +129,123 @@ def area_under_curves(v_data,c_data):
     # creates dataframe of the sweep in sections
     df_sections = split_data_in_sect(v_data,c_data,v_max,v_min)
 
+
+
     #calculate the area under the curve for each section
     sect1_area = abs(area_under_curve(df_sections.get('voltage_ps_sect1'),df_sections.get('current_ps_sect1')))
     sect2_area = abs(area_under_curve(df_sections.get('voltage_ps_sect2'), df_sections.get('current_ps_sect2')))
     sect3_area = abs(area_under_curve(df_sections.get('voltage_ng_sect1'), df_sections.get('current_ng_sect1')))
     sect4_area = abs(area_under_curve(df_sections.get('voltage_ng_sect2'), df_sections.get('current_ng_sect2')))
 
-    # plot to show where each section is on the hysteresis
+    #plot to show where each section is on the hysteresis
     # plt.plot(df_sections.get('voltage_ps_sect1'), df_sections.get('current_ps_sect1'),color="blue" )
     # plt.plot(df_sections.get('voltage_ps_sect2'), df_sections.get('current_ps_sect2'),color="green")
     # plt.plot(df_sections.get('voltage_ng_sect1'), df_sections.get('current_ng_sect1'),color="red")
     # plt.plot(df_sections.get('voltage_ng_sect2'), df_sections.get('current_ng_sect2'),color="yellow")
-    # plt.legend()
+    # #plt.legend()
     # plt.show()
     # plt.pause(0.1)
 
     #blue - green
     #red - yellow
 
-    ps_area_enclosed = sect1_area - sect2_area
-    ng_area_enclosed = sect3_area - sect4_area
-    total_area_enclosed = (sect1_area - sect2_area) + (sect3_area - sect4_area)
-    return ps_area_enclosed,ng_area_enclosed,total_area_enclosed
+    ps_area_enclosed = abs(sect1_area) - abs(sect2_area)
+    ng_area_enclosed = abs(sect4_area) - abs(sect3_area)
+    area_enclosed = ps_area_enclosed + ng_area_enclosed
+    print("total voltage",(abs(v_max) + abs(v_min)))
+    print(ng_area_enclosed,ps_area_enclosed)
+    norm_area_enclosed = area_enclosed / (abs(v_max) + abs(v_min))
+    return ps_area_enclosed,ng_area_enclosed,area_enclosed,norm_area_enclosed
 
-def split_data_in_sect(voltage, current,v_max,v_min):
-    positive = [(v, c) for v, c in zip(voltage, current) if 0 <= v <= v_max]
-    negative = [(v, c) for v, c in zip(voltage, current) if v_min <= v <= 0]
+def split_data_in_sect(voltage, current, v_max, v_min):
+    # splits the data into sections and clculates the area under the curve for how "memeristive" a device is.
+    zipped_data = list(zip(voltage, current))
 
-    # this makes sure that the arrays positive and negative are of the same length if not
-    # it repeats the last value , this shouldn't have too much of an effect on the result
-    len_positive, len_negative = len(positive), len(negative)
-    if len_positive < len_negative:
-        final_positive_value = positive[-1]
-        positive += [final_positive_value] * (len_negative - len_positive)
-    elif len_negative < len_positive:
-        final_negative_value = negative[-1]
-        negative += [final_negative_value] * (len_positive - len_negative)
+    positive = [(v, c) for v, c in zipped_data if 0 <= v <= v_max]
+    negative = [(v, c) for v, c in zipped_data if v_min <= v <= 0]
 
-    positive1 = list(zip(*positive[:len(positive)//2]))
-    positive2 = list(zip(*positive[len(positive)//2:]))
+    print("Length of positive and negative arrays:", len(positive), len(negative))
 
-    negative1 = list(zip(*negative[:len(negative)//2]))
-    negative2 = list(zip(*negative[len(negative)//2:]))
+    # Find the maximum length among the four sections
+    max_len = max(len(positive), len(negative))
+    # Check if max_len is odd and adjust
+    # if max_len % 2 != 0:
+    #     max_len += 1
+    # max_len//= 2
 
-    # create dataframe for device
-    sections = {'voltage_ps_sect1': positive1[0],
-                'current_ps_sect1': positive1[1],
-                'voltage_ps_sect2': positive2[0],
-                'current_ps_sect2': positive2[1],
-                'voltage_ng_sect1': negative1[0],
-                'current_ng_sect1': negative1[1],
-                'voltage_ng_sect2': negative2[0],
-                'current_ng_sect2': negative2[1]}
+    print(max_len, type(max_len))
+
+
+    # Split positive section into two equal parts
+    positive1 = positive[:max_len // 2]
+    positive2 = positive[max_len // 2:]
+
+    # Split negative section into two equal parts
+    negative3 = negative[:max_len // 2]
+    negative4 = negative[max_len // 2:]
+    #
+    # Pad shorter sections to ensure equal lengths
+    last_positive = positive[-1] if positive else (0, 0)
+    last_negative = negative[-1] if negative else (0, 0)
+
+    # Find the maximum length among the four sections
+    max_len = max(len(positive1), len(positive2), len(negative3), len(negative4))
+
+    # Calculate the required padding for each section
+    pad_positive1 = max_len - len(positive1)
+    pad_positive2 = max_len - len(positive2)
+    pad_negative3 = max_len - len(negative3)
+    pad_negative4 = max_len - len(negative4)
+
+    # Limit the padding to the length of the last value for each section
+    last_positive1 = positive1[-1] if positive1 else (0, 0)
+    last_positive2 = positive2[-1] if positive2 else (0, 0)
+    last_negative3 = negative3[-1] if negative3 else (0, 0)
+    last_negative4 = negative4[-1] if negative4 else (0, 0)
+
+    positive1 += [last_positive1] * pad_positive1
+    positive2 += [last_positive2] * pad_positive2
+    negative3 += [last_negative3] * pad_negative3
+    negative4 += [last_negative4] * pad_negative4
+
+    # Create DataFrame for device
+    sections = {
+        'voltage_ps_sect1': [v for v, _ in positive1],
+        'current_ps_sect1': [c for _, c in positive1],
+        'voltage_ps_sect2': [v for v, _ in positive2],
+        'current_ps_sect2': [c for _, c in positive2],
+        'voltage_ng_sect1': [v for v, _ in negative3],
+        'current_ng_sect1': [c for _, c in negative3],
+        'voltage_ng_sect2': [v for v, _ in negative4],
+        'current_ng_sect2': [c for _, c in negative4],
+    }
+
+    # print("----")
+    # print("this is all the sections of the hysteresis")
+    # print(positive1)
+    # print(len(positive1))
+    # print(positive2)
+    # print(len(positive2))
+    #
+    # print(negative3)
+    # print(len(negative3))
+    # print(negative4)
+    # print(len(negative4))
+    # print("----")
+    # df_sections = pd.DataFrame(sections)
+    # print(df_sections)
 
     df_sections = pd.DataFrame(sections)
+    #print(df_sections)
     return df_sections
+
 
 def area_under_curve (voltage,current):
     """
     Calculate the area under the curve given voltage and current data.
     """
+
+    #print(voltage,current)
     voltage = np.array(voltage)
     current = np.array(current)
     # Calculate the area under the curve using the trapezoidal rule
@@ -117,7 +281,6 @@ def check_for_loops(v_data):
 
     else:
         loops = num/2
-        print ("There are ", loops , " loops within this data")
         return loops
 
 
@@ -148,6 +311,7 @@ def split_iv_sweep(filepath):
     return v_data_array, c_data_array
 
 
+## ------------------------------------------------------------------------------------##
 
 # Equations for manipulating data
 def absolute_val(col):
