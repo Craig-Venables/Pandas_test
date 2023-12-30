@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from file import filepath
 import file as f
+import os
 
 
 class plot():
@@ -9,9 +10,11 @@ class plot():
     pass through data frame
     '''
 
-    def __init__(self, data,file_info) -> None:
+    def __init__(self, data,file_info,save_loc) -> None:
         self.data = data
         self._unpack_dataframe()
+
+
 
         # gets file info
         self.type = file_info.get('type')
@@ -20,11 +23,19 @@ class plot():
         self.section = file_info.get('section')
         self.device_number = file_info.get('device_number')
         self.filename = file_info.get('file_name')
+        self.save_loc = save_loc
+        self.short_filename = os.path.splitext(self.filename)[0]
+
 
         file_info = f.extract_folder_names(filepath)
         short_name = f.short_name()
         long_name = f.long_name()
 
+        # looped data
+        self.looped_info = False
+        self.normalized_areas = ""
+        self.ps_areas = ""
+        self.ng_areas = ""
 
         self.fig = None
         print(self.section)
@@ -36,10 +47,14 @@ class plot():
 
     def main_plot(self):
         '''
-            plots iv and log iv graphs as subplots in its own window
-            '''
+            plots iv and log iv graphs as subplots and saves it
+        '''
         plt.close('all')
         self.fig = plt.figure(figsize=(12, 8))
+
+        plt.suptitle(
+            f'{self.polymer} -' + f'{self.sample_name} -' + ' ' + f'{self.section} -' + ' '
+            + f'{self.device_number} -' + ' ' + self.filename)
 
         # using the functions main_plot the graphs
         plt.subplot(2, 2, 1)
@@ -52,23 +67,28 @@ class plot():
         self.plot_iv_avg()
 
         plt.subplot(2, 2, 4)
-        #self.information()
-        #self.plot_array_changes()
-
-        plt.ioff()
-
-        # add subplot title
-        plt.suptitle(
-            f'{self.polymer} -' + f'{self.sample_name} -' + ' ' + f'{self.section} -' + ' '
-            + f'{self.device_number} -' + ' ' + self.filename)
+        # self.information()
+        # self.plot_array_changes()
 
         # add label underneath plots for on-off ratio
-        #self.fig.text(0.5, 0.01, " ON/OFF Ratio @0.2v - " + f'{round(self.on_off_ratio, 4)}', ha='center', fontsize=10)
+        # self.fig.text(0.5, 0.01, " ON/OFF Ratio @0.2v - " + f'{round(self.on_off_ratio, 4)}', ha='center', fontsize=10)
+        #plt.show()
+        # add subplot title
 
+        # Turn off interactive mode
+        plt.ioff()
+        print(self.save_loc)
+        #print(self.save_loc+"\\"+f"{self.filename}.png")
+        plt.savefig(self.save_loc+"\\"+f"{self.short_filename}.png", bbox_inches='tight',dpi=200)
+        #note pngs not showing on photo app
+
+        # uncomment to show for 0.01 sec
         #plt.pause(0.01)
-        #plt.show(block=False)
-        plt.show()
-        plt.pause(0.01)
+
+        # uncomment to keep on screen
+        #plt.show()
+
+        return self.fig
 
 
     def plot_iv(self):
@@ -147,20 +167,20 @@ class plot():
         plt.legend()
         plt.grid(True)
 
-    # def plot_array_changes(self,vall):
-    #     # Create a range for the x-axis (indices of the array)
-    #     x = range(len(vall))
-    #
-    #     # Plot the array values
-    #     plt.plot(x, vall, marker='o', linestyle='-')
-    #
-    #     # Set labels and title
-    #     plt.xlabel('Index')
-    #     plt.ylabel('Value')
-    #     plt.title('Change of Values in the Array')
-    #
-    #     # Show the plot
-    #     plt.show()
+    def plot_array_changes(self,vall):
+        # Create a range for the x-axis (indices of the array)
+        x = range(len(vall))
+
+        # Plot the array values
+        plt.plot(x, vall, marker='o', linestyle='-')
+
+        # Set labels and title
+        plt.xlabel('Index')
+        plt.ylabel('Value')
+        plt.title('Change of Values in the Array')
+
+        # Show the plot
+        plt.show()
 
     # def information(self):
     #     '''
