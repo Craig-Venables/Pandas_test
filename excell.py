@@ -4,8 +4,7 @@ import time
 import pickle
 import pandas as pd
 
-""" Currently a work in progress but this pulls all the information for any given file from the excell sheet this 
-hasnt been implimented within this code yet but is else where."""
+# add in other sheet
 
 
 def save_info(device_name, excel_path, savelocation):
@@ -14,7 +13,7 @@ def save_info(device_name, excel_path, savelocation):
     on the device and the solutions used for the different solutions.
     saves it as a text document for easy reading and as a pkl file for python.
     :param device_name: Device Name
-    :param excel_path: Path too the excel file "solutions and devices"
+    :param excel_path: Path to the Excel file "solutions and devices"
     :param foldername:
     :return: Saves device parameters as a data frame
     '''
@@ -55,7 +54,7 @@ def save_info(device_name, excel_path, savelocation):
                 'Polymer': row.iloc[0]['Polymer'],
                 # Add more fields as needed
             }
-            print(info_dict)
+            #print(info_dict)
 
             solutions = ["Solution 1 ID", "Solution 2 ID", "Solution 3 ID", "Solution 4 ID"]
 
@@ -105,6 +104,10 @@ def save_info(device_name, excel_path, savelocation):
                 for key, value in info_dict.items():
                     txt_file.write(f"{key}: {value}\n")
             print("saved", device_name,"information" )
+
+            #info_dict_df = pd.DataFrame.from_dict(info_dict)
+
+            return (info_dict)
 
         else:
             print(f"Error: Device '{device_name}' not found in Excel file.")

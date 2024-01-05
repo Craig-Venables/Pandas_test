@@ -4,9 +4,10 @@ import os
 import Data as eq
 import pdf as pdf
 import matplotlib.pyplot as plt
+import excell as exc
 import plot as plot
 import file as f
-from file import filepath, excell_path
+from file import filepath, excel_path
 import excell as ex
 
 # pip install reportlab matplotlib
@@ -63,21 +64,27 @@ for type_folder in os.listdir(main_dir):
 
             if os.path.isdir(polymer_path):
                 # Navigate through sample_name folders
-                for sample_folder in os.listdir(polymer_path):
-                    sample_path = os.path.join(polymer_path, sample_folder)
+                for sample_name in os.listdir(polymer_path):
+                    sample_path = os.path.join(polymer_path, sample_name)
+                    print("working on ", sample_name)
 
                     if os.path.isdir(sample_path):
+                        # Anything to device that doesn't require information on individual sweeps
                         # sample name ie D14-Stock-Gold-PVA(2%)-Gold-s7
+                        # Pull info from excell sheet here
+
+                        info_dict = exc.save_info(sample_name,f.excel_path,sample_path)
+
                         print("working on", sample_path)
                         # Navigate through section folders
                         for section_folder in os.listdir(sample_path):
+                            # Anything to section that doesn't require information on individual sweeps
                             section_path = os.path.join(sample_path, section_folder)
-
                             if os.path.isdir(section_path):
                                 # Navigate through device_number folders
                                 for device_folder in os.listdir(section_path):
                                     device_path = os.path.join(section_path, device_folder)
-
+                                    #
                                     if os.path.isdir(device_path):
 
                                         # keeps a list of all files processed as well as each area measured
@@ -94,9 +101,14 @@ for type_folder in os.listdir(main_dir):
                                             if file_name.endswith('.txt'):
 
                                                 # Does work on the file here
+
+                                                # checks If in excell sheet on file its capacitive or not if capacative does something else
+
                                                 file_path = os.path.join(device_path, file_name)
+
                                                 file_info, short_name, long_name, df, area, areas_loops, looped_array_info, graph = eq.file_analysis(
                                                     file_path, plot_graph, save_df,device_path)
+                                                print("file_info",type(file_info))
 
                                                 # add check to see if device is capacitive then ignore area maybe
                                                 # check file maybe change loops into data into and averaging it check
@@ -132,6 +144,9 @@ for type_folder in os.listdir(main_dir):
                         # sample_name
                         # graphs = ["Graph1", "Graph2"]  # List of graph file names
 
+                        # can add this here instead
+
+                        #exc.save_info(sample_name, f.excel_path, sample_path)
                         def get_data_for_pdf():
                             data = [
                                 "Summary device.",
@@ -145,7 +160,7 @@ for type_folder in os.listdir(main_dir):
                         # Show the plot
                         plt.show()
                         #graphs = some_function_comparing_all_files
-                        pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{file_info.get('sample_name')}.pdf", graph, data)
+                        pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{file_info.get('sample_name')}.pdf", graph, info_dict)
 
                 # polymer
 # Perform actions in subsequent folders (e.g., g 200µm, D14-Stock-Gold-PVA(2%)-Gold-s7)
