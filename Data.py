@@ -13,19 +13,20 @@ debugging = False
 ''' all the data manipulation goes here including any dataframe manipulation 
  '''
 
-def file_analysis(filepath,plot_graph,save_df,device_path):
+
+def file_analysis(filepath, plot_graph, save_df, device_path):
     """ for all info from a single file this determines if it is a s """
 
     file_info = f.extract_folder_names(filepath)
     short_name = f.short_name()
     long_name = f.long_name()
 
-    print ("-----")
+    print("-----")
     print("Currently working on -", file_info.get('file_name'))
     print('Information on file below:')
     for variable_name, folder_name in file_info.items():
         print(f"{variable_name} = '{folder_name}'")
-    #print ("-----")
+    # print ("-----")
 
     # what type of data is this?
     # check how many columns it has and match it against something that tells you what data
@@ -43,7 +44,7 @@ def file_analysis(filepath,plot_graph,save_df,device_path):
     # checks for looped data and calculates the number of loops
     num_sweeps = check_for_loops(v_data)
 
-    # create dataframe for device of all the data
+    # create a dataframe for the device of all the data
     data = {'voltage': v_data,
             'current': c_data,
             'abs_current': absolute_val(c_data),
@@ -72,28 +73,27 @@ def file_analysis(filepath,plot_graph,save_df,device_path):
         print("running through looped data")
         print("There are ", num_sweeps, " loops within this data")
 
-        # splits the loops  depending on the number of sweeps
+        # splits the loops depending on the number of sweeps
         split_v_data, split_c_data = split_loops(v_data, c_data, num_sweeps)
         # Calculates the metrics for each array returning the areas
         ps_areas, ng_areas, areas, normalized_areas = calculate_metrics_for_loops(split_v_data, split_c_data)
 
-        # create dataframe for device of all the data
+        # create dataframe for a device of all the data
         areas_loops = {'ps_area': ps_areas,
-                'ng_area': ng_areas,
-                'areas': areas,
-                'normalised_areas': normalized_areas}
-        #areas_loops = pd.DataFrame(areas_loops)
+                       'ng_area': ng_areas,
+                       'areas': areas,
+                       'normalised_areas': normalized_areas}
+        # areas_loops = pd.DataFrame(areas_loops)
 
         # Analyze the array changes
         percent_change, avg_change, avg_relative_change, std_relative_change = analyze_array_changes(normalized_areas)
 
         # create dataframe for device of all the data
         looped_array_info = {'percentage_change': percent_change,
-                'avg_change': avg_change,
-                'avg_relative_change': avg_relative_change,
-                'stf_relative_change': std_relative_change}
-        #looped_array_info = pd.DataFrame(looped_array_info)
-
+                             'avg_change': avg_change,
+                             'avg_relative_change': avg_relative_change,
+                             'stf_relative_change': std_relative_change}
+        # looped_array_info = pd.DataFrame(looped_array_info)
 
         # print(f"Percentage change over the length: {percent_change:.5f}%")
         # print(f"Average change over time: {avg_change:.2e}")
@@ -109,21 +109,17 @@ def file_analysis(filepath,plot_graph,save_df,device_path):
         for variable_name, folder_name in file_info.items():
             df[variable_name] = folder_name
 
-        f.check_if_folder_exists(device_path,"python_images")
-
-
+        f.check_if_folder_exists(device_path, "python_images")
 
         save_loc = device_path + '\\' + "python_images"
 
-
-
         graph_dict = {}
         if plot_graph:
-            p = plot.plot(df, file_info,save_loc)
+            p = plot.plot(df, file_info, save_loc)
             graph = p.main_plot()
-            #p.fig.savefig(f"{file_info.get('file_name')}.png")
-            #print("saved graph too" , "###insert file path###")
-            #this will plot graphs specific too looped data
+            # p.fig.savefig(f"{file_info.get('file_name')}.png")
+            # print("saved graph too" , "###insert file path###")
+            # this will plot graphs specific too looped data
 
         # for loops save file within a folder then  the next bit acan access it and open it
         if save_df:
@@ -135,20 +131,23 @@ def file_analysis(filepath,plot_graph,save_df,device_path):
         # plot_array_changes(normalized_areas)
         area = None
 
+    # this is for later
+    # if num_sweeps < 1:
+    #     print("skipping as half sweep")
     else:
         # Data Processing for a single sweep
         print("data contains only one sweep")
         # if the xcell document states capaatice return
         ps_area, ng_area, area, normalized_area = area_under_curves(v_data, c_data)
         print("total area enclosed within the hysteresis normalised to voltage = ", normalized_area)
-        # this area will need passing back to a another array for comparision across all devices in the section
-        # create dataframe for device of all the data
+        # this area will need passing back to another array for comparision across all devices in the section
+        # create dataframe for the device of all the data
         area = {'ps_area': ps_area,
                 'ng_area': ng_area,
                 'area': area,
                 'normalised_areas': normalized_area}
 
-        #area = pd.DataFrame(area)
+        # area = pd.DataFrame(area)
 
         f.check_if_folder_exists(device_path, "python_images")
         save_loc = os.path.join(device_path, "python_images")
@@ -164,7 +163,8 @@ def file_analysis(filepath,plot_graph,save_df,device_path):
             df.to_csv(long_name, index=False)
         areas_loops = None
         looped_array_info = None
-    return file_info,short_name,long_name,df,area,areas_loops,looped_array_info,graph
+    return file_info, short_name, long_name, df, area, areas_loops, looped_array_info, graph
+
 
 def split_loops(v_data, c_data, num_loops):
     """ splits the looped data and outputs each sweep as another array"""
@@ -395,20 +395,40 @@ def check_for_loops(v_data):
     :param v_data:
     :return: number of loops for given data set
     """
-    # looks at max voltage and min voltage if they are seen more than twice
-    # it classes it as a loop
-    num = 0
+    # looks at max voltage and min voltage if they are seen more than twice it classes it as a loop
+    # checks for the number of zeros 3 = single loop
+    num_max = 0
+    num_min = 0
+    num_zero = 0
     max_v, min_v = bounds(v_data)
     for value in v_data:
         if value == max_v:
-            num += 1
-    if num <= 2:
-        print("Single sweep")
-        return 1
+            num_max += 1
+        if value == min_v:
+            num_min += 1
+        if value == 0:
+            num_zero += 1
 
+    print("num zero", num_zero)
+    if num_zero == 3:
+        print("single sweep")
+        return 1
+    if num_zero <= 3:
+        print("half_sweep", num_zero)
+        return 0.5
     else:
-        loops = num / 2
+        print("multiloop", num_zero)
+        loops = num_max / 3
         return loops
+    # used for checking with just positive and negative vlaues
+    # if num_max <= 2:
+    #     print("Single sweep", num_max)
+    #     return 1
+    # if num_max <= 1:
+    #     print("half sweep", num_max)
+    #     return 0.5
+    # else:
+    #     loops = num_max / 2
 
 
 def split_iv_sweep(filepath):

@@ -54,9 +54,9 @@ def full_device_info():
 
 
 # Navigate through the main directory
-main_dir = r'C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors'
-for type_folder in os.listdir(main_dir):
-    type_path = os.path.join(main_dir, type_folder)
+
+for type_folder in os.listdir(f.main_dir):
+    type_path = os.path.join(f.main_dir, type_folder)
     if os.path.isdir(type_path):
         # Navigate through sub-folders (e.g., polymer)
         for polymer_folder in os.listdir(type_path):
@@ -73,7 +73,9 @@ for type_folder in os.listdir(main_dir):
                         # sample name ie D14-Stock-Gold-PVA(2%)-Gold-s7
                         # Pull info from excell sheet here
 
-                        info_dict = exc.save_info(sample_name,f.excel_path,sample_path)
+                        sample_sweep_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
+
+                        info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
 
                         print("working on", sample_path)
                         # Navigate through section folders
@@ -146,7 +148,7 @@ for type_folder in os.listdir(main_dir):
 
                         # can add this here instead
 
-                        #exc.save_info(sample_name, f.excel_path, sample_path)
+                        #exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
                         def get_data_for_pdf():
                             data = [
                                 "Summary device.",
@@ -168,7 +170,7 @@ for type_folder in os.listdir(main_dir):
 
 
 # Get information
-# ex.save_info(file_info.get('sample_name'),excell_path,savelocation)
+# ex.save_info_from_solution_devices_excell(file_info.get('sample_name'),excell_path,savelocation)
 
 # Gets all information from a file wether a single sweep or multiple sweeps
 # file_info,short_name,long_name,df,area,areas_loops,looped_array_info = eq.file_analysis(filepath,plot_graph,save_df)
