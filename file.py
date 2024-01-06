@@ -1,17 +1,23 @@
+import os
 ''' This file contains everything to do with files, this includes the file location as a variable, this is so it can be imported in all files n'''
 #other file too test
 
 #1a 0.7 0.05 1 memristive af
+excel_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
+root_dir = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
 
 # notts computers
-filepath = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\1a 0.7 0.05 1 memristive af.txt"
-excell_path = r""
+filepath = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors\Stock\PVA\D14-Stock-Gold-PVA(2%)-Gold-s7\G 200µm\1\1-Fs_0.5v_0.01s.txt"
+
 # home pc
 #filepath = r"C:\Users\Craig-Desktop\Desktop\test folder for py\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\forthesis.txt"
 
 
-
-
+def check_if_folder_exists(d_path,fol_name):
+    if not os.path.exists(str(d_path) + '\\' + f"{fol_name}"):
+        os.makedirs(str(d_path) + '\\' + f"{fol_name}")
+        return f"{fol_name}", "exists"
+    return 'already exists'
 
 
 
