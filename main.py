@@ -7,7 +7,9 @@ import matplotlib.pyplot as plt
 import excell as exc
 import plot as plot
 import file as f
-from file import filepath, excel_path
+import pickle
+
+from file import excel_path
 import excell as ex
 
 # pip install reportlab matplotlib
@@ -30,30 +32,18 @@ import excell as ex
 # all the images for each file and within that have another for each of the looped data with all the individual
 # images in, with a full overview of each create a final overview pdf of each device with all the sweeps information
 # ie average enclosed area, avaerage switching
-#
+
+# check for number of sweeps completed for each device so far
 
 # find a way to incorporate the file created that keeps track of all the info from each sweep from past resuts where
 # i give the endurance nuber of sweeps etc celled _____
 
 save_df = False
-plot_graph = True
+plot_graph = False
 re_analyse = True
 eq.set_pandas_display_options()
 
-
-# Function to perform an operation on a file
-def process_file(file_path):
-    # Perform your operation on the file here
-    pass
-
-
-# Function to run after processing all files in a folder
-def full_device_info():
-    # Perform action after processing all files
-    pass
-
-
-# Navigate through the main directory
+# Main for loop for parsing through folders
 
 for type_folder in os.listdir(f.main_dir):
     type_path = os.path.join(f.main_dir, type_folder)
@@ -66,51 +56,65 @@ for type_folder in os.listdir(f.main_dir):
                 # Navigate through sample_name folders
                 for sample_name in os.listdir(polymer_path):
                     sample_path = os.path.join(polymer_path, sample_name)
-                    print("working on ", sample_name)
-
                     if os.path.isdir(sample_path):
+                        print("working on ", sample_name)
+                        print("Path = ", sample_path)
                         # Anything to device that doesn't require information on individual sweeps
-                        # sample name ie D14-Stock-Gold-PVA(2%)-Gold-s7
-                        # Pull info from excell sheet here
+                        # Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7
 
+                        # Pulls information from device sweep excell sheet
                         sample_sweep_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
+                        print(sample_sweep_dict['G'])
 
+                        # Pulls information on fabrication from excell file
                         info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
 
-                        print("working on", sample_path)
+                        # empty list for storing all measured devices
+                        list_of_measured_files_devices_sections = []
+
                         # Navigate through section folders
                         for section_folder in os.listdir(sample_path):
                             # Anything to section that doesn't require information on individual sweeps
                             section_path = os.path.join(sample_path, section_folder)
                             if os.path.isdir(section_path):
                                 # Navigate through device_number folders
+                                print("working on ", sample_name, section_folder)
+                                list_of_measured_files_devices = []
+
                                 for device_folder in os.listdir(section_path):
                                     device_path = os.path.join(section_path, device_folder)
-                                    #
                                     if os.path.isdir(device_path):
+                                        # Working on individual devices
+                                        print("")
+                                        print("working in folder ", sample_name, section_folder, device_folder)
+                                        print("")
 
-                                        # keeps a list of all files processed as well as each area measured
+
+                                        # keeps a list of all files processed for each device
                                         list_of_measured_files = []
                                         list_of_areas = []
                                         list_of_areas_loops = []
                                         list_of_looped_array_info = []
                                         list_of_df = []
                                         list_of_graphs = []
+                                        num_of_sweeps = 0
 
                                         # add more here into how each array changes over each array
                                         # Process each file in the device_number folder
                                         for file_name in os.listdir(device_path):
                                             if file_name.endswith('.txt'):
-
                                                 # Does work on the file here
 
-                                                # checks If in excell sheet on file its capacitive or not if capacative does something else
+                                                # checks If in excell sheet on file its capacitive or not if
+                                                # capacitive does something else
 
                                                 file_path = os.path.join(device_path, file_name)
 
-                                                file_info, short_name, long_name, df, area, areas_loops, looped_array_info, graph = eq.file_analysis(
-                                                    file_path, plot_graph, save_df,device_path)
-                                                print("file_info",type(file_info))
+                                                file_info,num_sweeps, short_name, long_name, df, area, areas_loops, \
+                                                    looped_array_info, graph = eq.file_analysis(
+                                                    file_path, plot_graph, save_df, device_path)
+
+                                                num_of_sweeps += num_sweeps
 
                                                 # add check to see if device is capacitive then ignore area maybe
                                                 # check file maybe change loops into data into and averaging it check
@@ -119,36 +123,49 @@ for type_folder in os.listdir(f.main_dir):
                                                 # vmin or vmax it assumes just a sweep within one region
 
                                                 # append all the information to a master set of arrays
+
                                                 list_of_df.append(df)
-                                                list_of_measured_files.append(file_info)
+                                                list_of_measured_files.append(long_name)
                                                 list_of_areas.append(area)
                                                 list_of_areas_loops.append(areas_loops)
                                                 list_of_looped_array_info.append(looped_array_info)
                                                 list_of_graphs.append(graph)
 
-                                                if areas_loops is None and looped_array_info is None:
-                                                    print("Worked on a single sweep file")
-                                                elif areas_loops is not None or looped_array_info is not None:
-                                                    print("Worked on a multi sweep file")
-                                                else:
-                                                    print("Something broke")
 
+
+                                        # After processing all files in the device_number folder
                                         # device number
+                                        print("")
+                                        print("####################################")
+                                        print("information on device", device_folder )
+                                        print("list of measured devices" ,list_of_measured_files)
+                                        print("total number of sweeps = " , num_of_sweeps)
                                         print("final list of measured files")
                                         print(list_of_measured_files)
                                         print(list_of_areas)
+                                        print("Moving onto next device folder")
+                                        print("####################################")
+                                        print("")
 
-                                        # After processing all files in the device_number folder
+
+
+                                        list_of_measured_files_devices.append(list_of_measured_files)
+
+                                list_of_measured_files_devices_sections.append(list_of_measured_files_devices)
+
+
+
+
+
                                 # calculation for ech section and the statistics of each
-                                #pdf.create_pdf_with_graphs_and_data_for_section()
+                                # pdf.create_pdf_with_graphs_and_data_for_section()
                                 # section name
 
-                        # sample_name
+
+                        # for all work done on sample_name folder
+
                         # graphs = ["Graph1", "Graph2"]  # List of graph file names
 
-                        # can add this here instead
-
-                        #exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
                         def get_data_for_pdf():
                             data = [
                                 "Summary device.",
@@ -159,22 +176,14 @@ for type_folder in os.listdir(f.main_dir):
 
                         data = get_data_for_pdf()
 
-                        # Show the plot
-                        plt.show()
-                        #graphs = some_function_comparing_all_files
-                        pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{file_info.get('sample_name')}.pdf", graph, info_dict)
+                        # graphs = some_function_comparing_all_files
+                        pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,
+                                                                       f"{file_info.get('sample_name')}.pdf", graph,
+                                                                       info_dict)
 
-                # polymer
-# Perform actions in subsequent folders (e.g., g 200µm, D14-Stock-Gold-PVA(2%)-Gold-s7)
-# (You can similarly navigate through these folders and perform actions on the processed data)
-
-
-# Get information
-# ex.save_info_from_solution_devices_excell(file_info.get('sample_name'),excell_path,savelocation)
-
-# Gets all information from a file wether a single sweep or multiple sweeps
-# file_info,short_name,long_name,df,area,areas_loops,looped_array_info = eq.file_analysis(filepath,plot_graph,save_df)
-
+                        with open(sample_path + '/list of devices measured', 'wb') as file:
+                            pickle.dump(list_of_measured_files, file)
+                # Information on the polymer
 
 # file_info = result['file_info']
 # short_name = result['short_name']
@@ -183,6 +192,6 @@ for type_folder in os.listdir(f.main_dir):
 
 
 # if save_df:
-#     # save the sada frame
+#     # save the data frame
 #     print(long_name)
 #     df.to_csv(long_name, index=False)

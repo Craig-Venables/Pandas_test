@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from file import filepath
 import file as f
 import os
 

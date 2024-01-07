@@ -4,7 +4,7 @@ import file as f
 import plot as plot
 import os
 import math
-from file import filepath
+
 import matplotlib.pyplot as plt
 from itertools import zip_longest
 
@@ -18,8 +18,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
     """ for all info from a single file this determines if it is a s """
 
     file_info = f.extract_folder_names(filepath)
-    short_name = f.short_name()
-    long_name = f.long_name()
+    short_name = f.short_name(filepath)
+    long_name = f.long_name(filepath)
+
 
     print("-----")
     print("Currently working on -", file_info.get('file_name'))
@@ -120,6 +121,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             # p.fig.savefig(f"{file_info.get('file_name')}.png")
             # print("saved graph too" , "###insert file path###")
             # this will plot graphs specific too looped data
+        else:
+            graph = None
 
         # for loops save file within a folder then  the next bit acan access it and open it
         if save_df:
@@ -137,7 +140,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
     else:
         # Data Processing for a single sweep
         print("data contains only one sweep")
-        # if the xcell document states capaatice return
+        # if the xcell document states capacitive return
         ps_area, ng_area, area, normalized_area = area_under_curves(v_data, c_data)
         print("total area enclosed within the hysteresis normalised to voltage = ", normalized_area)
         # this area will need passing back to another array for comparision across all devices in the section
@@ -156,6 +159,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         if plot_graph:
             p = plot.plot(df, file_info, save_loc)
             graph = p.main_plot()
+        else:
+            graph = None
 
         if save_df:
             # save the sada frame
@@ -163,7 +168,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             df.to_csv(long_name, index=False)
         areas_loops = None
         looped_array_info = None
-    return file_info, short_name, long_name, df, area, areas_loops, looped_array_info, graph
+    return file_info, num_sweeps, short_name, long_name, df, area, areas_loops, looped_array_info, graph
 
 
 def split_loops(v_data, c_data, num_loops):
@@ -401,24 +406,30 @@ def check_for_loops(v_data):
     num_min = 0
     num_zero = 0
     max_v, min_v = bounds(v_data)
+    max_v_2 = max_v/2
+    min_v_2 = min_v/2
+
+
+    # 4 per sweep
     for value in v_data:
-        if value == max_v:
+        if value == max_v_2:
             num_max += 1
-        if value == min_v:
+        if value == min_v_2:
             num_min += 1
         if value == 0:
             num_zero += 1
 
-    print("num zero", num_zero)
-    if num_zero == 3:
+
+    #print("num zero", num_zero)
+    if num_max == 2:
         print("single sweep")
         return 1
-    if num_zero <= 3:
+    if num_max or num_min == 1:
         print("half_sweep", num_zero)
         return 0.5
     else:
         print("multiloop", num_zero)
-        loops = num_max / 3
+        loops = num_max / 2
         return loops
     # used for checking with just positive and negative vlaues
     # if num_max <= 2:

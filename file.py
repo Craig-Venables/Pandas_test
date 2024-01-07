@@ -7,15 +7,15 @@ import os
 
 
 # notts computers
-# filepath = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors\Stock\PVA\D14-Stock-Gold-PVA(2%)-Gold-s7\G 200µm\1\1-Fs_0.5v_0.01s.txt"
-# excel_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
-# root_dir = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
-#main_dir = r'C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors'
+
+excel_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
+#root_dir = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
+main_dir = r'C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors'
 
 # home pc
-filepath = r"C:\Users\Craig-Desktop\Desktop\test folder for py\1) Memristors\Stock\PVA\Stock-PVA-Gold-Gold-7\G 200µm\1\forthesis.txt"
-excel_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
-main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
+
+# excel_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
+# main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
 def check_if_folder_exists(d_path,fol_name):
     if not os.path.exists(str(d_path) + '\\' + f"{fol_name}"):
         os.makedirs(str(d_path) + '\\' + f"{fol_name}")
@@ -24,13 +24,13 @@ def check_if_folder_exists(d_path,fol_name):
 
 
 
-def short_name():
+def short_name(filepath):
     file_info = extract_folder_names(filepath)
     short_name = file_info.get('sample_name') + " - " + file_info.get('section') + ' - ' + file_info.get('device_number') + " - " + file_info.get('file_name')
 
     return short_name
 
-def long_name():
+def long_name(filepath):
     file_info = extract_folder_names(filepath)
     long_name = file_info.get('type') + " - " + file_info.get('polymer') + " - " + \
                 file_info.get('sample_name') + " - " + file_info.get('section') + ' - ' + \
