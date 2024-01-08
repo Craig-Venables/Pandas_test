@@ -39,7 +39,7 @@ import excell as ex
 # i give the endurance nuber of sweeps etc celled _____
 
 save_df = False
-plot_graph = True
+plot_graph = False
 re_analyse = True
 eq.set_pandas_display_options()
 
@@ -118,8 +118,7 @@ for type_folder in os.listdir(f.main_dir):
 
                                                 if analysis_result is None:
                                                     continue
-                                                file_info, num_sweeps, short_name, long_name, df, area, areas_loops, \
-                                                    looped_array_info, graph = analysis_result
+                                                file_info, num_sweeps, short_name, long_name, df, info, graph = analysis_result
                                                 # on off ratio
 
                                                 num_of_sweeps += num_sweeps
@@ -132,15 +131,9 @@ for type_folder in os.listdir(f.main_dir):
 
                                                 # append all the information to a master set of arrays
 
-
-
-
-
                                                 list_of_df.append(df)
                                                 list_of_measured_files.append(long_name)
-                                                list_of_areas.append(area)
-                                                list_of_areas_loops.append(areas_loops)
-                                                list_of_looped_array_info.append(looped_array_info)
+                                                list_of_areas.append(info)
                                                 list_of_graphs.append(graph)
 
 

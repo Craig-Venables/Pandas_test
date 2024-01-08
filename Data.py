@@ -21,12 +21,11 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
     short_name = f.short_name(filepath)
     long_name = f.long_name(filepath)
 
-
     print("-----")
     print("Currently working on -", file_info.get('file_name'))
-    print('Information on file below:')
-    for variable_name, folder_name in file_info.items():
-        print(f"{variable_name} = '{folder_name}'")
+    # print('Information on file below:')
+    # for variable_name, folder_name in file_info.items():
+    #     print(f"{variable_name} = '{folder_name}'")
     # print ("-----")
 
     # what type of data is this?
@@ -44,8 +43,6 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
     v_data_ng, c_data_ng = filter_negative_values(v_data, c_data)
     # checks for looped data and calculates the number of loops
     num_sweeps = check_for_loops(v_data)
-
-
 
     # create a dataframe for the device of all the data
     data = {'voltage': v_data,
@@ -66,28 +63,30 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             'inverse_resistance_ps': inverse_resistance_eq(v_data_ps, c_data_ps),
             'inverse_resistance_ng': inverse_resistance_eq(v_data_ng, c_data_ng),
             'sqrt_Voltage': sqrt_array(v_data),
-            'on_off_ratio': statistics}
+            }
 
     df = pd.DataFrame(data)
-    #print(v_data)
-    #print(df)
 
     # if there is more than one loop adds
     if num_sweeps > 1:
         # Data processing for multiple sweeps
-        print("running through looped data")
+        print("Running through looped data")
         print("There are ", num_sweeps, " loops within this data")
 
         # splits the loops depending on the number of sweeps
         split_v_data, split_c_data = split_loops(v_data, c_data, num_sweeps)
         # Calculates the metrics for each array returning the areas
-        ps_areas, ng_areas, areas, normalized_areas = calculate_metrics_for_loops(split_v_data, split_c_data)
+        ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff = calculate_metrics_for_loops(split_v_data, split_c_data)
+        # have it plot each sweep individually for each loop number 1 to n
+        # create a folder named as the file name with the images of each saved inside.
+
 
         # create dataframe for a device of all the data
         areas_loops = {'ps_area': ps_areas,
                        'ng_area': ng_areas,
                        'areas': areas,
-                       'normalised_areas': normalized_areas}
+                       'normalised_areas': normalized_areas,
+                       }
         # areas_loops = pd.DataFrame(areas_loops)
 
         # Calculate the average values for each array
@@ -95,18 +94,25 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         ng_area_avg = sum(ng_areas) / len(ng_areas)
         areas_avg = sum(areas) / len(areas)
         normalized_areas_avg = sum(normalized_areas) / len(normalized_areas)
+        ron_avg = sum(ron) / len(ron)
+        roff_avg = sum(roff) / len(roff)
+        von_avg = sum(von) / len(von)
+        voff_avg = sum(voff) / len(voff)
 
         # Create a dictionary for the new DataFrame
-        averaged_data = {
+        info = {
             'ps_area_avg': [ps_area_avg],
             'ng_area_avg': [ng_area_avg],
             'areas_avg': [areas_avg],
-            'normalized_areas_avg': [normalized_areas_avg]
+            'normalized_areas_avg': [normalized_areas_avg],
+            'resistance_on_value': ron_avg,
+            'resistance_off_value': roff_avg,
+            'voltage_on_value': von_avg,
+            'voltage_off_value': voff_avg,
         }
 
         # Create a new DataFrame
-        df_averaged = pd.DataFrame(averaged_data)
-
+        # info = pd.DataFrame(info)
 
         # Analyze the array changes
         percent_change, avg_change, avg_relative_change, std_relative_change = analyze_array_changes(normalized_areas)
@@ -123,11 +129,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         # print(f"Average relative change: {avg_relative_change:.5e}")
         # print(f"Standard deviation of relative change: {std_relative_change:.5e}")
 
-        # have it plot each sweep individually for each loop number 1 to n
-        # create a folder named as the file name with the images of each saved inside.
 
-        # plots a different graph where the loops are shown but only the first set of split data is given for the
-        # directional graph
         # print variable names dd too dataframe
         for variable_name, folder_name in file_info.items():
             df[variable_name] = folder_name
@@ -138,7 +140,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 
         graph_dict = {}
         if plot_graph:
-            p = plot.plot(df, file_info, save_loc,filepath)
+            p = plot.plot(df, file_info, save_loc, filepath)
             graph = p.main_plot()
             # p.fig.savefig(f"{file_info.get('file_name')}.png")
             # print("saved graph too" , "###insert file path###")
@@ -154,9 +156,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 
         # plots the changes over time for each array and the loops.
         # plot_array_changes(normalized_areas)
-        area = None
+        # info = None
 
-    #this is for later
+    # this is for later
     if num_sweeps == 0.5:
         print("skipping as half sweep")
         return None
@@ -165,23 +167,27 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         print("data contains only one sweep")
         # if the xcell document states capacitive return
         ps_area, ng_area, area, normalized_area = area_under_curves(v_data, c_data)
-        print("total area enclosed within the hysteresis normalised to voltage = ", normalized_area)
-        # this area will need passing back to another array for comparision across all devices in the section
+        print("total info enclosed within the hysteresis normalised to voltage = ", normalized_area)
+        # this info will need passing back to another array for comparision across all devices in the section
         # create dataframe for the device of all the data
-        area = {'ps_area': ps_area,
+        resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
+        info = {'ps_area': ps_area,
                 'ng_area': ng_area,
                 'area': area,
-                'normalised_areas': normalized_area}
-
-        # area = pd.DataFrame(area)
-        resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
+                'normalised_areas': normalized_area,
+                'resistance_on_value': resistance_on_value,
+                'resistance_off_value': resistance_off_value,
+                'voltage_on_value': voltage_on_value,
+                'voltage_off_value': voltage_off_value,
+                }
+        # info = pd.DataFrame(info)
 
         f.check_if_folder_exists(device_path, "python_images")
         save_loc = os.path.join(device_path, "python_images")
 
         graph_dict = {}
         if plot_graph:
-            p = plot.plot(df, file_info, save_loc,filepath)
+            p = plot.plot(df, file_info, save_loc, filepath)
             graph = p.main_plot()
         else:
             graph = None
@@ -192,10 +198,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             df.to_csv(long_name, index=False)
         areas_loops = None
         looped_array_info = None
-    # if expanded:
-    #     return file_info, num_sweeps, short_name, long_name, df, area, areas_loops, looped_array_info, graph
-
-    return file_info, num_sweeps, short_name, long_name, df, area, areas_loops, looped_array_info, graph
+    return file_info, num_sweeps, short_name, long_name, df, info, graph
 
 
 def split_loops(v_data, c_data, num_loops):
@@ -258,6 +261,7 @@ def analyze_array_changes(arr):
 def calculate_metrics_for_loops(split_v_data, split_c_data):
     '''
     Calculate various metrics for each split array of voltage and current data.
+    anything that needs completing on loops added in here
 
     Parameters:
     - split_v_data (list of lists): List containing split voltage arrays
@@ -275,6 +279,10 @@ def calculate_metrics_for_loops(split_v_data, split_c_data):
     ng_areas = []
     areas = []
     normalized_areas = []
+    ron = []
+    roff = []
+    von = []
+    voff = []
 
     # Loop through each split array
     for idx in range(len(split_v_data)):
@@ -290,6 +298,13 @@ def calculate_metrics_for_loops(split_v_data, split_c_data):
         areas.append(area)
         normalized_areas.append(norm_area)
 
+        r_on, r_off, v_on, v_off = statistics(sub_v_array, sub_c_array)
+
+        ron.append(r_on)
+        roff.append(r_off)
+        von.append(v_on)
+        voff.append(v_off)
+
         # Print the values for the current split array
         # print(f"Metrics for split array {idx + 1}:")
         # print(f"PS Area Enclosed: {ps_area}")
@@ -302,10 +317,10 @@ def calculate_metrics_for_loops(split_v_data, split_c_data):
     # print("\nList of PS Areas:", ps_areas)
     # print("List of NG Areas:", ng_areas)
     # print("List of Total Areas:", areas)
-    print("List of Normalized Areas:", normalized_areas)
+    #print("List of Normalized Areas:", normalized_areas)
 
     # Return the calculated metrics
-    return ps_areas, ng_areas, areas, normalized_areas
+    return ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff
 
 
 def area_under_curves(v_data, c_data):
@@ -433,9 +448,8 @@ def check_for_loops(v_data):
     num_min = 0
     num_zero = 0
     max_v, min_v = bounds(v_data)
-    max_v_2 = max_v/2
-    min_v_2 = min_v/2
-
+    max_v_2 = max_v / 2
+    min_v_2 = min_v / 2
 
     # 4 per sweep
     for value in v_data:
@@ -445,18 +459,18 @@ def check_for_loops(v_data):
             num_min += 1
         if value == 0:
             num_zero += 1
-    print(num_min)
+    #print(num_min)
 
-    #print("num zero", num_zero)
+    # print("num zero", num_zero)
     if num_max + num_min == 4:
-        print("single sweep")
+        #print("single sweep")
         return 1
     if num_max + num_min == 2:
-        print("half_sweep", num_max , num_min)
+        #print("half_sweep", num_max, num_min)
         return 0.5
     else:
-        print("multiloop", (num_max+num_min)/4)
-        loops = (num_max+num_min)/4
+        #print("multiloop", (num_max + num_min) / 4)
+        loops = (num_max + num_min) / 4
         return loops
     # used for checking with just positive and negative vlaues
     # if num_max <= 2:
@@ -622,7 +636,7 @@ def sqrt_array(value_array):
 
 
 # todo change this from class too other
-def statistics(v_data,c_data):
+def statistics(v_data, c_data):
     """
     calculates r on off and v on off values for an individual device
     """
@@ -676,12 +690,10 @@ def statistics(v_data,c_data):
         voltage_on_value = voltage_on
         voltage_off_value = voltage_off
 
-    #print (resistance_on_value, resistance_off_value, voltage_on_value , voltage_off_value)
+    # print (resistance_on_value, resistance_off_value, voltage_on_value , voltage_off_value)
     return resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value
     # else:
     #     return 0, 0, 0, 0
-
-
 
 
 def set_pandas_display_options() -> None:

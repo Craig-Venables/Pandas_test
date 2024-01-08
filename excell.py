@@ -125,7 +125,7 @@ def save_info_from_device_info_excell(device_name,device_fol_location):
     :return: Saves device parameters as a data frame
     '''
     excel_path = device_fol_location +"\\"+ device_name + ".xlsx"
-    print(excel_path)
+    #print(excel_path)
 
     try:
         # Read the Excel file into a DataFrame without modifying it
@@ -142,66 +142,6 @@ def save_info_from_device_info_excell(device_name,device_fol_location):
                     section_dataframes[section] = section_data
             # print(section_dataframes['G'])
             return section_dataframes
-
-    except Exception as e:
-        print("Error:", e)
-        return None
-
-
-
-        # # Print column names to identify the correct column name for 'Section'
-        # print("Column Names:", df.columns)
-        #
-        # # Filter data for Section 'G' using the correct column name
-        # # Replace 'Section' with the correct column name if it's different
-        # section_g_data = df[df['Section '] == 'G']
-        # if not section_g_data.empty:
-        #     # Extract information from the found row
-        #     info_dict = {
-        #         'Device #': section_g_data.iloc[0]['Device #'],
-        #         'Classification': section_g_data.iloc[0]['Classification'],
-
-                # Add more fields as needed
-        #     }
-        #     print(info_dict)
-        # #
-        #     solutions = ["Solution 1 ID", "Solution 2 ID", "Solution 3 ID", "Solution 4 ID"]
-        #
-        #     # Read the Excel file into a DataFrame without modifying it
-        #     with pd.ExcelFile(excel_path, engine='openpyxl') as xls:
-        #         df = pd.read_excel(xls, sheet_name='Prepared Solutions')
-        #
-        #     # Loop through solutions
-        #     for solution in solutions:
-        #         df_solutions = df[df['Solution Id'] == info_dict.get(solution)]
-        #
-        #         if pd.notnull(info_dict.get(solution)):
-        #             if not df_solutions.empty:
-        #                 # extract information about solutions
-        #                 info_dict['Solution #'+ solution] = df_solutions.iloc[0]['Solution #']
-        #                 info_dict['Np Solution used ' + solution] = df_solutions.iloc[0]['Np Solution used']
-        #
-        #             else:
-        #                 print(f"Skipping search in 'Prepared Solutions' because Solution {solution} ID is blank or null.")
-        #                 continue  # Skip the rest of the loop for this solution ID
-        #
-        #     # Save the dictionary to a file using pickle
-        #     with open(device_fol_location +'/Device_info_dict.pkl', 'wb') as file:
-        #         pickle.dump(info_dict, file)
-        #
-        #     # # Save information to a text file for easy reading
-        #     # with open(device_fol_location +'/Device_info.txt', 'w') as txt_file:
-        #     #     txt_file.write("Information for device '{}':\n".format(device_name))
-        #     #     for key, value in info_dict.items():
-        #     #         txt_file.write(f"{key}: {value}\n")
-        #     # print("saved", device_name,"information" )
-        #
-        #     #info_dict_df = pd.DataFrame.from_dict(info_dict)
-        #
-        #     return (info_dict)
-        #
-        # else:
-        #     print(f"Error: Device '{device_name}' not found in Excel file.")
 
     except Exception as e:
         print(f"Error: {str(e)}")
