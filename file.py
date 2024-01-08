@@ -2,9 +2,6 @@ import os
 ''' This file contains everything to do with files, this includes the file location as a variable, this is so it can be imported in all files n'''
 #other file too test
 
-#1a 0.7 0.05 1 memristive af
-
-
 
 # notts computers
 

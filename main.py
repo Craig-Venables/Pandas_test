@@ -39,7 +39,7 @@ import excell as ex
 # i give the endurance nuber of sweeps etc celled _____
 
 save_df = False
-plot_graph = False
+plot_graph = True
 re_analyse = True
 eq.set_pandas_display_options()
 
@@ -110,9 +110,17 @@ for type_folder in os.listdir(f.main_dir):
 
                                                 file_path = os.path.join(device_path, file_name)
 
-                                                file_info,num_sweeps, short_name, long_name, df, area, areas_loops, \
-                                                    looped_array_info, graph = eq.file_analysis(
-                                                    file_path, plot_graph, save_df, device_path)
+                                                # file_info,num_sweeps, short_name, long_name, df, area, areas_loops, \
+                                                #     looped_array_info, graph = eq.file_analysis(
+                                                #     file_path, plot_graph, save_df, device_path)
+
+                                                analysis_result = eq.file_analysis(file_path, plot_graph, save_df, device_path)
+
+                                                if analysis_result is None:
+                                                    continue
+                                                file_info, num_sweeps, short_name, long_name, df, area, areas_loops, \
+                                                    looped_array_info, graph = analysis_result
+                                                # on off ratio
 
                                                 num_of_sweeps += num_sweeps
 
@@ -123,6 +131,10 @@ for type_folder in os.listdir(f.main_dir):
                                                 # vmin or vmax it assumes just a sweep within one region
 
                                                 # append all the information to a master set of arrays
+
+
+
+
 
                                                 list_of_df.append(df)
                                                 list_of_measured_files.append(long_name)
@@ -146,8 +158,6 @@ for type_folder in os.listdir(f.main_dir):
                                         print("Moving onto next device folder")
                                         print("####################################")
                                         print("")
-
-
 
                                         list_of_measured_files_devices.append(list_of_measured_files)
 

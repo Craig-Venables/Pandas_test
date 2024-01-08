@@ -45,6 +45,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
     # checks for looped data and calculates the number of loops
     num_sweeps = check_for_loops(v_data)
 
+
+
     # create a dataframe for the device of all the data
     data = {'voltage': v_data,
             'current': c_data,
@@ -67,6 +69,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             'on_off_ratio': statistics}
 
     df = pd.DataFrame(data)
+    #print(v_data)
+    #print(df)
 
     # if there is more than one loop adds
     if num_sweeps > 1:
@@ -85,6 +89,24 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
                        'areas': areas,
                        'normalised_areas': normalized_areas}
         # areas_loops = pd.DataFrame(areas_loops)
+
+        # Calculate the average values for each array
+        ps_area_avg = sum(ps_areas) / len(ps_areas)
+        ng_area_avg = sum(ng_areas) / len(ng_areas)
+        areas_avg = sum(areas) / len(areas)
+        normalized_areas_avg = sum(normalized_areas) / len(normalized_areas)
+
+        # Create a dictionary for the new DataFrame
+        averaged_data = {
+            'ps_area_avg': [ps_area_avg],
+            'ng_area_avg': [ng_area_avg],
+            'areas_avg': [areas_avg],
+            'normalized_areas_avg': [normalized_areas_avg]
+        }
+
+        # Create a new DataFrame
+        df_averaged = pd.DataFrame(averaged_data)
+
 
         # Analyze the array changes
         percent_change, avg_change, avg_relative_change, std_relative_change = analyze_array_changes(normalized_areas)
@@ -116,7 +138,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 
         graph_dict = {}
         if plot_graph:
-            p = plot.plot(df, file_info, save_loc)
+            p = plot.plot(df, file_info, save_loc,filepath)
             graph = p.main_plot()
             # p.fig.savefig(f"{file_info.get('file_name')}.png")
             # print("saved graph too" , "###insert file path###")
@@ -134,9 +156,10 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         # plot_array_changes(normalized_areas)
         area = None
 
-    # this is for later
-    # if num_sweeps < 1:
-    #     print("skipping as half sweep")
+    #this is for later
+    if num_sweeps == 0.5:
+        print("skipping as half sweep")
+        return None
     else:
         # Data Processing for a single sweep
         print("data contains only one sweep")
@@ -151,13 +174,14 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
                 'normalised_areas': normalized_area}
 
         # area = pd.DataFrame(area)
+        resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
 
         f.check_if_folder_exists(device_path, "python_images")
         save_loc = os.path.join(device_path, "python_images")
 
         graph_dict = {}
         if plot_graph:
-            p = plot.plot(df, file_info, save_loc)
+            p = plot.plot(df, file_info, save_loc,filepath)
             graph = p.main_plot()
         else:
             graph = None
@@ -168,6 +192,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             df.to_csv(long_name, index=False)
         areas_loops = None
         looped_array_info = None
+    # if expanded:
+    #     return file_info, num_sweeps, short_name, long_name, df, area, areas_loops, looped_array_info, graph
+
     return file_info, num_sweeps, short_name, long_name, df, area, areas_loops, looped_array_info, graph
 
 
@@ -418,18 +445,18 @@ def check_for_loops(v_data):
             num_min += 1
         if value == 0:
             num_zero += 1
-
+    print(num_min)
 
     #print("num zero", num_zero)
-    if num_max == 2:
+    if num_max + num_min == 4:
         print("single sweep")
         return 1
-    if num_max or num_min == 1:
-        print("half_sweep", num_zero)
+    if num_max + num_min == 2:
+        print("half_sweep", num_max , num_min)
         return 0.5
     else:
-        print("multiloop", num_zero)
-        loops = num_max / 2
+        print("multiloop", (num_max+num_min)/4)
+        loops = (num_max+num_min)/4
         return loops
     # used for checking with just positive and negative vlaues
     # if num_max <= 2:
@@ -595,7 +622,7 @@ def sqrt_array(value_array):
 
 
 # todo change this from class too other
-def statistics(self):
+def statistics(v_data,c_data):
     """
     calculates r on off and v on off values for an individual device
     """
@@ -610,18 +637,18 @@ def statistics(self):
     # voltage and current magnitude
     voltage_mag = []
     current_mag = []
-    if not len(self.v_data) < 10:
-        for value in range(len(self.v_data)):
-            if -thresh < self.v_data[value] < thresh:
-                voltage_mag.append(self.v_data[value])
-                current_mag.append(self.c_data[value])
+    if not len(v_data) < 10:
+        for value in range(len(v_data)):
+            if -thresh < v_data[value] < thresh:
+                voltage_mag.append(v_data[value])
+                current_mag.append(c_data[value])
 
         res_mag = []  # same here but for the resistances
         for j in range(len(voltage_mag)):
             if voltage_mag[j] != 0:
                 res_mag.append(voltage_mag[j] / current_mag[j])
 
-        if not len(self.v_data) < 10:
+        if not len(v_data) < 10:
             roff = min(res_mag)
             ron = max(res_mag)
         else:
@@ -632,28 +659,29 @@ def statistics(self):
         resistance_on_value = ron
 
         grads = []
-        for j in range(len(self.v_data)):
-            if j != len(self.v_data) - 1:
-                if self.v_data[j + 1] - self.v_data[j] != 0:
-                    grads.append((self.c_data[j + 1] - self.c_data[j]) / (self.v_data[
-                                                                              j + 1] - self.v_data[j]))
+        for j in range(len(v_data)):
+            if j != len(v_data) - 1:
+                if v_data[j + 1] - v_data[j] != 0:
+                    grads.append((c_data[j + 1] - c_data[j]) / (v_data[j + 1] - v_data[j]))
 
         max_grad = max(grads[:(int(len(grads) / 2))])
         min_grad = min(grads)
 
         for j in range(len(grads)):
             if grads[j] == max_grad:
-                voltage_off = self.v_data[j]
+                voltage_off = v_data[j]
             if grads[j] == min_grad:
-                voltage_on = self.v_data[j]
+                voltage_on = v_data[j]
 
         voltage_on_value = voltage_on
         voltage_off_value = voltage_off
-    else:
-        return 0, 0, 0, 0
 
-    # print (resistance_on_value, resistance_off_value, voltage_on_value , voltage_off_value)
+    #print (resistance_on_value, resistance_off_value, voltage_on_value , voltage_off_value)
     return resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value
+    # else:
+    #     return 0, 0, 0, 0
+
+
 
 
 def set_pandas_display_options() -> None:

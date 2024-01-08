@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import file as f
+import scipy as sp
+import pathlib as pl
 import os
 
 
@@ -9,7 +11,7 @@ class plot():
     pass through data frame
     '''
 
-    def __init__(self, data,file_info,save_loc) -> None:
+    def __init__(self, data,file_info,save_loc,filepath) -> None:
         self.data = data
         self._unpack_dataframe()
 
@@ -25,10 +27,9 @@ class plot():
         self.save_loc = save_loc
         self.short_filename = os.path.splitext(self.filename)[0]
 
-
         file_info = f.extract_folder_names(filepath)
-        short_name = f.short_name()
-        long_name = f.long_name()
+        short_name = f.short_name(filepath)
+        long_name = f.long_name(filepath)
 
         # looped data
         self.looped_info = False
@@ -66,6 +67,7 @@ class plot():
         self.plot_iv_avg()
 
         plt.subplot(2, 2, 4)
+        #self.plot_graph_other()
         # self.information()
         # self.plot_array_changes()
 
@@ -166,6 +168,49 @@ class plot():
         plt.legend()
         plt.grid(True)
 
+    def plot_graph_other(self):
+        """ code got from raven"""
+        data = {"t": [], "V": [], "I": [], "dIdt": []}
+
+        #print(self.data["voltage"].to_numpy()) #dataframe
+
+        data["V"] = (self.data["voltage"].to_numpy())
+        data["I"] = (self.data["current"].to_numpy())
+
+        data["V"] = np.array(data["V"])  # volts
+        data["I"] = np.array(data["I"]) * 10 ** 6  # mAmps
+
+        src_delay = 1  # msec
+        meas_delay = 20  # msec
+        total_delay = src_delay + meas_delay
+
+        v_step = 0.1  # volts
+        v_range = [(-4, 4), (-5, 5)]
+        step_num = len(data["V"])
+
+        data["t"] = np.arange(start=0, stop=step_num * total_delay, step=total_delay)
+
+        print(step_num,total_delay)
+        print(data)
+
+        data["dIdt"] = np.gradient(data["I"], total_delay)
+
+
+        # just need to plot graphs now
+
+        fig, axs = plt.subplots(3, 1, tight_layout=True, figsize=(8, 12))
+
+        '''axs[0].plot(data[0]["t"], data[0]["V"], color = "r")
+        axs[1].plot(data[0]["t"], data[0]["I"], color = "r")
+        axs[2].plot(data[0]["t"], data[0]["dIdt"], color = "r")'''
+
+        axs[0].plot(data["t"][0:82], data["V"][0:82], color="b")
+        axs[0].plot(data["t"][0:82], data["I"][0:82], color="r")
+        # axs[1].plot(data[1]["t"][0:82], data[1]["dIdt"][0:82], color="b")
+        # axs[2].plot(data[1]["V"][0:82], data[1]["dIdt"][0:82], color="b")
+
+
+
     def plot_array_changes(self,vall):
         # Create a range for the x-axis (indices of the array)
         x = range(len(vall))
@@ -210,7 +255,7 @@ class plot():
     #
     #     # Adjust the subplot layout
     #     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
-    #
+
 
     # def save_plot(self, figure_path):
     #     """
@@ -266,12 +311,4 @@ class plot():
     #     plt.tight_layout()
     #     plt.show()
 
-    # cpp.plot_python_single_sweep(file_info.v_data, file_info.c_data, file_info.abs_current,
-    #                              file_info.current_density_ps, file_info.current_density_ng,
-    #                              file_info.electric_field_ps, file_info.electric_field_ng,
-    #                              file_info.current_over_voltage_ps, file_info.current_over_voltage_ng,
-    #                              file_info.voltage_to_the_half_ps, file_info.voltage_to_the_half_ng,
-    #                              file_info.resistance_on_value, file_info.resistance_off_value,
-    #                              file_info.voltage_on_value, file_info.voltage_off_value,
-    #                              file_info.filename, section_name, device_name, device_number, full_path,
-    #                              file_info.on_off_ratio)
+
