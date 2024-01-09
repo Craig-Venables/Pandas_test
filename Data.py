@@ -45,27 +45,27 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
     num_sweeps = check_for_loops(v_data)
 
     # create a dataframe for the device of all the data
-    device_data = {'voltage': v_data,
-                   'current': c_data,
-                   'abs_current': absolute_val(c_data),
-                   'resistance': resistance(v_data, c_data),
-                   'voltage_ps': v_data_ps,
-                   'current_ps': c_data_ps,
-                   'voltage_ng': v_data_ng,
-                   'current_ng': c_data_ng,
-                   'log_Resistance': log_value(resistance(v_data, c_data)),
-                   'abs_Current_ps': absolute_val(c_data_ps),
-                   'abs_Current_ng': absolute_val(c_data_ng),
-                   'current_Density_ps': current_density_eq(v_data_ps, c_data_ps),
-                   'current_Density_ng': current_density_eq(v_data_ng, c_data_ng),
-                   'electric_field_ps': electric_field_eq(v_data_ps),
-                   'electric_field_ng': electric_field_eq(v_data_ng),
-                   'inverse_resistance_ps': inverse_resistance_eq(v_data_ps, c_data_ps),
-                   'inverse_resistance_ng': inverse_resistance_eq(v_data_ng, c_data_ng),
-                   'sqrt_Voltage': sqrt_array(v_data),
-                   }
+    data = {'voltage': v_data,
+            'current': c_data,
+            'abs_current': absolute_val(c_data),
+            'resistance': resistance(v_data, c_data),
+            'voltage_ps': v_data_ps,
+            'current_ps': c_data_ps,
+            'voltage_ng': v_data_ng,
+            'current_ng': c_data_ng,
+            'log_Resistance': log_value(resistance(v_data, c_data)),
+            'abs_Current_ps': absolute_val(c_data_ps),
+            'abs_Current_ng': absolute_val(c_data_ng),
+            'current_Density_ps': current_density_eq(v_data_ps, c_data_ps),
+            'current_Density_ng': current_density_eq(v_data_ng, c_data_ng),
+            'electric_field_ps': electric_field_eq(v_data_ps),
+            'electric_field_ng': electric_field_eq(v_data_ng),
+            'inverse_resistance_ps': inverse_resistance_eq(v_data_ps, c_data_ps),
+            'inverse_resistance_ng': inverse_resistance_eq(v_data_ng, c_data_ng),
+            'sqrt_Voltage': sqrt_array(v_data),
+            }
 
-    df_device_data = pd.DataFrame(device_data)
+    df = pd.DataFrame(data)
 
     # if there is more than one loop adds
     if num_sweeps > 1:
@@ -76,18 +76,18 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         # splits the loops depending on the number of sweeps
         split_v_data, split_c_data = split_loops(v_data, c_data, num_sweeps)
         # Calculates the metrics for each array returning the areas
-        ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff = calculate_metrics_for_loops(split_v_data,
-                                                                                                        split_c_data)
+        ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff = calculate_metrics_for_loops(split_v_data, split_c_data)
         # have it plot each sweep individually for each loop number 1 to n
         # create a folder named as the file name with the images of each saved inside.
 
+
         # create dataframe for a device of all the data
-        areas_loops = {'ps_area': ps_areas,
-                       'ng_area': ng_areas,
-                       'areas': areas,
-                       'normalised_areas': normalized_areas,
+        areas_loops = {'ps_area': [ps_areas],
+                       'ng_area': [ng_areas],
+                       'areas': [areas],
+                       'normalised_areas': [normalized_areas],
                        }
-        # areas_loops = pd.DataFrame(areas_loops)
+        df_areas_loops = pd.DataFrame(areas_loops,index=[0])
 
         # Calculate the average values for each array
         ps_area_avg = sum(ps_areas) / len(ps_areas)
@@ -108,7 +108,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             'resistance_on_value': [ron_avg],
             'resistance_off_value': [roff_avg],
             'voltage_on_value': [von_avg],
-            'voltage_off_value': [voff_avg]}
+            'voltage_off_value': [voff_avg],
+        }
 
         # Create a new DataFrame
         df_file_stats = pd.DataFrame(file_stats, index=[0])
@@ -117,20 +118,21 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         percent_change, avg_change, avg_relative_change, std_relative_change = analyze_array_changes(normalized_areas)
 
         # create dataframe for device of all the data
-        looped_array_info = {'percentage_change': percent_change,
-                             'avg_change': avg_change,
-                             'avg_relative_change': avg_relative_change,
-                             'stf_relative_change': std_relative_change}
-        # looped_array_info = pd.DataFrame(looped_array_info)
+        looped_array_info = {'percentage_change': [percent_change],
+                             'avg_change': [avg_change],
+                             'avg_relative_change': [avg_relative_change],
+                             'stf_relative_change': [std_relative_change]}
+        looped_array_info = pd.DataFrame(looped_array_info, index=[0])
 
         # print(f"Percentage change over the length: {percent_change:.5f}%")
         # print(f"Average change over time: {avg_change:.2e}")
         # print(f"Average relative change: {avg_relative_change:.5e}")
         # print(f"Standard deviation of relative change: {std_relative_change:.5e}")
 
+
         # print variable names dd too dataframe
         for variable_name, folder_name in file_info.items():
-            df_device_data[variable_name] = folder_name
+            df[variable_name] = folder_name
 
         f.check_if_folder_exists(device_path, "python_images")
 
@@ -138,7 +140,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 
         graph_dict = {}
         if plot_graph:
-            p = plot.plot(df_device_data, file_info, save_loc, filepath)
+            p = plot.plot(df, file_info, save_loc, filepath)
             graph = p.main_plot()
             # p.fig.savefig(f"{file_info.get('file_name')}.png")
             # print("saved graph too" , "###insert file path###")
@@ -150,12 +152,11 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         if save_df:
             # save the sada frame
             print(long_name)
-            df_device_data.to_csv(long_name, index=False)
+            df.to_csv(long_name, index=False)
 
         # plots the changes over time for each array and the loops.
         # plot_array_changes(normalized_areas)
         # info = None
-        return file_info, num_sweeps, short_name, long_name, df_device_data, df_file_stats, graph
 
     # this is for later
     if num_sweeps == 0.5:
@@ -166,20 +167,19 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         print("data contains only one sweep")
         # if the xcell document states capacitive return
         ps_area, ng_area, area, normalized_area = area_under_curves(v_data, c_data)
-        print("total info enclosed within the hysteresis normalised to voltage = ", normalized_area)
+        #print("total info enclosed within the hysteresis normalised to voltage = ", normalized_area)
         # this info will need passing back to another array for comparision across all devices in the section
         # create dataframe for the device of all the data
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
         file_stats = {'ps_area': [ps_area],
                 'ng_area': [ng_area],
                 'area': [area],
-                'normalised_areas': [normalized_area],
+                'normalised_area': [normalized_area],
                 'resistance_on_value': [resistance_on_value],
                 'resistance_off_value': [resistance_off_value],
                 'voltage_on_value': [voltage_on_value],
                 'voltage_off_value': [voltage_off_value],
                 }
-        print(file_stats)
         df_file_stats = pd.DataFrame(file_stats, index=[0])
 
         f.check_if_folder_exists(device_path, "python_images")
@@ -187,7 +187,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 
         graph_dict = {}
         if plot_graph:
-            p = plot.plot(df_device_data, file_info, save_loc, filepath)
+            p = plot.plot(df, file_info, save_loc, filepath)
             graph = p.main_plot()
         else:
             graph = None
@@ -195,10 +195,10 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         if save_df:
             # save the sada frame
             print(long_name)
-            df_device_data.to_csv(long_name, index=False)
+            df.to_csv(long_name, index=False)
         areas_loops = None
         looped_array_info = None
-        return file_info, num_sweeps, short_name, long_name, df_device_data, df_file_stats, graph
+    return file_info, num_sweeps, short_name, long_name, df, df_file_stats, graph
 
 
 def split_loops(v_data, c_data, num_loops):
@@ -317,7 +317,7 @@ def calculate_metrics_for_loops(split_v_data, split_c_data):
     # print("\nList of PS Areas:", ps_areas)
     # print("List of NG Areas:", ng_areas)
     # print("List of Total Areas:", areas)
-    # print("List of Normalized Areas:", normalized_areas)
+    #print("List of Normalized Areas:", normalized_areas)
 
     # Return the calculated metrics
     return ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff
@@ -459,17 +459,17 @@ def check_for_loops(v_data):
             num_min += 1
         if value == 0:
             num_zero += 1
-    # print(num_min)
+    #print(num_min)
 
     # print("num zero", num_zero)
     if num_max + num_min == 4:
-        # print("single sweep")
+        #print("single sweep")
         return 1
     if num_max + num_min == 2:
-        # print("half_sweep", num_max, num_min)
+        #print("half_sweep", num_max, num_min)
         return 0.5
     else:
-        # print("multiloop", (num_max + num_min) / 4)
+        #print("multiloop", (num_max + num_min) / 4)
         loops = (num_max + num_min) / 4
         return loops
     # used for checking with just positive and negative vlaues
