@@ -71,6 +71,8 @@ for type_folder in os.listdir(f.main_dir):
 
                         # empty list for storing all measured devices
                         list_of_measured_files_devices_sections = []
+                        df_dict = {}
+                        file_dict = {}
 
                         # Navigate through section folders
                         for section_folder in os.listdir(sample_path):
@@ -92,7 +94,7 @@ for type_folder in os.listdir(f.main_dir):
 
                                         # keeps a list of all files processed for each device
                                         list_of_measured_files = []
-                                        list_of_areas = []
+                                        list_of_file_stats = []
                                         list_of_areas_loops = []
                                         list_of_looped_array_info = []
                                         list_of_df = []
@@ -118,7 +120,7 @@ for type_folder in os.listdir(f.main_dir):
 
                                                 if analysis_result is None:
                                                     continue
-                                                file_info, num_sweeps, short_name, long_name, df, info, graph = analysis_result
+                                                file_info, num_sweeps, short_name, long_name, df, file_stats, graph = analysis_result
                                                 # on off ratio
 
                                                 num_of_sweeps += num_sweeps
@@ -133,51 +135,57 @@ for type_folder in os.listdir(f.main_dir):
 
                                                 list_of_df.append(df)
                                                 list_of_measured_files.append(long_name)
-                                                list_of_areas.append(info)
                                                 list_of_graphs.append(graph)
+                                                list_of_file_stats.append(file_stats)
 
 
+                                        print("#############-----------------####################")
+                                        concatdf = pd.concat(list_of_file_stats,ignore_index=True)
+                                        print(concatdf)
 
+                                        df_dict[f'{device_folder}'] = concatdf
+                                        print(df_dict)
                                         # After processing all files in the device_number folder
                                         # device number
                                         print("")
                                         print("####################################")
                                         print("information on device", device_folder )
-                                        print("list of measured devices" ,list_of_measured_files)
-                                        print("total number of sweeps = " , num_of_sweeps)
-                                        print("final list of measured files")
-                                        print(list_of_measured_files)
-                                        print(list_of_areas)
+                                        # print("list of measured devices" ,list_of_measured_files)
+                                        print("total number of sweeps = ", num_of_sweeps)
+                                        # print("final list of measured files")
+                                        #print(list_of_file_stats)
+                                        # print(list_of_measured_files)
+                                        # print(list_of_file_stats)
                                         print("Moving onto next device folder")
                                         print("####################################")
                                         print("")
 
                                         list_of_measured_files_devices.append(list_of_measured_files)
 
-                                list_of_measured_files_devices_sections.append(list_of_measured_files_devices)
-
-
-
-
-
+                                file_dict[f'{section_folder}'] = df_dict
+                                print("dddddddddddddd")
+                                print(file_dict)
                                 # calculation for ech section and the statistics of each
                                 # pdf.create_pdf_with_graphs_and_data_for_section()
                                 # section name
+                                list_of_measured_files_devices_sections.append(list_of_measured_files_devices)
 
 
-                        # for all work done on sample_name folder
+                        # Iterate through each outer_item in outer_dict
+                        for outer_item, df_dict in file_dict.items():
+                            print(f"Outer Item: {outer_item}")
+                            print("------------------------------")
 
-                        # graphs = ["Graph1", "Graph2"]  # List of graph file names
+                            # Iterate through each section_folder in df_dict
+                            for section_folder, list_of_file_stats in df_dict.items():
+                                print(f"Section Folder: {section_folder}")
+                                print("------------------------------")
 
-                        def get_data_for_pdf():
-                            data = [
-                                "Summary device.",
-                                "Line 2:",
-                                "Line 3:"]
-                            return data
-
-
-                        data = get_data_for_pdf()
+                                # Iterate through each file_stats DataFrame in list_of_file_stats
+                                for idx, file_stats_df in enumerate(list_of_file_stats, start=1):
+                                    print(f"File Stats DataFrame {idx}:")
+                                    print(file_stats_df)
+                                    print("------------------------------")
 
                         # graphs = some_function_comparing_all_files
                         pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,
@@ -186,15 +194,6 @@ for type_folder in os.listdir(f.main_dir):
 
                         with open(sample_path + '/list of devices measured', 'wb') as file:
                             pickle.dump(list_of_measured_files, file)
+
                 # Information on the polymer
 
-# file_info = result['file_info']
-# short_name = result['short_name']
-# long_name = result['long_name']
-# df = result['df']
-
-
-# if save_df:
-#     # save the data frame
-#     print(long_name)
-#     df.to_csv(long_name, index=False)

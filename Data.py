@@ -82,12 +82,12 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 
 
         # create dataframe for a device of all the data
-        areas_loops = {'ps_area': ps_areas,
-                       'ng_area': ng_areas,
-                       'areas': areas,
-                       'normalised_areas': normalized_areas,
+        areas_loops = {'ps_area': [ps_areas],
+                       'ng_area': [ng_areas],
+                       'areas': [areas],
+                       'normalised_areas': [normalized_areas],
                        }
-        # areas_loops = pd.DataFrame(areas_loops)
+        df_areas_loops = pd.DataFrame(areas_loops,index=[0])
 
         # Calculate the average values for each array
         ps_area_avg = sum(ps_areas) / len(ps_areas)
@@ -100,29 +100,29 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         voff_avg = sum(voff) / len(voff)
 
         # Create a dictionary for the new DataFrame
-        info = {
+        file_stats = {
             'ps_area_avg': [ps_area_avg],
             'ng_area_avg': [ng_area_avg],
             'areas_avg': [areas_avg],
             'normalized_areas_avg': [normalized_areas_avg],
-            'resistance_on_value': ron_avg,
-            'resistance_off_value': roff_avg,
-            'voltage_on_value': von_avg,
-            'voltage_off_value': voff_avg,
+            'resistance_on_value': [ron_avg],
+            'resistance_off_value': [roff_avg],
+            'voltage_on_value': [von_avg],
+            'voltage_off_value': [voff_avg],
         }
 
         # Create a new DataFrame
-        # info = pd.DataFrame(info)
+        df_file_stats = pd.DataFrame(file_stats, index=[0])
 
         # Analyze the array changes
         percent_change, avg_change, avg_relative_change, std_relative_change = analyze_array_changes(normalized_areas)
 
         # create dataframe for device of all the data
-        looped_array_info = {'percentage_change': percent_change,
-                             'avg_change': avg_change,
-                             'avg_relative_change': avg_relative_change,
-                             'stf_relative_change': std_relative_change}
-        # looped_array_info = pd.DataFrame(looped_array_info)
+        looped_array_info = {'percentage_change': [percent_change],
+                             'avg_change': [avg_change],
+                             'avg_relative_change': [avg_relative_change],
+                             'stf_relative_change': [std_relative_change]}
+        looped_array_info = pd.DataFrame(looped_array_info, index=[0])
 
         # print(f"Percentage change over the length: {percent_change:.5f}%")
         # print(f"Average change over time: {avg_change:.2e}")
@@ -167,20 +167,20 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         print("data contains only one sweep")
         # if the xcell document states capacitive return
         ps_area, ng_area, area, normalized_area = area_under_curves(v_data, c_data)
-        print("total info enclosed within the hysteresis normalised to voltage = ", normalized_area)
+        #print("total info enclosed within the hysteresis normalised to voltage = ", normalized_area)
         # this info will need passing back to another array for comparision across all devices in the section
         # create dataframe for the device of all the data
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
-        info = {'ps_area': ps_area,
-                'ng_area': ng_area,
-                'area': area,
-                'normalised_areas': normalized_area,
-                'resistance_on_value': resistance_on_value,
-                'resistance_off_value': resistance_off_value,
-                'voltage_on_value': voltage_on_value,
-                'voltage_off_value': voltage_off_value,
+        file_stats = {'ps_area': [ps_area],
+                'ng_area': [ng_area],
+                'area': [area],
+                'normalised_area': [normalized_area],
+                'resistance_on_value': [resistance_on_value],
+                'resistance_off_value': [resistance_off_value],
+                'voltage_on_value': [voltage_on_value],
+                'voltage_off_value': [voltage_off_value],
                 }
-        # info = pd.DataFrame(info)
+        df_file_stats = pd.DataFrame(file_stats, index=[0])
 
         f.check_if_folder_exists(device_path, "python_images")
         save_loc = os.path.join(device_path, "python_images")
@@ -198,7 +198,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             df.to_csv(long_name, index=False)
         areas_loops = None
         looped_array_info = None
-    return file_info, num_sweeps, short_name, long_name, df, info, graph
+    return file_info, num_sweeps, short_name, long_name, df, df_file_stats, graph
 
 
 def split_loops(v_data, c_data, num_loops):
