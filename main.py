@@ -92,7 +92,7 @@ for type_folder in os.listdir(f.main_dir):
 
                                         # keeps a list of all files processed for each device
                                         list_of_measured_files = []
-                                        list_of_areas = []
+                                        list_info = []
                                         list_of_areas_loops = []
                                         list_of_looped_array_info = []
                                         list_of_df = []
@@ -133,7 +133,7 @@ for type_folder in os.listdir(f.main_dir):
 
                                                 list_of_df.append(df)
                                                 list_of_measured_files.append(long_name)
-                                                list_of_areas.append(info)
+                                                list_info.append(info)
                                                 list_of_graphs.append(graph)
 
 
@@ -146,8 +146,8 @@ for type_folder in os.listdir(f.main_dir):
                                         print("list of measured devices" ,list_of_measured_files)
                                         print("total number of sweeps = " , num_of_sweeps)
                                         print("final list of measured files")
-                                        print(list_of_measured_files)
-                                        print(list_of_areas)
+                                        #print(list_of_measured_files)
+                                        #print(list_info)
                                         print("Moving onto next device folder")
                                         print("####################################")
                                         print("")
