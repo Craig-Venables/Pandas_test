@@ -8,6 +8,8 @@ import excell as exc
 import plot as plot
 import file as f
 import pickle
+import pprint
+
 
 from file import excel_path
 import excell as ex
@@ -71,9 +73,9 @@ for type_folder in os.listdir(f.main_dir):
 
                         # empty list for storing all measured devices
                         list_of_measured_files_devices_sections = []
-                        df_dict = {}
-                        file_dict = {}
-
+                        device_dict = {}
+                        section_dict = {}
+                        final_dict = {}
                         # Navigate through section folders
                         for section_folder in os.listdir(sample_path):
                             # Anything to section that doesn't require information on individual sweeps
@@ -138,15 +140,16 @@ for type_folder in os.listdir(f.main_dir):
                                                 list_of_graphs.append(graph)
                                                 list_of_file_stats.append(file_stats)
 
+                                        # for the device level
 
-                                        print("#############-----------------####################")
                                         concatdf = pd.concat(list_of_file_stats,ignore_index=True)
                                         print(concatdf)
+                                        device_dict[f'{device_folder}'] = concatdf
 
-                                        df_dict[f'{device_folder}'] = concatdf
-                                        print(df_dict)
+
+
                                         # After processing all files in the device_number folder
-                                        # device number
+
                                         print("")
                                         print("####################################")
                                         print("information on device", device_folder )
@@ -156,36 +159,46 @@ for type_folder in os.listdir(f.main_dir):
                                         #print(list_of_file_stats)
                                         # print(list_of_measured_files)
                                         # print(list_of_file_stats)
+                                        list_of_measured_files_devices.append(list_of_measured_files)
                                         print("Moving onto next device folder")
                                         print("####################################")
                                         print("")
 
-                                        list_of_measured_files_devices.append(list_of_measured_files)
 
-                                file_dict[f'{section_folder}'] = df_dict
-                                print("dddddddddddddd")
-                                print(file_dict)
+                                # for the section level
+                                # this already does all sections correctly
+                                section_dict[f'{section_folder}'] = device_dict
+
                                 # calculation for ech section and the statistics of each
                                 # pdf.create_pdf_with_graphs_and_data_for_section()
                                 # section name
                                 list_of_measured_files_devices_sections.append(list_of_measured_files_devices)
 
+                        # Names the final dictionary the sample name for storage later if necessary
+                        final_dict[f'{sample_name}'] = section_dict
 
-                        # Iterate through each outer_item in outer_dict
-                        for outer_item, df_dict in file_dict.items():
-                            print(f"Outer Item: {outer_item}")
-                            print("------------------------------")
+                        print("----------------------------------------")
+                        print("----------------------------------------")
+                        print("----------------------------------------")
 
-                            # Iterate through each section_folder in df_dict
-                            for section_folder, list_of_file_stats in df_dict.items():
-                                print(f"Section Folder: {section_folder}")
-                                print("------------------------------")
+                        # access the dataframe for specific bits
+                        print(final_dict[f'{sample_name}']['G 200µm'])
 
-                                # Iterate through each file_stats DataFrame in list_of_file_stats
-                                for idx, file_stats_df in enumerate(list_of_file_stats, start=1):
-                                    print(f"File Stats DataFrame {idx}:")
-                                    print(file_stats_df)
-                                    print("------------------------------")
+
+                        for sample_name,section_name in final_dict.items():
+                            print("------------------------")
+                            print(f"sample Name:{sample_name}")
+                            print("------------------------")
+                            for section_name, device_number in section_name.items():
+                                print(f"section Name:{section_name}")
+                                print("------------------------")
+                                for device_number, info in device_number.items():
+                                    print(f"device number:{device_number}")
+                                    print(info)
+                                    print("------------------------")
+
+
+
 
                         # graphs = some_function_comparing_all_files
                         pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,
