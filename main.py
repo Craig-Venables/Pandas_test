@@ -214,6 +214,7 @@ for type_folder in os.listdir(f.main_dir):
                         eq.save_df_off_stats(sample_path,final_stats_dict,final_sweeps_dict)
 
                         print(final_data[f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt'])
+                        # these dictionrys need to be all the way back to "1) memristor"
 
 
 
