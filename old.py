@@ -1,3 +1,34 @@
+# # Information on the polymer
+# for sample_name, section_name in final_sweeps_dict.items():
+#     print("------------------------")
+#     print(f"sample Name:{sample_name}")
+#     print("------------------------")
+#     for section_name, device_number in section_name.items():
+#         print(f"section Name:{section_name}")
+#         print("------------------------")
+#         for device_number, info in device_number.items():
+#             print(f"device number:{device_number}")
+#             print(info)
+#             print("------------------------")
+#
+#
+# for sample_name, section_name in final_stats_dict.items():
+#     print("------------------------")
+#     print(f"sample Name:{sample_name}" )
+#     print("------------------------")
+#     for section_name, device_number in section_name.items():
+#         print(f"section Name:{section_name}")
+#         print("------------------------")
+#         for device_number, info in device_number.items():
+#             print(f"device number:{device_number}")
+#             print(info)
+#             print("------------------------")
+
+
+
+
+
+
 # def split_data_in_sect(voltage, current,v_max,v_min):
 #     positive = [(v, c) for v, c in zip(voltage, current) if 0 <= v <= v_max]
 #     negative = [(v, c) for v, c in zip(voltage, current) if v_min <= v <= 0]

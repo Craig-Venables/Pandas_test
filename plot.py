@@ -16,7 +16,6 @@ class plot():
         self._unpack_dataframe()
 
 
-
         # gets file info
         self.type = file_info.get('type')
         self.polymer = file_info.get('polymer')

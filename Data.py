@@ -107,6 +107,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             'normalized_areas_avg': [normalized_areas_avg],
             'resistance_on_value': [ron_avg],
             'resistance_off_value': [roff_avg],
+            'ON_OFF_Ratio': [ron_avg / roff_avg],
             'voltage_on_value': [von_avg],
             'voltage_off_value': [voff_avg],
         }
@@ -177,6 +178,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
                 'normalised_area': [normalized_area],
                 'resistance_on_value': [resistance_on_value],
                 'resistance_off_value': [resistance_off_value],
+                'ON_OFF_Ratio': [resistance_on_value / resistance_off_value],
                 'voltage_on_value': [voltage_on_value],
                 'voltage_off_value': [voltage_off_value],
                 }
