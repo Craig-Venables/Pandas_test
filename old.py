@@ -1,5 +1,5 @@
 # # Information on the polymer
-# for sample_name, section_name in final_sweeps_dict.items():
+# for sample_name, section_name in sample_sweeps_dict.items():
 #     print("------------------------")
 #     print(f"sample Name:{sample_name}")
 #     print("------------------------")
@@ -12,7 +12,7 @@
 #             print("------------------------")
 #
 #
-# for sample_name, section_name in final_stats_dict.items():
+# for sample_name, section_name in sample_stats_dict.items():
 #     print("------------------------")
 #     print(f"sample Name:{sample_name}" )
 #     print("------------------------")

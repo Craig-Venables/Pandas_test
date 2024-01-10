@@ -165,7 +165,6 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         return None
     else:
         # Data Processing for a single sweep
-        print("data contains only one sweep")
         # if the xcell document states capacitive return
         ps_area, ng_area, area, normalized_area = area_under_curves(v_data, c_data)
         #print("total info enclosed within the hysteresis normalised to voltage = ", normalized_area)
@@ -708,7 +707,7 @@ def save_df_off_stats(sample_path,final_stats_dict,final_sweeps_dict):
     with open(sample_path + '/stats_dict.txt', 'w', encoding='utf-8') as file:
 
         file.write("###########################\n")
-        # Iterate through final_stats_dict
+        # Iterate through sample_stats_dict
         for sample_name, section_info_stats in final_stats_dict.items():
             file.write("------------------------\n")
             file.write(f"Sample Name: {sample_name}\n")
@@ -719,13 +718,13 @@ def save_df_off_stats(sample_path,final_stats_dict,final_sweeps_dict):
                 file.write(f"Section Name: {section_name}\n")
                 file.write("------------------------\n")
 
-                # Access corresponding information from final_sweeps_dict
+                # Access corresponding information from sample_sweeps_dict
                 section_info_sweeps = final_sweeps_dict.get(sample_name, {}).get(section_name, {})
 
                 # Iterate through devices
                 for device_number, info in devices.items():
                     file.write(f"Device Number: {device_number}\n")
-                    # Print corresponding info from final_sweeps_dict if available
+                    # Print corresponding info from sample_sweeps_dict if available
                     sweeps_info = section_info_sweeps.get(device_number, "No sweeps info available")
                     file.write(f"Number of sweeps: {sweeps_info}\n")
                     file.write(f"{info}\n")
