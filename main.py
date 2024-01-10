@@ -16,12 +16,14 @@ import excell as ex
 # pip install reportlab matplotlib
 
 # to add
-# Todo add in the device name and polymer etc into the graphs when they get saved
 # Todo Statistics- pull data from the statisitcs sheet i fill out when measuring the devices
-#  - creat a file that saves all the data collected from each device an sweeps within the data
+#  create a file that saves all the data collected from each device an sweeps within the data
 # - histogram all the data
 # - reorganise the functions
 #
+
+
+
 # Add a try except when file reading, so if the first way dosnt work it tries something else.
 # i.e tries csv or a different method of extracting data from a text file
 # add something about working out what kind of data i am taking and it should react acodingly
@@ -42,7 +44,7 @@ import excell as ex
 save_df = False
 plot_graph = False
 re_analyse = True
-eq.set_pandas_display_options()
+#eq.set_pandas_display_options()
 
 # Main for loop for parsing through folders
 
@@ -57,6 +59,7 @@ for type_folder in os.listdir(f.main_dir):
                 # Navigate through sample_name folders
                 final_stats_dict = {}
                 final_sweeps_dict = {}
+                final_data = {}
 
                 for sample_name in os.listdir(polymer_path):
                     sample_path = os.path.join(polymer_path, sample_name)
@@ -77,6 +80,7 @@ for type_folder in os.listdir(f.main_dir):
                         list_of_measured_files_devices_sections = []
                         section_dict = {}
                         sweeps_dict = {}
+                        sect_data = {}
 
                         # Navigate through section folders
                         for section_folder in os.listdir(sample_path):
@@ -88,6 +92,7 @@ for type_folder in os.listdir(f.main_dir):
                                 list_of_measured_files_devices = []
                                 device_sweeps_dict = {}
                                 device_dict = {}
+                                device_data = {}
 
                                 for device_folder in os.listdir(section_path):
                                     device_path = os.path.join(section_path, device_folder)
@@ -102,9 +107,10 @@ for type_folder in os.listdir(f.main_dir):
                                         list_of_file_stats = []
                                         list_of_areas_loops = []
                                         list_of_looped_array_info = []
-                                        list_of_df = []
+                                        list_of_data_dfs = []
                                         list_of_graphs = []
                                         num_of_sweeps = 0
+                                        file_data = {}
 
                                         # add more here into how each array changes over each array
                                         # Process each file in the device_number folder
@@ -126,8 +132,9 @@ for type_folder in os.listdir(f.main_dir):
 
                                                 if analysis_result is None:
                                                     continue
-                                                file_info, num_sweeps, short_name, long_name, df, file_stats, graph = analysis_result
+                                                file_info, num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
                                                 # on off ratio
+
 
                                                 num_of_sweeps += num_sweeps
 
@@ -138,18 +145,20 @@ for type_folder in os.listdir(f.main_dir):
                                                 # vmin or vmax it assumes just a sweep within one region
 
                                                 # append all the information to a master set of arrays
-                                                plt.show()
+                                                #plt.show()
 
-                                                list_of_df.append(df)
+                                                #list_of_data_dfs.append(data)
                                                 list_of_measured_files.append(long_name)
                                                 list_of_graphs.append(graph)
                                                 list_of_file_stats.append(file_stats)
+                                                file_data[f'{file_name}'] = data
 
 
                                         # for the device level, After processing all files in the device_number folder:
                                         # add file stats to a pd dataframe
 
                                         device_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
+                                        device_data[f'{device_folder}'] = file_data
 
                                         list_of_measured_files_devices.append(list_of_measured_files)
                                         print(num_of_sweeps)
@@ -170,6 +179,7 @@ for type_folder in os.listdir(f.main_dir):
                                 # this already does all sections correctly
                                 section_dict[f'{section_folder}'] = device_dict
                                 sweeps_dict[f'{section_folder}'] = device_sweeps_dict
+                                sect_data[f'{section_folder}']=device_data
                                 print('sweeps_dict for section',sweeps_dict)
 
                                 # calculation for ech section and the statistics of each
@@ -180,6 +190,7 @@ for type_folder in os.listdir(f.main_dir):
                         # Names the final dictionary the sample name for storage later if necessary
                         final_stats_dict[f'{sample_name}'] = section_dict
                         final_sweeps_dict[f'{sample_name}'] = sweeps_dict
+                        final_data[f'{sample_name}'] = sect_data
                         print(final_sweeps_dict)
 
                         # access the dataframe for specific bits
@@ -193,29 +204,50 @@ for type_folder in os.listdir(f.main_dir):
                                                                        info_dict)
 
                         # Saves information for later use
-                        with open(sample_path + '/stats_dict_pkl', 'wb') as file:
+                        with open(sample_path + '/statistic_device_pkl', 'wb') as file:
                             pickle.dump(final_stats_dict, file)
 
-                        with open(sample_path + '/list of devices measured_pkl', 'wb') as file:
+                        with open(sample_path + '/list of devices & files measured', 'wb') as file:
                             pickle.dump(list_of_measured_files, file)
 
-print("###########################")
-for sample_name, section_info_stats in final_stats_dict.items():
-    print("------------------------")
-    print(f"Sample Name: {sample_name}")
-    print("------------------------")
-    for section_name, device_number in section_info_stats.items():
-        print(f"Section Name: {section_name}")
-        print("------------------------")
+                        # save the dataframe for stats within the sample folder in txt format
+                        eq.save_df_off_stats(sample_path,final_stats_dict,final_sweeps_dict)
 
-        # Access corresponding information from final_sweeps_dict
-        section_info_sweeps = final_sweeps_dict.get(sample_name, {}).get(section_name, {})
+                        print(final_data[f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt'])
 
-        for device_number, info in device_number.items():
-            print(f"Device Number: {device_number}")
-            # Print corresponding info from final_sweeps_dict if available
-            sweeps_info = section_info_sweeps.get(device_number, "No sweeps info available")
-            print(f"Number of sweeps: {sweeps_info}")
-            print(info)
-            print("------------------------")
 
+
+# For printing these
+#################################
+# for sample_name, section_name in final_data.items():
+#     print("------------------------")
+#     print(f"sample Name:{sample_name}")
+#     print("------------------------")
+#     for section_name, device_number in section_name.items():
+#         print(f"section Name:{section_name}")
+#         print("------------------------")
+#         for device_number, info in device_number.items():
+#             print(f"device number:{device_number}")
+#             print("------------------------")
+#             print(info)
+#             print("------------------------")
+# print("###########################")
+# for sample_name, section_info_stats in final_stats_dict.items():
+#     print("------------------------")
+#     print(f"Sample Name: {sample_name}")
+#     print("------------------------")
+#     for section_name, device_number in section_info_stats.items():
+#         print(f"Section Name: {section_name}")
+#         print("------------------------")
+#
+#         # Access corresponding information from final_sweeps_dict
+#         section_info_sweeps = final_sweeps_dict.get(sample_name, {}).get(section_name, {})
+#
+#         for device_number, info in device_number.items():
+#             print(f"Device Number: {device_number}")
+#             # Print corresponding info from final_sweeps_dict if available
+#             sweeps_info = section_info_sweeps.get(device_number, "No sweeps info available")
+#             print(f"Number of sweeps: {sweeps_info}")
+#             print(info)
+#             print("------------------------")
+#
