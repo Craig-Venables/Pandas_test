@@ -47,22 +47,27 @@ eq.set_pandas_display_options()
 material_stats_dict = {}
 material_sweeps_dict = {}
 material_data = {}
+material_names_dict = {}
 
-for type_folder in os.listdir(f.main_dir):
-    type_path = os.path.join(f.main_dir, type_folder)
-    if os.path.isdir(type_path):
+sample_name_arr = []
+
+for material in os.listdir(f.main_dir):
+    material_path = os.path.join(f.main_dir, material)
+    if os.path.isdir(material_path):
         # Navigate through sub-folders (e.g., polymer)
         polymer_stats_dict = {}
         polymer_sweeps_dict = {}
         polymer_data = {}
-        for polymer_folder in os.listdir(type_path):
-            polymer_path = os.path.join(type_path, polymer_folder)
+        polymer_names_dict = {}
+        for polymer in os.listdir(material_path):
+            polymer_path = os.path.join(material_path, polymer)
 
             if os.path.isdir(polymer_path):
                 # Navigate through sample_name folders
                 sample_stats_dict = {}
                 sample_sweeps_dict = {}
                 sample_data = {}
+                sample_names_dict = {}
 
                 for sample_name in os.listdir(polymer_path):
                     sample_path = os.path.join(polymer_path, sample_name)
@@ -194,6 +199,8 @@ for type_folder in os.listdir(f.main_dir):
                         sample_stats_dict[f'{sample_name}'] = section_stats_dict
                         sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
                         sample_data[f'{sample_name}'] = section_data
+                        sample_names_dict["sample_name"] = sample_name
+                        sample_name_arr.append(sample_name)
                         print(sample_sweeps_dict)
 
                         print("")
@@ -217,6 +224,9 @@ for type_folder in os.listdir(f.main_dir):
                         with open(sample_path + '/Statistic_device_pkl', 'wb') as file:
                             pickle.dump(sample_stats_dict, file)
 
+                        with open(sample_path + '/material_stats_dict.pkl', 'wb') as file:
+                            pickle.dump(material_stats_dict, file)
+
                         with open(sample_path + '/List of devices & files measured', 'wb') as file:
                             pickle.dump(list_of_measured_files, file)
 
@@ -232,21 +242,99 @@ for type_folder in os.listdir(f.main_dir):
                         # these dictionrys need to be all the way back to "1) memristor"
 
                 # More dictionary stuff
-                polymer_stats_dict[f'{polymer_folder}'] = sample_stats_dict
-                polymer_sweeps_dict[f'{polymer_folder}'] = sample_sweeps_dict
-                polymer_data[f'{polymer_folder}'] = sample_data
+                polymer_stats_dict[f'{polymer}'] = sample_stats_dict
+                polymer_sweeps_dict[f'{polymer}'] = sample_sweeps_dict
+                polymer_data[f'{polymer}'] = sample_data
+                polymer_names_dict[f'{polymer}'] = sample_names_dict
+
+                print(sample_names_dict)
 
         # More dictionary stuff
-        material_stats_dict[f'{type_folder}'] = polymer_stats_dict
-        material_sweeps_dict[f'{type_folder}'] = polymer_sweeps_dict
-        material_data[f'{type_folder}'] = polymer_data
+        material_stats_dict[f'{material}'] = polymer_stats_dict
+        material_sweeps_dict[f'{material}'] = polymer_sweeps_dict
+        material_data[f'{material}'] = polymer_data
+        material_names_dict[f'{material}'] = polymer_names_dict
 
         print("")
         print("-----------------------")
         print("access files using the following")
-        print("material_data['Stock'][f'{polymer_folder}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt']")
-        #print(material_data['Stock'][f'{polymer_folder}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt'])
+        print("material_data['Stock'][f'{polymer}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt']")
+        print("material_sweeps_dict(['stock'][[f'{polymer}'][f'{sample_name}'][['G 200µm']['1'])")
+        #print(material_data['Stock'][f'{polymer}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt'])
         print("-----------------------")
+
+
+# returns total number of sweeps completed for a single sample
+def find_sample_number_sweeps(material,polymer,sample_name):
+
+    data = material_sweeps_dict[f'{material}'][f'{polymer}'][f'{sample_name}']
+    #print(data)
+    def recursive_sum(value):
+        if isinstance(value, (int, float)):
+            return value
+        elif isinstance(value, dict):
+            return sum(recursive_sum(v) for v in value.values())
+        else:
+            return 0
+
+    total_sum = sum(recursive_sum(value) for inner_dict in data.values() for value in inner_dict.values() if isinstance(value, (int, float)))
+    #print(total_sum)
+    return sample_name, total_sum
+
+
+for item in sample_name_arr:
+    sample_name, total_sum = find_sample_number_sweeps("Stock","PVA",item)
+    print("total sweeps for",sample_name, "=",total_sum)
+
+print(material_names_dict)
+#data = {'D14-Stock-Gold-PVA(2%)-Gold-s7': {'G 200µm': {'1': 13.0, '2': 2}, 'H 100μm': {'1': 13.0, '2': 11.0}}}
+
+# def recursive_sum(value):
+#     if isinstance(value, (int, float)):
+#         return value
+#     elif isinstance(value, dict):
+#         return sum(recursive_sum(v) for v in value.values())
+#     else:
+#         return 0
+#
+# total_sum = sum(recursive_sum(value) for nested_dict in data.values() for inner_dict in nested_dict.values() for value in inner_dict.values() if isinstance(value, (int, float)))
+
+# print(total_sum)
+# def find_largest_sweeps(material_sweeps_dict):
+#     max_sweeps = 0
+#     max_sweeps_sample_name = ""
+#
+#     for material_type, polymer_dict in material_sweeps_dict.items():
+#         for polymer_type, sample_dict in polymer_dict.items():
+#             for sample_name, sweeps_dict in sample_dict.items():
+#                 for section_name, num_sweeps in sweeps_dict.items():
+#                     if isinstance(num_sweeps, int) and num_sweeps > max_sweeps:
+#                         print(num_sweeps , "num_sweeps")
+#                         max_sweeps = num_sweeps
+#                         max_sweeps_sample_name = sample_name
+#                     else:
+#                         print("notworking")
+#
+#     return max_sweeps, max_sweeps_sample_name
+
+# def find_largest_sweeps(material_sweeps_dict, target_sample_name):
+#     max_sweeps = 0
+#
+#     for material_type, polymer_dict in material_sweeps_dict.items():
+#         for polymer_type, sample_dict in polymer_dict.items():
+#             for sample_name, sweeps_dict in sample_dict.items():
+#                 if sample_name == target_sample_name:
+#                     sample_sweeps = sum(int(num_sweeps) for num_sweeps in sweeps_dict.values() if isinstance(num_sweeps, (int, float)))
+#                     max_sweeps = max(max_sweeps, sample_sweeps)
+#
+#     return max_sweeps
+#
+# # Example usage:
+# target_sample_name = "D14-Stock-Gold-PVA(2%)-Gold-s7"
+# max_sweeps = find_largest_sweeps(material_sweeps_dict, target_sample_name)
+#
+# # Print the result
+# print(f"The largest number of sweeps for {target_sample_name} is {max_sweeps}")
 
 
 
