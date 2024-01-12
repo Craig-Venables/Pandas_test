@@ -697,6 +697,49 @@ def statistics(v_data, c_data):
     #     return 0, 0, 0, 0
 
 
+def save_df_off_data(sample_path, final_data_dict, final_sweeps_dict):
+    """
+    saves df of data for each sample
+
+    :param sample_path: full sample path
+    :return: n/a saves file stats_dict in the location sample path
+    """
+    # Open the file in write mode
+    with open(sample_path + '/final_data_dict.txt', 'w', encoding='utf-8') as file:
+
+        file.write("###########################\n")
+        # Iterate through sample_stats_dict
+        for sample_name, section_info_stats in final_data_dict.items():
+            file.write("------------------------\n")
+            file.write(f"Sample Name: {sample_name}\n")
+            file.write("------------------------\n")
+
+            # Iterate through section_info_stats
+            for section_name, devices in section_info_stats.items():
+                file.write(f"Section Name: {section_name}\n")
+                file.write("------------------------\n")
+
+                # Access corresponding information from sample_sweeps_dict
+                section_info_sweeps = final_sweeps_dict.get(sample_name, {}).get(section_name, {})
+
+                # Iterate through devices
+                for device_number, info in devices.items():
+                    file.write(f"Device Number: {device_number}\n")
+                    # Print corresponding info from sample_sweeps_dict if available
+                    sweeps_info = section_info_sweeps.get(device_number, "No sweeps info available")
+                    file.write(f"Number of sweeps: {sweeps_info}\n")
+                    #file.write(f"{info}\n")
+                    file.write("------------------------\n")
+
+                    # Iterate through the first 5 items in info
+                    for sweep, sweep_value in info.items():
+                        file.write(f"{sweep}: {sweep_value}\n")
+                        #print(sweep)
+                        file.write("------------------------\n")
+
+
+
+
 def save_df_off_stats(sample_path,final_stats_dict,final_sweeps_dict):
     """
 

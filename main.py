@@ -40,7 +40,7 @@ import excell as ex
 save_df = False
 plot_graph = False
 re_analyse = True
-#eq.set_pandas_display_options()
+eq.set_pandas_display_options()
 
 # Main for loop for parsing through folders
 # empty dictionary's
@@ -74,7 +74,7 @@ for type_folder in os.listdir(f.main_dir):
 
                         # Pulls information from device sweep excell sheet
                         sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
-                        print(sample_sweep_excell_dict['G'])
+                        #print(sample_sweep_excell_dict['G'])
 
                         # Pulls information on fabrication from excell file
                         info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
@@ -152,8 +152,8 @@ for type_folder in os.listdir(f.main_dir):
 
                                         # for the device level, After processing all files in the device_number folder:
 
-
-                                        device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
+                                        if len(list_of_file_stats) >=2:
+                                            device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
                                         device_data[f'{device_folder}'] = file_data
                                         device_sweeps_dict[f'{device_folder}'] = num_of_sweeps
                                         print('section_sweeps_dict for device', (device_sweeps_dict))
@@ -209,19 +209,24 @@ for type_folder in os.listdir(f.main_dir):
                         #print(sample_stats_dict[f'{sample_name}']['G 200µm'])
 
                         # graphs = some_function_comparing_all_files
-                        pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,
-                                                                       f"{file_info.get('sample_name')}.pdf", graph,
-                                                                       info_dict)
+                        # pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,
+                        #                                                f"{file_info.get('sample_name')}.pdf", graph,
+                        #                                                info_dict)
 
                         # Saves information for later use
-                        with open(sample_path + '/statistic_device_pkl', 'wb') as file:
+                        with open(sample_path + '/Statistic_device_pkl', 'wb') as file:
                             pickle.dump(sample_stats_dict, file)
 
-                        with open(sample_path + '/list of devices & files measured', 'wb') as file:
+                        with open(sample_path + '/List of devices & files measured', 'wb') as file:
                             pickle.dump(list_of_measured_files, file)
+
+                        with open(sample_path + '/Sample_data', 'wb') as file:
+                            pickle.dump(sample_data, file)
 
                         # save the dataframe for stats within the sample folder in txt format
                         eq.save_df_off_stats(sample_path, sample_stats_dict, sample_sweeps_dict)
+
+                        #eq.save_df_off_data(sample_path, sample_data, sample_sweeps_dict)
 
                         #print(sample_data[f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt'])
                         # these dictionrys need to be all the way back to "1) memristor"
