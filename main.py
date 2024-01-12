@@ -199,9 +199,10 @@ for material in os.listdir(f.main_dir):
                         sample_stats_dict[f'{sample_name}'] = section_stats_dict
                         sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
                         sample_data[f'{sample_name}'] = section_data
+                        #current_sample_dict = {'sample_name': sample_name}
                         sample_names_dict["sample_name"] = sample_name
-                        sample_name_arr.append(sample_name)
-                        print(sample_sweeps_dict)
+                        sample_name_arr.append("sample_name")
+                        print(sample_names_dict)
 
                         print("")
                         print("\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/")
@@ -245,15 +246,16 @@ for material in os.listdir(f.main_dir):
                 polymer_stats_dict[f'{polymer}'] = sample_stats_dict
                 polymer_sweeps_dict[f'{polymer}'] = sample_sweeps_dict
                 polymer_data[f'{polymer}'] = sample_data
-                polymer_names_dict[f'{polymer}'] = sample_names_dict
+                current_polymer_dict = {polymer: sample_names_dict}
+                polymer_names_dict["polymer"] = current_polymer_dict
 
-                print(sample_names_dict)
 
         # More dictionary stuff
         material_stats_dict[f'{material}'] = polymer_stats_dict
         material_sweeps_dict[f'{material}'] = polymer_sweeps_dict
         material_data[f'{material}'] = polymer_data
-        material_names_dict[f'{material}'] = polymer_names_dict
+        current_material_dict = {material: polymer_names_dict}
+        material_names_dict["material"] = current_material_dict
 
         print("")
         print("-----------------------")
@@ -262,6 +264,32 @@ for material in os.listdir(f.main_dir):
         print("material_sweeps_dict(['stock'][[f'{polymer}'][f'{sample_name}'][['G 200µm']['1'])")
         #print(material_data['Stock'][f'{polymer}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt'])
         print("-----------------------")
+
+print(material_names_dict)
+print("#############")
+
+# Assuming material_names_dict is the given dictionary
+for material, material_dict in material_names_dict.items():
+    print("Material Name:", material)
+
+    for polymer, polymer_dict in material_dict.items():
+        print("  Polymer Name:", polymer)
+
+        for sample_name, sample_info in polymer_dict.items():
+            print("    Sample Name:", sample_name)
+
+            # Extract additional information if needed
+            for key, value in sample_info.items():
+                print(f"      {key}: {value}")
+
+# # Assuming material_names_dict is the given dictionary
+# material_name = list(material_names_dict['material'].keys())[0]
+# polymer_name = list(material_names_dict['material'][material_name]['polymer'].keys())[0]
+# sample_name = material_names_dict['material'][material_name]['polymer'][polymer_name]['sample_name']
+#
+# print("Material Name:", material_name)
+# print("Polymer Name:", polymer_name)
+# print("Sample Name:", sample_name)
 
 
 # returns total number of sweeps completed for a single sample
@@ -286,7 +314,7 @@ for item in sample_name_arr:
     sample_name, total_sum = find_sample_number_sweeps("Stock","PVA",item)
     print("total sweeps for",sample_name, "=",total_sum)
 
-print(material_names_dict)
+
 #data = {'D14-Stock-Gold-PVA(2%)-Gold-s7': {'G 200µm': {'1': 13.0, '2': 2}, 'H 100μm': {'1': 13.0, '2': 11.0}}}
 
 # def recursive_sum(value):
