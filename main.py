@@ -38,7 +38,7 @@ import excell as ex
 # i give the endurance nuber of sweeps etc celled _____
 
 save_df = False
-plot_graph = False
+plot_graph = True
 re_analyse = True
 eq.set_pandas_display_options()
 

@@ -48,38 +48,48 @@ class plot():
         '''
             plots iv and log iv graphs as subplots and saves it
         '''
-        plt.close('all')
-        self.fig = plt.figure(figsize=(12, 8))
 
-        plt.suptitle(
-            f'{self.polymer} -' + f'{self.sample_name} -' + ' ' + f'{self.section} -' + ' '
-            + f'{self.device_number} -' + ' ' + self.filename)
+        file_path = os.path.join(self.save_loc, f"{self.short_filename}.png")
 
-        # using the functions main_plot the graphs
-        plt.subplot(2, 2, 1)
-        self.plot_iv()
+        if not os.path.exists(file_path):
+            plt.close('all')
+            self.fig = plt.figure(figsize=(12, 8))
 
-        plt.subplot(2, 2, 2)
-        self.plot_logiv()
+            plt.suptitle(
+                f'{self.polymer} -' + f'{self.sample_name} -' + ' ' + f'{self.section} -' + ' '
+                + f'{self.device_number} -' + ' ' + self.filename)
 
-        plt.subplot(2, 2, 3)
-        self.plot_iv_avg()
+            # using the functions main_plot the graphs
+            plt.subplot(2, 2, 1)
+            self.plot_iv()
 
-        plt.subplot(2, 2, 4)
-        #self.plot_graph_other()
-        # self.information()
-        # self.plot_array_changes()
+            plt.subplot(2, 2, 2)
+            self.plot_logiv()
 
-        # add label underneath plots for on-off ratio
-        # self.fig.text(0.5, 0.01, " ON/OFF Ratio @0.2v - " + f'{round(self.on_off_ratio, 4)}', ha='center', fontsize=10)
-        #plt.show()
-        # add subplot title
+            plt.subplot(2, 2, 3)
+            self.plot_iv_avg()
 
-        # Turn off interactive mode
-        plt.ioff()
-        print(self.save_loc)
-        #print(self.save_loc+"\\"+f"{self.filename}.png")
-        plt.savefig(self.save_loc+"\\"+f"{self.short_filename}.png", bbox_inches='tight',dpi=200)
+            plt.subplot(2, 2, 4)
+            #self.plot_graph_other()
+            # self.information()
+            # self.plot_array_changes()
+
+            # add label underneath plots for on-off ratio
+            # self.fig.text(0.5, 0.01, " ON/OFF Ratio @0.2v - " + f'{round(self.on_off_ratio, 4)}', ha='center', fontsize=10)
+            #plt.show()
+            # add subplot title
+
+            # Turn off interactive mode
+            plt.ioff()
+            print(self.save_loc)
+
+            file_path = os.path.join(self.save_loc, f"{self.short_filename}.png")
+
+            plt.savefig(file_path, bbox_inches='tight', dpi=200)
+            print(f"File saved successfully at {file_path}")
+        else:
+            print(f"File {file_path} already exists. Skipping save.")
+        #plt.savefig(self.save_loc+"\\"+f"{self.short_filename}.png", bbox_inches='tight',dpi=200)
         #note pngs not showing on photo app
 
         # uncomment to show for 0.01 sec
