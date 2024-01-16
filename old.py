@@ -1,3 +1,119 @@
+
+# print(material_sweeps_dict)
+
+# # Assuming material_names_dict is the given dictionary
+# for material, material_dict in material_names_dict.items():
+#     print("Material Name:", material)
+#
+#     for polymer, polymer_dict in material_dict.items():
+#         print("  Polymer Name:", polymer)
+#
+#         for sample_name, sample_info in polymer_dict.items():
+#             print("    Sample Name:", sample_name)
+#
+#             # Extract additional information if needed
+#             for key, value in sample_info.items():
+#                 print(f"      {key}: {value}")
+
+# # Assuming material_names_dict is the given dictionary
+# material_name = list(material_names_dict['material'].keys())[0]
+# polymer_name = list(material_names_dict['material'][material_name]['polymer'].keys())[0]
+# sample_name = material_names_dict['material'][material_name]['polymer'][polymer_name]['sample_name']
+#
+# print("Material Name:", material_name)
+# print("Polymer Name:", polymer_name)
+# print("Sample Name:", sample_name)
+
+
+#data = {'D14-Stock-Gold-PVA(2%)-Gold-s7': {'G 200µm': {'1': 13.0, '2': 2}, 'H 100μm': {'1': 13.0, '2': 11.0}}}
+
+# def recursive_sum(value):
+#     if isinstance(value, (int, float)):
+#         return value
+#     elif isinstance(value, dict):
+#         return sum(recursive_sum(v) for v in value.values())
+#     else:
+#         return 0
+#
+# total_sum = sum(recursive_sum(value) for nested_dict in data.values() for inner_dict in nested_dict.values() for value in inner_dict.values() if isinstance(value, (int, float)))
+
+# print(total_sum)
+# def find_largest_sweeps(material_sweeps_dict):
+#     max_sweeps = 0
+#     max_sweeps_sample_name = ""
+#
+#     for material_type, polymer_dict in material_sweeps_dict.items():
+#         for polymer_type, sample_dict in polymer_dict.items():
+#             for sample_name, sweeps_dict in sample_dict.items():
+#                 for section_name, num_sweeps in sweeps_dict.items():
+#                     if isinstance(num_sweeps, int) and num_sweeps > max_sweeps:
+#                         print(num_sweeps , "num_sweeps")
+#                         max_sweeps = num_sweeps
+#                         max_sweeps_sample_name = sample_name
+#                     else:
+#                         print("notworking")
+#
+#     return max_sweeps, max_sweeps_sample_name
+
+# def find_largest_sweeps(material_sweeps_dict, target_sample_name):
+#     max_sweeps = 0
+#
+#     for material_type, polymer_dict in material_sweeps_dict.items():
+#         for polymer_type, sample_dict in polymer_dict.items():
+#             for sample_name, sweeps_dict in sample_dict.items():
+#                 if sample_name == target_sample_name:
+#                     sample_sweeps = sum(int(num_sweeps) for num_sweeps in sweeps_dict.values() if isinstance(num_sweeps, (int, float)))
+#                     max_sweeps = max(max_sweeps, sample_sweeps)
+#
+#     return max_sweeps
+#
+# # Example usage:
+# target_sample_name = "D14-Stock-Gold-PVA(2%)-Gold-s7"
+# max_sweeps = find_largest_sweeps(material_sweeps_dict, target_sample_name)
+#
+# # Print the result
+# print(f"The largest number of sweeps for {target_sample_name} is {max_sweeps}")
+
+
+
+
+
+# For printing these
+#################################
+# for sample_name, section_name in sample_data.items():
+#     print("------------------------")
+#     print(f"sample Name:{sample_name}")
+#     print("------------------------")
+#     for section_name, device_number in section_name.items():
+#         print(f"section Name:{section_name}")
+#         print("------------------------")
+#         for device_number, info in device_number.items():
+#             print(f"device number:{device_number}")
+#             print("------------------------")
+#             print(info)
+#             print("------------------------")
+# print("###########################")
+# for sample_name, section_info_stats in sample_stats_dict.items():
+#     print("------------------------")
+#     print(f"Sample Name: {sample_name}")
+#     print("------------------------")
+#     for section_name, device_number in section_info_stats.items():
+#         print(f"Section Name: {section_name}")
+#         print("------------------------")
+#
+#         # Access corresponding information from sample_sweeps_dict
+#         section_info_sweeps = sample_sweeps_dict.get(sample_name, {}).get(section_name, {})
+#
+#         for device_number, info in device_number.items():
+#             print(f"Device Number: {device_number}")
+#             # Print corresponding info from sample_sweeps_dict if available
+#             sweeps_info = section_info_sweeps.get(device_number, "No sweeps info available")
+#             print(f"Number of sweeps: {sweeps_info}")
+#             print(info)
+#             print("------------------------")
+#
+
+
 # print the file info dictionary
 # for file_key, file_info in file_info_dict.items():
 #     print(f'File Key: {file_key}')

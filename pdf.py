@@ -8,7 +8,7 @@ import pandas as pd
 
 
 
-def create_pdf_with_graphs_and_data_for_sample(sample_path, pdf_file, graph, data):
+def create_pdf_with_graphs_and_data_for_sample(sample_path, pdf_file, data,sample_stats_dict):
     # Create the full path for the PDF file
     full_pdf_path = os.path.join(sample_path, pdf_file)
 
@@ -24,8 +24,10 @@ def create_pdf_with_graphs_and_data_for_sample(sample_path, pdf_file, graph, dat
     # Styles for paragraphs
     styles = getSampleStyleSheet()
 
-    # Add sample_name as title
+    # Add sample_name as title with adjusted style
     title_style = styles["Title"]
+    title_style.fontSize = 16  # Adjust the font size
+    title_style.spaceAfter = 20  # Adjust the space after the title
     content.append(Paragraph(pdf_file, title_style))
 
     # Add spacer
@@ -55,8 +57,8 @@ def create_pdf_with_graphs_and_data_for_sample(sample_path, pdf_file, graph, dat
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 12),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('FONTSIZE', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
         ('GRID', (0, 0), (-1, -1), 1, colors.black)
     ]))

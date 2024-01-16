@@ -22,13 +22,9 @@ import excell as ex
 # - reorganise the functions
 #
 
-# Add a try except when file reading, so if the first way doesn't work, it tries something else.
-# i.e tries csv or a different method of extracting data from a text file
-# add something about working out what kind of data I am taking, and it should react accordingly
 # have it create the origin graphs for all files towards the end, however only do this if there isn't already an origin
 # file created for each
 
-# loop through all the multiple sweeps and save images if each sweep for use later, for each of the looped data with all the individual
 # images in, with a full overview of each create a final overview pdf of each device with all the sweeps information
 # ie average enclosed area, avaerage switching
 
@@ -38,7 +34,7 @@ import excell as ex
 # i give the endurance nuber of sweeps etc celled _____
 
 save_df = False
-plot_graph = False
+plot_graph = True
 re_analyse = True
 eq.set_pandas_display_options()
 
@@ -74,6 +70,8 @@ for material in os.listdir(f.main_dir):
                     if os.path.isdir(sample_path):
                         print("working on ", sample_name)
                         print("Path = ", sample_path)
+
+
                         # Anything to device that doesn't require information on individual sweeps
                         # Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7
 
@@ -125,46 +123,49 @@ for material in os.listdir(f.main_dir):
                                         for file_name in os.listdir(device_path):
                                             if file_name.endswith('.txt'):
                                                 # Does work on the file here
-
                                                 # checks If in excell sheet on file its capacitive or not if
                                                 # capacitive does something else
 
                                                 file_path = os.path.join(device_path, file_name)
+                                                sweep_type = eq.check_sweep_type(file_path)
+                                                if sweep_type == 'Iv_sweep':
 
-                                                # Performs analysis on the file given returning the dataframe after
-                                                # analysis
-                                                analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
-                                                                                   device_path)
+                                                    # Performs analysis on the file given returning the dataframe after
+                                                    # analysis
+                                                    analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
+                                                                                       device_path)
 
-                                                if analysis_result is None:
-                                                    # if there is an error in reading the file it will jst continue
-                                                    # skipping
+                                                    if analysis_result is None:
+                                                        # if there is an error in reading the file it will jst continue
+                                                        # skipping
+                                                        continue
+
+                                                    num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
+
+                                                    # keeps count of the number of sweeps by each device
+                                                    num_of_sweeps += num_sweeps
+
+                                                    # storing information from analysis
+                                                    list_of_measured_files.append(long_name)
+                                                    list_of_graphs.append(graph)
+                                                    list_of_file_stats.append(file_stats)
+                                                    file_data[f'{file_name}'] = data
+
+                                                    file_key = f'{material}_{polymer}_{sample_name}_{section_folder}_{device_folder}_{file_name}'
+
+                                                    # Store the file information in the dictionary
+                                                    file_info_dict[file_key] = {
+                                                        'material': material,
+                                                        'polymer': polymer,
+                                                        'sample_name': sample_name,
+                                                        'section_folder': section_folder,
+                                                        'device_folder': device_folder,
+                                                        'file_name': file_name,
+                                                        'file_path': os.path.join(device_path, file_name)
+                                                    }
+                                                else:
+                                                    print("This file isn't a simple IV_Sweep Skipping ")
                                                     continue
-
-                                                num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
-
-                                                # keeps count of the number of sweeps by each device
-                                                num_of_sweeps += num_sweeps
-
-                                                # storing information from analysis
-                                                list_of_measured_files.append(long_name)
-                                                list_of_graphs.append(graph)
-                                                list_of_file_stats.append(file_stats)
-                                                file_data[f'{file_name}'] = data
-
-                                                file_key = f'{material}_{polymer}_{sample_name}_{section_folder}_{device_folder}_{file_name}'
-
-                                                # Store the file information in the dictionary
-                                                file_info_dict[file_key] = {
-                                                    'material': material,
-                                                    'polymer': polymer,
-                                                    'sample_name': sample_name,
-                                                    'section_folder': section_folder,
-                                                    'device_folder': device_folder,
-                                                    'file_name': file_name,
-                                                    'file_path': os.path.join(device_path, file_name)
-                                                }
-
 
 
                                         # for the device level, After processing all files in the device_number folder:
@@ -211,7 +212,7 @@ for material in os.listdir(f.main_dir):
                         sample_stats_dict[f'{sample_name}'] = section_stats_dict
                         sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
                         sample_data[f'{sample_name}'] = section_data
-                        #current_sample_dict = {'sample_name': sample_name}
+
 
                         print("")
                         print("\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/")
@@ -226,231 +227,72 @@ for material in os.listdir(f.main_dir):
                         #print(sample_stats_dict[f'{sample_name}']['G 200µm'])
 
                         # graphs = some_function_comparing_all_files
-                        # pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,
-                        #                                                f"{file_info.get('sample_name')}.pdf", graph,
-                        #                                                info_dict)
+                        pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{sample_name}.pdf",info_dict,sample_stats_dict)
 
                         # Saves information for later use
-                        with open(sample_path + '/Statistic_device_pkl', 'wb') as file:
+                        with open(sample_path + '/' + sample_name + '_Stats', 'wb') as file:
                             pickle.dump(sample_stats_dict, file)
 
                         with open(sample_path + '/material_stats_dict.pkl', 'wb') as file:
                             pickle.dump(material_stats_dict, file)
 
-                        with open(sample_path + '/List of devices & files measured', 'wb') as file:
-                            pickle.dump(list_of_measured_files, file)
-
-                        with open(sample_path + '/Sample_data', 'wb') as file:
+                        with open(sample_path + '/'+sample_name+'_data', 'wb') as file:
+                            # all the data for the given sample
                             pickle.dump(sample_data, file)
 
                         # save the dataframe for stats within the sample folder in txt format
                         eq.save_df_off_stats(sample_path, sample_stats_dict, sample_sweeps_dict)
-
+                        # saves df in text format for each sample
                         #eq.save_df_off_data(sample_path, sample_data, sample_sweeps_dict)
 
                         #print(sample_data[f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt'])
-                        # these dictionrys need to be all the way back to "1) memristor"
+
 
                 # More dictionary stuff
                 polymer_stats_dict[f'{polymer}'] = sample_stats_dict
                 polymer_sweeps_dict[f'{polymer}'] = sample_sweeps_dict
                 polymer_data[f'{polymer}'] = sample_data
-                current_polymer_dict = {polymer: sample_names_dict}
-
 
         # More dictionary stuff
         material_stats_dict[f'{material}'] = polymer_stats_dict
         material_sweeps_dict[f'{material}'] = polymer_sweeps_dict
         material_data[f'{material}'] = polymer_data
-        current_material_dict = {material: polymer_names_dict}
+
+# material data = all the data extracted forom the sweep (voltage,current,abs_current etc....
+# materials_stats_dict = all the stats like area, resistance on and off etc...
+# materials_sweeps_dicts = all the sweeps per device in dictionary
 
 
-        print("")
-        print("-----------------------")
-        print("access files using the following")
-        print("material_data['Stock'][f'{polymer}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt']")
-        print("material_sweeps_dict(['stock'][[f'{polymer}'][f'{sample_name}'][['G 200µm']['1'])")
-        #print(material_data['Stock'][f'{polymer}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt'])
-        print("-----------------------")
+print("")
+print("-----------------------")
+print("access files using the following")
+print("material_data['Stock'][f'{polymer}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt']")
+print("material_sweeps_dict(['stock'][[f'{polymer}'][f'{sample_name}'][['G 200µm']['1'])")
+#print(material_data['Stock'][f'{polymer}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt'])
+print("-----------------------")
+
+# perform any analysis of the data here and below:
+
+# Sample with the most sweeps, corresponding sample and its sweeps in high to low
+sample_sweeps = eq.get_num_sweeps_ordered(file_info_dict,material_sweeps_dict)
 
 
-# returns total number of sweeps completed for a single sample
+# Counter variable to keep track of the number of items printed
+print("Top 3 measured samples = ")
+print('-' * 50)
+printed_count = 0
+for file_key, file_info in sample_sweeps.items():
+    # Print only the top 3 items
+    if printed_count < 3:
+        print(f'File Key: {file_key}')
+        print(f'Sample Name: {file_info["sample_name"]}')
+        print(f'Total Sum: {file_info["total_sum"]}')
+        print('-' * 25)
 
-def find_sample_number_sweeps(material, polymer, sample_name):
-    data = material_sweeps_dict[f'{material}'][f'{polymer}'][f'{sample_name}']
-
-    def recursive_sum(value):
-        if isinstance(value, (int, float)):
-            return value
-        elif isinstance(value, dict):
-            return sum(recursive_sum(v) for v in value.values())
-        else:
-            return 0
-
-    total_sum = sum(recursive_sum(value) for inner_dict in data.values() for value in inner_dict.values() if
-                    isinstance(value, (int, float)))
-    # print(total_sum)
-    return sample_name, total_sum
+        # Increment the counter
+        printed_count += 1
 
 
-for item in sample_name_arr:
-    sample_name, total_sum = find_sample_number_sweeps("Stock", "PVA", f'{sample_name}')
-    print("total sweeps for", sample_name, "=", total_sum)
-
-def get_num_sweeps_ordered(file_info_dict):
-    result_dict = {}
-
-    def order_dict_by_total_sum(input_dict):
-        # Sort the dictionary by 'total_sum' in descending order
-        sorted_dict = dict(sorted(input_dict.items(), key=lambda item: item[1]['total_sum'], reverse=True))
-        return sorted_dict
-
-    for file_key, file_info in file_info_dict.items():
-        material = file_info['material']
-        polymer = file_info['polymer']
-        sample_name = file_info['sample_name']
-
-        # Assuming find_sample_number_sweeps returns 'sample_name' and 'total_sum'
-        sample_name, total_sum = find_sample_number_sweeps(material, polymer, sample_name)
-
-        file_key2 = f'{material}_{polymer}_{sample_name}'
-
-        result_dict[file_key2] = {
-            'sample_name': sample_name,
-            'total_sum': total_sum
-        }
-
-    ordered_dict = order_dict_by_total_sum(result_dict)
-    return ordered_dict
-
-# Example usage:
-a = get_num_sweeps_ordered(file_info_dict)
-for file_key, file_info in a.items():
-    print(f'File Key: {file_key}')
-    print(f'Sample Name: {file_info["sample_name"]}')
-    print(f'Total Sum: {file_info["total_sum"]}')
-    print('-' * 50)
-
-print(a)
-print("#############")
-
-# print(material_sweeps_dict)
-
-# # Assuming material_names_dict is the given dictionary
-# for material, material_dict in material_names_dict.items():
-#     print("Material Name:", material)
-#
-#     for polymer, polymer_dict in material_dict.items():
-#         print("  Polymer Name:", polymer)
-#
-#         for sample_name, sample_info in polymer_dict.items():
-#             print("    Sample Name:", sample_name)
-#
-#             # Extract additional information if needed
-#             for key, value in sample_info.items():
-#                 print(f"      {key}: {value}")
-
-# # Assuming material_names_dict is the given dictionary
-# material_name = list(material_names_dict['material'].keys())[0]
-# polymer_name = list(material_names_dict['material'][material_name]['polymer'].keys())[0]
-# sample_name = material_names_dict['material'][material_name]['polymer'][polymer_name]['sample_name']
-#
-# print("Material Name:", material_name)
-# print("Polymer Name:", polymer_name)
-# print("Sample Name:", sample_name)
-
-#################################################################################
-# keep this
-
-
-#################################################################################
-#data = {'D14-Stock-Gold-PVA(2%)-Gold-s7': {'G 200µm': {'1': 13.0, '2': 2}, 'H 100μm': {'1': 13.0, '2': 11.0}}}
-
-# def recursive_sum(value):
-#     if isinstance(value, (int, float)):
-#         return value
-#     elif isinstance(value, dict):
-#         return sum(recursive_sum(v) for v in value.values())
-#     else:
-#         return 0
-#
-# total_sum = sum(recursive_sum(value) for nested_dict in data.values() for inner_dict in nested_dict.values() for value in inner_dict.values() if isinstance(value, (int, float)))
-
-# print(total_sum)
-# def find_largest_sweeps(material_sweeps_dict):
-#     max_sweeps = 0
-#     max_sweeps_sample_name = ""
-#
-#     for material_type, polymer_dict in material_sweeps_dict.items():
-#         for polymer_type, sample_dict in polymer_dict.items():
-#             for sample_name, sweeps_dict in sample_dict.items():
-#                 for section_name, num_sweeps in sweeps_dict.items():
-#                     if isinstance(num_sweeps, int) and num_sweeps > max_sweeps:
-#                         print(num_sweeps , "num_sweeps")
-#                         max_sweeps = num_sweeps
-#                         max_sweeps_sample_name = sample_name
-#                     else:
-#                         print("notworking")
-#
-#     return max_sweeps, max_sweeps_sample_name
-
-# def find_largest_sweeps(material_sweeps_dict, target_sample_name):
-#     max_sweeps = 0
-#
-#     for material_type, polymer_dict in material_sweeps_dict.items():
-#         for polymer_type, sample_dict in polymer_dict.items():
-#             for sample_name, sweeps_dict in sample_dict.items():
-#                 if sample_name == target_sample_name:
-#                     sample_sweeps = sum(int(num_sweeps) for num_sweeps in sweeps_dict.values() if isinstance(num_sweeps, (int, float)))
-#                     max_sweeps = max(max_sweeps, sample_sweeps)
-#
-#     return max_sweeps
-#
-# # Example usage:
-# target_sample_name = "D14-Stock-Gold-PVA(2%)-Gold-s7"
-# max_sweeps = find_largest_sweeps(material_sweeps_dict, target_sample_name)
-#
-# # Print the result
-# print(f"The largest number of sweeps for {target_sample_name} is {max_sweeps}")
-
-
-
-
-
-# For printing these
-#################################
-# for sample_name, section_name in sample_data.items():
-#     print("------------------------")
-#     print(f"sample Name:{sample_name}")
-#     print("------------------------")
-#     for section_name, device_number in section_name.items():
-#         print(f"section Name:{section_name}")
-#         print("------------------------")
-#         for device_number, info in device_number.items():
-#             print(f"device number:{device_number}")
-#             print("------------------------")
-#             print(info)
-#             print("------------------------")
-# print("###########################")
-# for sample_name, section_info_stats in sample_stats_dict.items():
-#     print("------------------------")
-#     print(f"Sample Name: {sample_name}")
-#     print("------------------------")
-#     for section_name, device_number in section_info_stats.items():
-#         print(f"Section Name: {section_name}")
-#         print("------------------------")
-#
-#         # Access corresponding information from sample_sweeps_dict
-#         section_info_sweeps = sample_sweeps_dict.get(sample_name, {}).get(section_name, {})
-#
-#         for device_number, info in device_number.items():
-#             print(f"Device Number: {device_number}")
-#             # Print corresponding info from sample_sweeps_dict if available
-#             sweeps_info = section_info_sweeps.get(device_number, "No sweeps info available")
-#             print(f"Number of sweeps: {sweeps_info}")
-#             print(info)
-#             print("------------------------")
-#
 
 # if __name__ == '__main__':
 #     #This is a piece of boilerplate code which you should write routinely when you create a script.

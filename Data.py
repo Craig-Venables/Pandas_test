@@ -138,11 +138,17 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 
         save_loc = device_path + '\\' + "python_images"
 
-        graph_dict = {}
-
         if plot_graph:
             p = plot.plot(df, file_info, save_loc, filepath)
-            graph = p.main_plot()
+            count = 0
+            for arr_v, arr_c in zip(split_v_data, split_c_data):
+                count += 1
+                p.main_plot_loop(arr_v, arr_c, absolute_val(arr_c),count)
+
+            # plot main graph too of all together
+            p.main_plot()
+
+
             # p.fig.savefig(f"{file_info.get('file_name')}.png")
             # print("saved graph too" , "###insert file path###")
             # this will plot graphs specific too looped data
@@ -190,6 +196,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         if plot_graph:
             p = plot.plot(df, file_info, save_loc, filepath)
             graph = p.main_plot()
+            #print(type(graph))
         else:
             graph = None
 
@@ -201,7 +208,47 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         looped_array_info = None
     return num_sweeps, short_name, long_name, df, df_file_stats, graph
 
+def find_sample_number_sweeps(material_sweeps_dict,material, polymer, sample_name):
+    data = material_sweeps_dict[f'{material}'][f'{polymer}'][f'{sample_name}']
 
+    def recursive_sum(value):
+        if isinstance(value, (int, float)):
+            return value
+        elif isinstance(value, dict):
+            return sum(recursive_sum(v) for v in value.values())
+        else:
+            return 0
+
+    total_sum = sum(recursive_sum(value) for inner_dict in data.values() for value in inner_dict.values() if
+                    isinstance(value, (int, float)))
+    # print(total_sum)
+    return sample_name, total_sum
+
+def get_num_sweeps_ordered(file_info_dict,material_sweeps_dict):
+    result_dict = {}
+
+    def order_dict_by_total_sum(input_dict):
+        # Sort the dictionary by 'total_sum' in descending order
+        sorted_dict = dict(sorted(input_dict.items(), key=lambda item: item[1]['total_sum'], reverse=True))
+        return sorted_dict
+
+    for file_key, file_info in file_info_dict.items():
+        material = file_info['material']
+        polymer = file_info['polymer']
+        sample_name = file_info['sample_name']
+
+        # Assuming find_sample_number_sweeps returns 'sample_name' and 'total_sum'
+        sample_name, total_sum = find_sample_number_sweeps(material_sweeps_dict,material, polymer, sample_name)
+
+        file_key2 = f'{material}_{polymer}_{sample_name}'
+
+        result_dict[file_key2] = {
+            'sample_name': sample_name,
+            'total_sum': total_sum
+        }
+
+    ordered_dict = order_dict_by_total_sum(result_dict)
+    return ordered_dict
 def split_loops(v_data, c_data, num_loops):
     """ splits the looped data and outputs each sweep as another array"""
     total_length = len(v_data)  # Assuming both v_data and c_data have the same length
@@ -484,32 +531,62 @@ def check_for_loops(v_data):
     #     loops = num_max / 2
 
 
-def split_iv_sweep(filepath):
-    # print(f"{filepath_for_single_sweep}")
-    with open(filepath, "r") as f:  # open the file as read only
-        fread = f.readlines()
-        fread.pop(0)
-    # B = self.filereader()
-    # B = fm.directory(self.filepath_for_single_sweep).filereader()
-    Data = []
-    for i, line in enumerate(fread):
-        C = (line.split('\t'))
-        D = []
-        for value in C:
-            if value != '':
-                D.append(float(value))
-        Data.append(D)
-    v_data_array = []
-    c_data_array = []
-    for value in Data:
-        if value:
-            v_data_array.append(value[0])
-            c_data_array.append(value[1])
-    if len(v_data_array) == 0 or len(v_data_array) < 10:
-        print('not enough data', filepath)
-        return None
-    return v_data_array, c_data_array
+# def split_iv_sweep(filepath):
+#     # print(f"{filepath_for_single_sweep}")
+#     with open(filepath, "r") as f:  # open the file as read only
+#         fread = f.readlines()
+#         fread.pop(0)
+#     # B = self.filereader()
+#     # B = fm.directory(self.filepath_for_single_sweep).filereader()
+#     Data = []
+#     for i, line in enumerate(fread):
+#         C = (line.split('\t'))
+#         D = []
+#         for value in C:
+#             if value != '':
+#                 D.append(float(value))
+#         Data.append(D)
+#     v_data_array = []
+#     c_data_array = []
+#     for value in Data:
+#         if value:
+#             v_data_array.append(value[0])
+#             c_data_array.append(value[1])
+#     if len(v_data_array) == 0 or len(v_data_array) < 10:
+#         print('not enough data', filepath)
+#         return None
+#     return v_data_array, c_data_array
 
+def split_iv_sweep(filepath):
+    data = np.loadtxt(filepath,unpack=True,skiprows=1)
+    voltage = data[0]
+    current = data[1]
+    return voltage,current
+
+def check_sweep_type(filepath):
+    with open(filepath, 'r') as file:
+        # Read the first line
+        first_line = file.readline().strip()
+    print(first_line)
+
+    # Define dictionaries for different types of sweeps and their expected column headings
+    sweep_types = {
+        'Iv_sweep': ['voltage', 'current'],
+        'Endurance': ['Iteration #', 'Time (s)', 'Resistance (Set)','Set Voltage','Time (s)','Resistance (Reset)','Reset Voltage'],
+        'Retention': ['Iteration #', 'Time (s)', 'Current (Set)'],
+        'type4': ['V', 'I', 'Pressure']
+    }
+
+    # Check if the actual headings match any of the expected ones
+    for sweep_type, expected_headings in sweep_types.items():
+        if all(heading in first_line for heading in expected_headings):
+            print(f"Column headings match {sweep_type} sweep.")
+            # Perform your action here, e.g., return the sweep type or do something else
+            return sweep_type
+
+    print("Column headings do not match any expected sweep types.")
+    # Perform another action if needed, e.g., return None or do something else
+    return None
 
 ## ------------------------------------------------------------------------------------##
 

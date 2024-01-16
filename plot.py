@@ -39,7 +39,7 @@ class plot():
         self.ng_areas = ""
 
         self.fig = None
-        print(self.section)
+
 
     def _unpack_dataframe(self):
         """ Unpacks dataframe with the names given """
@@ -88,23 +88,76 @@ class plot():
 
             # Turn off interactive mode
             plt.ioff()
-            print(self.save_loc)
+
 
             file_path = os.path.join(self.save_loc, f"{self.short_filename}.png")
 
+
             plt.savefig(file_path, bbox_inches='tight', dpi=200)
-            print(f"File saved successfully at {file_path}")
+
+            # print(f"File saved successfully at {file_path}")
+            return self.fig
         else:
-            print(f"File {file_path} already exists. Skipping save.")
+            return None
+            # print(f"File {file_path} already exists. Skipping save.")
+
+
+
+    def main_plot_loop(self,voltage,current,abs_current,sweep_num):
+        '''
+            plots iv and log iv graphs as subplots and saves it
+        '''
+
+        save_name = f"{self.short_filename}" + "- #" + f"{sweep_num}"+ ".png"
+        file_path = os.path.join(self.save_loc, "Extracted sweeps",f"{self.filename}",save_name)
+
+
+        if not os.path.exists(file_path):
+            plt.close('all')
+            self.fig = plt.figure(figsize=(12, 8))
+
+            plt.suptitle(
+                f'{self.polymer} -' + f'{self.sample_name} -' + ' ' + f'{self.section} -' + ' '
+                + f'{self.device_number} -' + ' ' + self.filename)
+
+            # using the functions main_plot the graphs
+            plt.subplot(2, 2, 1)
+            self.plot_iv(voltage, current)
+
+            plt.subplot(2, 2, 2)
+            self.plot_logiv(voltage, abs_current)
+
+            plt.subplot(2, 2, 3)
+            self.plot_iv_avg(voltage, current)
+
+            plt.subplot(2, 2, 4)
+            # self.plot_graph_other()
+            # self.information()
+            # self.plot_array_changes()
+
+            # add label underneath plots for on-off ratio
+            # self.fig.text(0.5, 0.01, " ON/OFF Ratio @0.2v - " + f'{round(self.on_off_ratio, 4)}', ha='center', fontsize=10)
+            # plt.show()
+            # add subplot title
+
+            # Turn off interactive mode
+            plt.ioff()
+
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            plt.savefig(file_path, bbox_inches='tight', dpi=200)
+
+            #print(f"File saved successfully at {file_path}")
+        else:
+            return None
+            #print(f"File {file_path} already exists. Skipping save.")
 
         # uncomment to show for 0.01 sec
-        #plt.pause(0.01)
+        # plt.pause(0.01)
 
         # uncomment to keep on screen
-        #plt.show()
+        # plt.show()
 
-        return self.fig
-
+            return self.fig
 
     def plot_iv(self, voltage,current):
         """
