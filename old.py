@@ -1,3 +1,17 @@
+# print the file info dictionary
+# for file_key, file_info in file_info_dict.items():
+#     print(f'File Key: {file_key}')
+#     print(f'Material: {file_info["material"]}')
+#     print(f'Polymer: {file_info["polymer"]}')
+#     print(f'Sample Name: {file_info["sample_name"]}')
+#     print(f'Section Folder: {file_info["section_folder"]}')
+#     print(f'Device Folder: {file_info["device_folder"]}')
+#     print(f'File Name: {file_info["file_name"]}')
+#     print(f'File Path: {file_info["file_path"]}')
+#     print('-' * 50)
+
+
+
 # # Information on the polymer
 # for sample_name, section_name in sample_sweeps_dict.items():
 #     print("------------------------")

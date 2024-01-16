@@ -76,10 +76,10 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         # splits the loops depending on the number of sweeps
         split_v_data, split_c_data = split_loops(v_data, c_data, num_sweeps)
         # Calculates the metrics for each array returning the areas
-        ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff = calculate_metrics_for_loops(split_v_data, split_c_data)
+        ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff = calculate_metrics_for_loops(split_v_data,
+                                                                                                        split_c_data)
         # have it plot each sweep individually for each loop number 1 to n
         # create a folder named as the file name with the images of each saved inside.
-
 
         # create dataframe for a device of all the data
         areas_loops = {'ps_area': [ps_areas],
@@ -87,7 +87,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
                        'areas': [areas],
                        'normalised_areas': [normalized_areas],
                        }
-        df_areas_loops = pd.DataFrame(areas_loops,index=[0])
+        df_areas_loops = pd.DataFrame(areas_loops, index=[0])
 
         # Calculate the average values for each array
         ps_area_avg = sum(ps_areas) / len(ps_areas)
@@ -130,7 +130,6 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         # print(f"Average relative change: {avg_relative_change:.5e}")
         # print(f"Standard deviation of relative change: {std_relative_change:.5e}")
 
-
         # print variable names dd too dataframe
         for variable_name, folder_name in file_info.items():
             df[variable_name] = folder_name
@@ -140,6 +139,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         save_loc = device_path + '\\' + "python_images"
 
         graph_dict = {}
+
         if plot_graph:
             p = plot.plot(df, file_info, save_loc, filepath)
             graph = p.main_plot()
@@ -167,20 +167,20 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         # Data Processing for a single sweep
         # if the xcell document states capacitive return
         ps_area, ng_area, area, normalized_area = area_under_curves(v_data, c_data)
-        #print("total info enclosed within the hysteresis normalised to voltage = ", normalized_area)
+        # print("total info enclosed within the hysteresis normalised to voltage = ", normalized_area)
         # this info will need passing back to another array for comparision across all devices in the section
         # create dataframe for the device of all the data
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
         file_stats = {'ps_area': [ps_area],
-                'ng_area': [ng_area],
-                'area': [area],
-                'normalised_area': [normalized_area],
-                'resistance_on_value': [resistance_on_value],
-                'resistance_off_value': [resistance_off_value],
-                'ON_OFF_Ratio': [resistance_on_value / resistance_off_value],
-                'voltage_on_value': [voltage_on_value],
-                'voltage_off_value': [voltage_off_value],
-                }
+                      'ng_area': [ng_area],
+                      'area': [area],
+                      'normalised_area': [normalized_area],
+                      'resistance_on_value': [resistance_on_value],
+                      'resistance_off_value': [resistance_off_value],
+                      'ON_OFF_Ratio': [resistance_on_value / resistance_off_value],
+                      'voltage_on_value': [voltage_on_value],
+                      'voltage_off_value': [voltage_off_value],
+                      }
         df_file_stats = pd.DataFrame(file_stats, index=[0])
 
         f.check_if_folder_exists(device_path, "python_images")
@@ -199,7 +199,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             df.to_csv(long_name, index=False)
         areas_loops = None
         looped_array_info = None
-    return file_info, num_sweeps, short_name, long_name, df, df_file_stats, graph
+    return num_sweeps, short_name, long_name, df, df_file_stats, graph
 
 
 def split_loops(v_data, c_data, num_loops):
@@ -318,7 +318,7 @@ def calculate_metrics_for_loops(split_v_data, split_c_data):
     # print("\nList of PS Areas:", ps_areas)
     # print("List of NG Areas:", ng_areas)
     # print("List of Total Areas:", areas)
-    #print("List of Normalized Areas:", normalized_areas)
+    # print("List of Normalized Areas:", normalized_areas)
 
     # Return the calculated metrics
     return ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff
@@ -460,17 +460,17 @@ def check_for_loops(v_data):
             num_min += 1
         if value == 0:
             num_zero += 1
-    #print(num_min)
+    # print(num_min)
 
     # print("num zero", num_zero)
     if num_max + num_min == 4:
-        #print("single sweep")
+        # print("single sweep")
         return 1
     if num_max + num_min == 2:
-        #print("half_sweep", num_max, num_min)
+        # print("half_sweep", num_max, num_min)
         return 0.5
     else:
-        #print("multiloop", (num_max + num_min) / 4)
+        # print("multiloop", (num_max + num_min) / 4)
         loops = (num_max + num_min) / 4
         return loops
     # used for checking with just positive and negative vlaues
@@ -728,19 +728,17 @@ def save_df_off_data(sample_path, final_data_dict, final_sweeps_dict):
                     # Print corresponding info from sample_sweeps_dict if available
                     sweeps_info = section_info_sweeps.get(device_number, "No sweeps info available")
                     file.write(f"Number of sweeps: {sweeps_info}\n")
-                    #file.write(f"{info}\n")
+                    # file.write(f"{info}\n")
                     file.write("------------------------\n")
 
                     # Iterate through the first 5 items in info
                     for sweep, sweep_value in info.items():
                         file.write(f"{sweep}: {sweep_value}\n")
-                        #print(sweep)
+                        # print(sweep)
                         file.write("------------------------\n")
 
 
-
-
-def save_df_off_stats(sample_path,final_stats_dict,final_sweeps_dict):
+def save_df_off_stats(sample_path, final_stats_dict, final_sweeps_dict):
     """
 
     :param sample_path: full sample path
@@ -785,4 +783,3 @@ def set_pandas_display_options() -> None:
     display.width = 1000
     # display.precision = 2  # set as needed
     # display.float_format = lambda x: '{:,.2f}'.format(x)  # set as needed
-

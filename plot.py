@@ -13,7 +13,9 @@ class plot():
 
     def __init__(self, data,file_info,save_loc,filepath) -> None:
         self.data = data
+
         self._unpack_dataframe()
+
 
 
         # gets file info
@@ -44,6 +46,11 @@ class plot():
         for column in self.data.columns:
             setattr(self, column.lower(), self.data.get(column))
 
+    def _unpack_dataframe_file_info(self):
+        """ Unpacks dataframe with the names given """
+        for column in self.file_info.columns:
+            setattr(self, column.lower(), self.file_info.get(column))
+
     def main_plot(self):
         '''
             plots iv and log iv graphs as subplots and saves it
@@ -61,13 +68,13 @@ class plot():
 
             # using the functions main_plot the graphs
             plt.subplot(2, 2, 1)
-            self.plot_iv()
+            self.plot_iv(self.voltage, self.current)
 
             plt.subplot(2, 2, 2)
-            self.plot_logiv()
+            self.plot_logiv(self.voltage, self.abs_current)
 
             plt.subplot(2, 2, 3)
-            self.plot_iv_avg()
+            self.plot_iv_avg(self.voltage, self.current)
 
             plt.subplot(2, 2, 4)
             #self.plot_graph_other()
@@ -89,8 +96,6 @@ class plot():
             print(f"File saved successfully at {file_path}")
         else:
             print(f"File {file_path} already exists. Skipping save.")
-        #plt.savefig(self.save_loc+"\\"+f"{self.short_filename}.png", bbox_inches='tight',dpi=200)
-        #note pngs not showing on photo app
 
         # uncomment to show for 0.01 sec
         #plt.pause(0.01)
@@ -101,7 +106,7 @@ class plot():
         return self.fig
 
 
-    def plot_iv(self):
+    def plot_iv(self, voltage,current):
         """
          Plots voltage against abs current using Matplotlib.
 
@@ -110,7 +115,7 @@ class plot():
           - abs_current_data (list): List of current data points.
           """
         # Create a scatter main_plot of voltage against current
-        plt.plot(self.voltage, self.current, color='blue')
+        plt.plot(voltage, current, color='blue')
 
         # Add labels and a title
         plt.ylabel('Current')
@@ -119,7 +124,7 @@ class plot():
         plt.title('Voltage vs. Current Graph')
 
 
-    def plot_logiv(self):
+    def plot_logiv(self, voltage,abs_current):
         """
             Plots voltage against abs current using Matplotlib.
 
@@ -128,7 +133,7 @@ class plot():
             - abs_current_data (list): List of current data points.
             """
         # Create a scatter main_plot of voltage against current
-        plt.plot(self.voltage, self.abs_current, color='blue')
+        plt.plot(voltage, abs_current, color='blue')
 
         # Add labels and a title
         plt.ylabel('abs Current')
@@ -142,11 +147,11 @@ class plot():
         # plt.show()
 
 
-    def plot_iv_avg(self, num_points=20, ax=None):
+    def plot_iv_avg(self, voltage,current, num_points=20, ax=None):
         # plt.figure(figsize=(8, 6))
 
         # Calculate the length of the data
-        data_len = len(self.voltage)
+        data_len = len(voltage)
 
         # Determine the step size for averaging
         step_size = data_len // num_points
@@ -157,8 +162,8 @@ class plot():
 
         # Calculate the averages
         for i in range(0, data_len, step_size):
-            avg_v = np.mean(self.voltage[i:i + step_size])
-            avg_c = np.mean(self.current[i:i + step_size])
+            avg_v = np.mean(voltage[i:i + step_size])
+            avg_c = np.mean(current[i:i + step_size])
             avg_v_data.append(avg_v)
             avg_c_data.append(avg_c)
 

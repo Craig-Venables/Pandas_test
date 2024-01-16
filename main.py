@@ -38,7 +38,7 @@ import excell as ex
 # i give the endurance nuber of sweeps etc celled _____
 
 save_df = False
-plot_graph = True
+plot_graph = False
 re_analyse = True
 eq.set_pandas_display_options()
 
@@ -79,7 +79,6 @@ for material in os.listdir(f.main_dir):
 
                         # Pulls information from device sweep excell sheet
                         sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
-                        #print(sample_sweep_excell_dict['G'])
 
                         # Pulls information on fabrication from excell file
                         info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
@@ -142,7 +141,7 @@ for material in os.listdir(f.main_dir):
                                                     # skipping
                                                     continue
 
-                                                file_info, num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
+                                                num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
 
                                                 # keeps count of the number of sweeps by each device
                                                 num_of_sweeps += num_sweeps
@@ -275,30 +274,67 @@ for material in os.listdir(f.main_dir):
         print("-----------------------")
 
 
-print("#############")
+# returns total number of sweeps completed for a single sample
 
-print(material_sweeps_dict)
+def find_sample_number_sweeps(material, polymer, sample_name):
+    data = material_sweeps_dict[f'{material}'][f'{polymer}'][f'{sample_name}']
 
-#print(file_info_dict)
-for file_key, file_info in file_info_dict.items():
+    def recursive_sum(value):
+        if isinstance(value, (int, float)):
+            return value
+        elif isinstance(value, dict):
+            return sum(recursive_sum(v) for v in value.values())
+        else:
+            return 0
+
+    total_sum = sum(recursive_sum(value) for inner_dict in data.values() for value in inner_dict.values() if
+                    isinstance(value, (int, float)))
+    # print(total_sum)
+    return sample_name, total_sum
+
+
+for item in sample_name_arr:
+    sample_name, total_sum = find_sample_number_sweeps("Stock", "PVA", f'{sample_name}')
+    print("total sweeps for", sample_name, "=", total_sum)
+
+def get_num_sweeps_ordered(file_info_dict):
+    result_dict = {}
+
+    def order_dict_by_total_sum(input_dict):
+        # Sort the dictionary by 'total_sum' in descending order
+        sorted_dict = dict(sorted(input_dict.items(), key=lambda item: item[1]['total_sum'], reverse=True))
+        return sorted_dict
+
+    for file_key, file_info in file_info_dict.items():
+        material = file_info['material']
+        polymer = file_info['polymer']
+        sample_name = file_info['sample_name']
+
+        # Assuming find_sample_number_sweeps returns 'sample_name' and 'total_sum'
+        sample_name, total_sum = find_sample_number_sweeps(material, polymer, sample_name)
+
+        file_key2 = f'{material}_{polymer}_{sample_name}'
+
+        result_dict[file_key2] = {
+            'sample_name': sample_name,
+            'total_sum': total_sum
+        }
+
+    ordered_dict = order_dict_by_total_sum(result_dict)
+    return ordered_dict
+
+# Example usage:
+a = get_num_sweeps_ordered(file_info_dict)
+for file_key, file_info in a.items():
     print(f'File Key: {file_key}')
-    print(f'Material: {file_info["material"]}')
-    print(f'Polymer: {file_info["polymer"]}')
     print(f'Sample Name: {file_info["sample_name"]}')
-    print(f'Section Folder: {file_info["section_folder"]}')
-    print(f'Device Folder: {file_info["device_folder"]}')
-    print(f'File Name: {file_info["file_name"]}')
-    print(f'File Path: {file_info["file_path"]}')
+    print(f'Total Sum: {file_info["total_sum"]}')
     print('-' * 50)
 
-def get_from_file_dict():
-    desired_file_key = 'Material_Polymer_Sample_Section_Device_File.txt'
-    desired_file_info = file_info_dict.get(desired_file_key, None)
+print(a)
+print("#############")
 
-    if desired_file_info:
-        print(f'File Path: {desired_file_info["file_path"]}')
-    else:
-        print(f'File not found: {desired_file_key}')
+# print(material_sweeps_dict)
 
 # # Assuming material_names_dict is the given dictionary
 # for material, material_dict in material_names_dict.items():
@@ -325,29 +361,8 @@ def get_from_file_dict():
 
 #################################################################################
 # keep this
-# returns total number of sweeps completed for a single sample
 
-# def find_sample_number_sweeps(material,polymer,sample_name):
-#
-#     data = material_sweeps_dict[f'{material}'][f'{polymer}'][f'{sample_name}']
-#     #print(data)
-#     def recursive_sum(value):
-#         if isinstance(value, (int, float)):
-#             return value
-#         elif isinstance(value, dict):
-#             return sum(recursive_sum(v) for v in value.values())
-#         else:
-#             return 0
-#
-#     total_sum = sum(recursive_sum(value) for inner_dict in data.values() for value in inner_dict.values() if isinstance(value, (int, float)))
-#     #print(total_sum)
-#     return sample_name, total_sum
-#
-#
-# for item in sample_name_arr:
-#     sample_name, total_sum = find_sample_number_sweeps("Stock","PVA",f'{sample_name}')
-#     print("total sweeps for",sample_name, "=",total_sum)
-#
+
 #################################################################################
 #data = {'D14-Stock-Gold-PVA(2%)-Gold-s7': {'G 200µm': {'1': 13.0, '2': 2}, 'H 100μm': {'1': 13.0, '2': 11.0}}}
 
