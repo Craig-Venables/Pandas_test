@@ -4,6 +4,7 @@ import file as f
 import plot as plot
 import os
 import math
+import statistics as stats_module
 
 import matplotlib.pyplot as plt
 from itertools import zip_longest
@@ -21,16 +22,6 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
     short_name = f.short_name(filepath)
     long_name = f.long_name(filepath)
 
-    print("-----")
-    print("Currently working on -", file_info.get('file_name'))
-    # print('Information on file below:')
-    # for variable_name, folder_name in file_info.items():
-    #     print(f"{variable_name} = '{folder_name}'")
-    # print ("-----")
-
-    # what type of data is this?
-    # check how many columns it has and match it against something that tells you what data
-    # ie Iv sweeps = 2 columns named voltage and current
     try:
         # Pull voltage and current data from file
         v_data, c_data = split_iv_sweep(filepath)
@@ -70,8 +61,6 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
     # if there is more than one loop adds
     if num_sweeps > 1:
         # Data processing for multiple sweeps
-        print("Running through looped data")
-        print("There are ", num_sweeps, " loops within this data")
 
         # splits the loops depending on the number of sweeps
         split_v_data, split_c_data = split_loops(v_data, c_data, num_sweeps)
@@ -101,6 +90,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 
         # Create a dictionary for the new DataFrame
         file_stats = {
+            'file_name': [file_info.get('file_name')],
             'ps_area_avg': [ps_area_avg],
             'ng_area_avg': [ng_area_avg],
             'areas_avg': [areas_avg],
@@ -167,7 +157,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 
     # this is for later
     if num_sweeps == 0.5:
-        print("skipping as half sweep")
+        #print("skipping as half sweep")
         return None
     else:
         # Data Processing for a single sweep
@@ -177,7 +167,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         # this info will need passing back to another array for comparision across all devices in the section
         # create dataframe for the device of all the data
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
-        file_stats = {'ps_area': [ps_area],
+        file_stats = {'file_name': [file_info.get('file_name')],
+                      'ps_area': [ps_area],
                       'ng_area': [ng_area],
                       'area': [area],
                       'normalised_area': [normalized_area],
@@ -208,7 +199,234 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         looped_array_info = None
     return num_sweeps, short_name, long_name, df, df_file_stats, graph
 
-def find_sample_number_sweeps(material_sweeps_dict,material, polymer, sample_name):
+# Function to process either 'ON_OFF_Ratio' or 'normalised_area'
+# def process_property(material_stats_dict, property_name):
+#     # Dictionary to store information for each unique sample
+#     comprehensive_sample_info = {}
+#
+#     # Iterate through the material, polymer, and sample dictionaries
+#     for material_key, polymer_dict in material_stats_dict.items():
+#         for polymer_key, sample_dict in polymer_dict.items():
+#             for sample_key, section_dict in sample_dict.items():
+#                 # Skip if the sample has already been processed
+#                 if sample_key in comprehensive_sample_info:
+#                     print(f"Skipping processing for already processed sample: {sample_key}")
+#                     continue
+#
+#                 # List to store information for all devices in the sample
+#                 all_devices_info = []
+#
+#                 # Iterate through devices in the sample
+#                 for section_key, device_dict in section_dict.items():
+#                     for device_key, stats_df in device_dict.items():
+#                         # Check if 'file_name' and property_name exist in stats_df
+#                         file_name = stats_df['file_name'].iloc[0] if not stats_df['file_name'].isnull().all() else None
+#                         property_value = stats_df[property_name].iloc[0] if not stats_df[property_name].isnull().all() else None
+#
+#                         # Append device information to the list
+#                         all_devices_info.append({
+#                             'device_key': device_key,
+#                             f'{property_name}s': stats_df[property_name].tolist(),
+#                             'file_name': file_name,
+#                             property_name: property_value
+#                         })
+#
+#                 # Check for NaN values in property_values_all
+#                 if any(math.isnan(value) for device_info in all_devices_info for value in device_info[f'{property_name}s']):
+#                     print(f"NaN values detected in {property_name}s_all for {material_key}_{polymer_key}_{sample_key}.")
+#
+#                 # Check if property_values_all is empty
+#                 if not all_devices_info:
+#                     print(f"{property_name}s_all is an empty list for {material_key}_{polymer_key}_{sample_key}.")
+#                     continue
+#
+#                 # Calculate and store statistical measures for each device
+#                 devices_stats = []
+#                 for device_info in all_devices_info:
+#                     mean_value = stats_module.mean(device_info[f'{property_name}s'])
+#                     median_value = stats_module.median(device_info[f'{property_name}s'])
+#                     mode_value = stats_module.mode(device_info[f'{property_name}s'])
+#                     devices_stats.append({
+#                         'device_key': device_info['device_key'],
+#                         'mean_value': mean_value,
+#                         'median_value': median_value,
+#                         'mode_value': mode_value
+#                     })
+#
+#                 # Calculate and store statistical measures for all devices
+#                 property_values_all = [value for device_info in devices_stats for value in device_info[f'{property_name}s']]
+#                 mean_all = stats_module.mean(property_values_all)
+#                 median_all = stats_module.median(property_values_all)
+#                 mode_all = stats_module.mode(property_values_all)
+#
+#                 # Sort the devices based on mean property_value in descending order
+#                 devices_stats.sort(key=lambda x: x['mean_value'], reverse=True)
+#
+#                 # Store the top 3 devices based on mean property_value
+#                 top3_devices_individual = devices_stats[:3]
+#
+#                 # Store the information for the unique sample name
+#                 comprehensive_sample_info[sample_key] = {
+#                     'best_device': devices_stats[0],
+#                     'top3_devices': top3_devices_individual,
+#                     'mean_all': mean_all,
+#                     'median_all': median_all,
+#                     'mode_all': mode_all
+#                 }
+#
+#                 # Print the information for each sample
+#                 print(f"Information for {material_key}_{polymer_key}_{sample_key}:")
+#                 print(f"Best Device: #{devices_stats[0]['device_key']}, Mean {property_name}: {devices_stats[0]['mean_value']}, File Name: {all_devices_info[0]['file_name']}, {property_name}: {devices_stats[0][property_name]}")
+#                 print(f"Top 3 Devices:")
+#                 for idx, device_info in enumerate(top3_devices_individual, start=1):
+#                     print(f"#{idx}: Device: #{device_info['device_key']}, {property_name}: {device_info['mean_value']}, File Name: {all_devices_info[0]['file_name']}")
+#                 print(f"Mean {property_name} for All Devices: {mean_all}")
+#                 print(f"Median {property_name} for All Devices: {median_all}")
+#                 print(f"Mode {property_name} for All Devices: {mode_all}")
+#                 print("\n")
+#
+#     # Return the comprehensive information for all samples
+#     return comprehensive_sample_info
+
+
+# Function to process either 'ON_OFF_Ratio' or 'normalised_area'
+def process_property(material_stats_dict, property_name):
+    # Dictionary to store comprehensive information for each unique sample
+    comprehensive_sample_info = {}
+
+    # Iterate through the material, polymer, and sample dictionaries
+    for material_key, polymer_dict in material_stats_dict.items():
+        for polymer_key, sample_dict in polymer_dict.items():
+            for sample_key, section_dict in sample_dict.items():
+                # Skip if the sample has already been processed
+                if sample_key in comprehensive_sample_info:
+                    continue
+
+                # List to store information for all devices in the sample
+                all_devices_info = []
+
+                # Iterate through devices in the sample
+                for section_key, device_dict in section_dict.items():
+                    for device_key, stats_df in device_dict.items():
+                        # Check if 'file_name' and property_name exist in stats_df
+                        file_name = stats_df['file_name'].iloc[0] if not stats_df['file_name'].isnull().all() else None
+                        property_value = stats_df[property_name].iloc[0] if not stats_df[property_name].isnull().all() else None
+
+                        # Extract the property values for the current device
+                        property_values = stats_df[property_name]
+
+                        # Append device information to the list
+                        all_devices_info.append({
+                            'device_key': device_key,
+                            f'{property_name}s': property_values.tolist(),
+                            'file_name': file_name,
+                            property_name: property_value
+                        })
+
+                # Check for NaN values in property_values_all
+                if any(math.isnan(value) for device_info in all_devices_info for value in device_info[f'{property_name}s']):
+                    print(f"NaN values detected in {property_name}s_all for {material_key}_{polymer_key}_{sample_key}.")
+
+                # Check if property_values_all is empty
+                if not all_devices_info:
+                    print(f"{property_name}s_all is an empty list for {material_key}_{polymer_key}_{sample_key}.")
+                    continue
+
+                # Calculate and store statistical measures
+                property_values_all = [value for device_info in all_devices_info for value in device_info[f'{property_name}s']]
+                mean_value = stats_module.mean(property_values_all)
+                median_value = stats_module.median(property_values_all)
+                mode_value = stats_module.mode(property_values_all)
+
+                # Sort the devices based on mean property_value in descending order
+                all_devices_info.sort(key=lambda x: stats_module.mean(x[f'{property_name}s']), reverse=True)
+
+                # Store the top 3 devices based on individual property_values
+                top3_devices_individual = all_devices_info[:3]
+
+                # Store the comprehensive information for the unique sample name
+                comprehensive_sample_info[sample_key] = {
+                    'best_device': all_devices_info[0],
+                    'top3_devices': top3_devices_individual,
+                    f'mean_{property_name}': mean_value,
+                    f'median_{property_name}': median_value,
+                    f'mode_{property_name}': mode_value
+                }
+
+    # Return the comprehensive information for all samples
+    return comprehensive_sample_info
+
+def find_top_samples(material_stats_dict: dict, property_name: str = 'ON_OFF_Ratio', top_n: int = 10) -> tuple:
+    """
+    This function finds the top samples based on a given property (ON-OFF ratio or normalized area) in a given material_stats_dict.
+
+    Args:
+        material_stats_dict (dict): A dictionary containing the material, polymer, and sample dictionaries.
+        property_name (str, optional): The name of the property to be used for sorting the samples. Defaults to 'ON_OFF_Ratio'.
+        top_n (int, optional): The number of samples to be returned. Defaults to 10.
+
+    Returns:
+        tuple: A tuple containing three lists: all_samples_info, samples_with_repetition, and samples_without_repetition.
+            all_samples_info (list): A list containing information for all samples, including sample_key, section_key, device_key, file_name, and property_value.
+            samples_with_repetition (list): A list containing the sample keys that appear multiple times in all_samples_info.
+            samples_without_repetition (list): A list containing the sample keys that appear only once in all_samples_info.
+
+    """
+    # List to store information for all samples
+    all_samples_info = []
+
+    # Iterate through the material, polymer, and sample dictionaries
+    for material_key, polymer_dict in material_stats_dict.items():
+        for polymer_key, sample_dict in polymer_dict.items():
+            for sample_key, section_dict in sample_dict.items():
+                # List to store information for each sample
+                sample_info = []
+
+                # Iterate through devices in the sample
+                for section_key, device_dict in section_dict.items():
+                    for device_key, stats_df in device_dict.items():
+                        # Check if 'file_name' and property_name exist in stats_df
+                        file_name = stats_df['file_name'].iloc[0] if not stats_df['file_name'].isnull().all() else None
+                        property_value = stats_df[property_name].iloc[0] if not stats_df[property_name].isnull().all() else None
+
+                        # Append sample information to the list
+                        sample_info.append({
+                            'sample_key': sample_key,
+                            'section_key': section_key,
+                            'device_key': device_key,
+                            'file_name': file_name,
+                            'property_value': property_value
+                        })
+
+                # Sort the devices based on the given property in descending order
+                sample_info.sort(key=lambda x: x['property_value'], reverse=True)
+
+                # Store the top samples based on the given property
+                top_samples_individual = sample_info[:top_n]
+
+                # Store the information for all samples
+                all_samples_info.extend(top_samples_individual)
+
+    # Separate lists for samples with and without repetition
+    samples_with_repetition = [info['sample_key'] for info in all_samples_info]
+    samples_without_repetition = list(set(samples_with_repetition))
+
+    return all_samples_info, samples_with_repetition, samples_without_repetition
+
+
+def find_sample_number_sweeps(material_sweeps_dict: dict, material: str, polymer: str, sample_name: str) -> tuple:
+    """
+        Find the sample name and total sum of a given material, polymer, and sample name in a material sweeps dictionary.
+
+        Args:
+            material_sweeps_dict (dict): Dictionary containing material sweeps.
+            material (str): Material name.
+            polymer (str): Polymer name.
+            sample_name (str): Sample name.
+
+        Returns:
+            tuple: Tuple containing the sample name and total sum.
+        """
     data = material_sweeps_dict[f'{material}'][f'{polymer}'][f'{sample_name}']
 
     def recursive_sum(value):
@@ -224,10 +442,29 @@ def find_sample_number_sweeps(material_sweeps_dict,material, polymer, sample_nam
     # print(total_sum)
     return sample_name, total_sum
 
-def get_num_sweeps_ordered(file_info_dict,material_sweeps_dict):
+def get_num_sweeps_ordered(file_info_dict: dict, material_sweeps_dict: dict) -> dict:
+    """
+    Get the number of sweeps in the data in an ordered dictionary.
+
+    Parameters:
+        file_info_dict (dict): Dictionary containing file information.
+        material_sweeps_dict (dict): Dictionary containing material sweeps.
+
+    Returns:
+        dict: Ordered dictionary containing file information and total sum.
+    """
     result_dict = {}
 
-    def order_dict_by_total_sum(input_dict):
+    def order_dict_by_total_sum(input_dict: dict) -> dict:
+        """
+        Order a dictionary by the total sum.
+
+        Parameters:
+            input_dict (dict): Dictionary to be ordered.
+
+        Returns:
+            dict: Ordered dictionary.
+        """
         # Sort the dictionary by 'total_sum' in descending order
         sorted_dict = dict(sorted(input_dict.items(), key=lambda item: item[1]['total_sum'], reverse=True))
         return sorted_dict
@@ -238,7 +475,7 @@ def get_num_sweeps_ordered(file_info_dict,material_sweeps_dict):
         sample_name = file_info['sample_name']
 
         # Assuming find_sample_number_sweeps returns 'sample_name' and 'total_sum'
-        sample_name, total_sum = find_sample_number_sweeps(material_sweeps_dict,material, polymer, sample_name)
+        sample_name, total_sum = find_sample_number_sweeps(material_sweeps_dict, material, polymer, sample_name)
 
         file_key2 = f'{material}_{polymer}_{sample_name}'
 
@@ -249,6 +486,10 @@ def get_num_sweeps_ordered(file_info_dict,material_sweeps_dict):
 
     ordered_dict = order_dict_by_total_sum(result_dict)
     return ordered_dict
+
+
+
+
 def split_loops(v_data, c_data, num_loops):
     """ splits the looped data and outputs each sweep as another array"""
     total_length = len(v_data)  # Assuming both v_data and c_data have the same length
@@ -567,7 +808,7 @@ def check_sweep_type(filepath):
     with open(filepath, 'r') as file:
         # Read the first line
         first_line = file.readline().strip()
-    print(first_line)
+    #print(first_line)
 
     # Define dictionaries for different types of sweeps and their expected column headings
     sweep_types = {
@@ -580,7 +821,7 @@ def check_sweep_type(filepath):
     # Check if the actual headings match any of the expected ones
     for sweep_type, expected_headings in sweep_types.items():
         if all(heading in first_line for heading in expected_headings):
-            print(f"Column headings match {sweep_type} sweep.")
+            #print(f"Column headings match {sweep_type} sweep.")
             # Perform your action here, e.g., return the sweep type or do something else
             return sweep_type
 
@@ -651,18 +892,19 @@ def resistance(v_data, c_data):
 # result = np.log(self.resistance[i]) im unsure why
 
 def log_value(array):
-    ''' takes an array returns an array of logged values'''
+    """
+    Takes an array and returns an array of the logged values.
+    If a value is zero, the function returns zero instead of taking the natural logarithm.
+    """
     log_value = []
     for i in range(len(array)):
-        # checks for 0 value and if there is a zero value it returns 0 instead of loging it
         if array[i] != 0:
-            result = np.log(array[i])
+            result = np.log(abs(array[i]))
             log_value.append(result)
         else:
             result = 0  # or any other suitable value
             log_value.append(result)
     return log_value
-
 
 def current_density_eq(v_data, c_data, distance=100E-9, area=100E-6):
     ''' Returns current density array using the current and voltage data arrays'''

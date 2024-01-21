@@ -102,7 +102,7 @@ def save_info_from_solution_devices_excell(device_name, excel_path, savelocation
                 txt_file.write("Information for device '{}':\n".format(device_name))
                 for key, value in info_dict.items():
                     txt_file.write(f"{key}: {value}\n")
-            print("saved", device_name,"information" )
+            #print("saved", device_name,"information" )
 
             #info_dict_df = pd.DataFrame.from_dict(info_dict)
 

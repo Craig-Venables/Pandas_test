@@ -1,14 +1,26 @@
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image,Table,TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
 
 import os
 import pandas as pd
 
 
+def create_pdf_with_graphs_and_data_for_sample(sample_path, pdf_file, data, sample_stats_dict) -> None:
+    """
+    Create a PDF document with graphs and data for a sample.
 
-def create_pdf_with_graphs_and_data_for_sample(sample_path, pdf_file, data,sample_stats_dict):
+    Args:
+        sample_path (str): The path to the sample folder.
+        pdf_file (str): The name of the PDF file.
+        data (dict): A dictionary of data points. The keys should be labels and the values should be strings.
+        sample_stats_dict (dict): A dictionary of sample statistics. The keys should be labels and the values should be numbers.
+
+    Returns:
+        None
+
+    """
     # Create the full path for the PDF file
     full_pdf_path = os.path.join(sample_path, pdf_file)
 
@@ -42,7 +54,7 @@ def create_pdf_with_graphs_and_data_for_sample(sample_path, pdf_file, data,sampl
     # Remove rows with null values (if any)
     df = df.dropna()
 
-    exclude_columns = ['Polymer Density Solution 1 ID','Solvent Density Solution 1 ID']
+    exclude_columns = ['Polymer Density Solution 1 ID', 'Solvent Density Solution 1 ID']
     df_cleaned = df.drop(columns=exclude_columns, errors='ignore')
 
     # Convert cleaned DataFrame to a list of lists
@@ -90,7 +102,7 @@ def create_pdf_with_graphs_and_data_for_section(pdf_file, graph, data):
 
     # Add graph to content
     # Assuming the graph is saved as a PNG file
-    #content.append(Image(f"{graph}.png"))
+    # content.append(Image(f"{graph}.png"))
 
     # Add spacer
     content.append(Spacer(1, 12))
@@ -112,5 +124,3 @@ data = [
     "Line 2: Consectetur adipiscing elit.",
     "Line 3: Maecenas tincidunt finibus felis."
 ]
-
-
