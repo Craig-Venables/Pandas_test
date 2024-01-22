@@ -275,17 +275,17 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 #                     'mode_all': mode_all
 #                 }
 #
-#                 # Print the information for each sample
-#                 print(f"Information for {material_key}_{polymer_key}_{sample_key}:")
-#                 print(f"Best Device: #{devices_stats[0]['device_key']}, Mean {property_name}: {devices_stats[0]['mean_value']}, File Name: {all_devices_info[0]['file_name']}, {property_name}: {devices_stats[0][property_name]}")
-#                 print(f"Top 3 Devices:")
-#                 for idx, device_info in enumerate(top3_devices_individual, start=1):
-#                     print(f"#{idx}: Device: #{device_info['device_key']}, {property_name}: {device_info['mean_value']}, File Name: {all_devices_info[0]['file_name']}")
-#                 print(f"Mean {property_name} for All Devices: {mean_all}")
-#                 print(f"Median {property_name} for All Devices: {median_all}")
-#                 print(f"Mode {property_name} for All Devices: {mode_all}")
-#                 print("\n")
-#
+                # # Print the information for each sample
+                # print(f"Information for {material_key}_{polymer_key}_{sample_key}:")
+                # print(f"Best Device: #{devices_stats[0]['device_key']}, Mean {property_name}: {devices_stats[0]['mean_value']}, File Name: {all_devices_info[0]['file_name']}, {property_name}: {devices_stats[0][property_name]}")
+                # print(f"Top 3 Devices:")
+                # for idx, device_info in enumerate(top3_devices_individual, start=1):
+                #     print(f"#{idx}: Device: #{device_info['device_key']}, {property_name}: {device_info['mean_value']}, File Name: {all_devices_info[0]['file_name']}")
+                # print(f"Mean {property_name} for All Devices: {mean_all}")
+                # print(f"Median {property_name} for All Devices: {median_all}")
+                # print(f"Mode {property_name} for All Devices: {mode_all}")
+                # print("\n")
+
 #     # Return the comprehensive information for all samples
 #     return comprehensive_sample_info
 
@@ -400,7 +400,10 @@ def find_top_samples(material_stats_dict: dict, property_name: str = 'ON_OFF_Rat
                         })
 
                 # Sort the devices based on the given property in descending order
-                sample_info.sort(key=lambda x: x['property_value'] if x['property_value'] is not None else float('-inf'), reverse=True)
+                sample_info.sort(key=lambda x: (
+                    float('-inf') if x['property_value'] is None or math.isnan(x['property_value']) else x[
+                        'property_value']), reverse=True)
+                top_samples_individual = sample_info[:top_n]
 
                 # Store the top samples based on the given property
                 top_samples_individual = sample_info[:top_n]

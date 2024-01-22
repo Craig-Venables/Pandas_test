@@ -78,6 +78,8 @@ material_names_dict = {}
 file_info_dict = {}
 sample_name_arr = []
 
+print("Starting...")
+
 for material in os.listdir(f.main_dir):
     material_path = os.path.join(f.main_dir, material)
     if os.path.isdir(material_path):
