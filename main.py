@@ -55,10 +55,12 @@ import excell as ex
 # ie average enclosed area, average switching
 
 # Open a file for writing with utf-8 encoding
-output_file = open(f.main_dir + '/printlog.txt', 'w',encoding='utf-8')
+output_file = open(f.main_dir + 'printlog.txt', 'w',encoding='utf-8')
 
 # Redirect print output to both the file and the console
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
+
+# add check for nan values and
 
 
 
@@ -104,10 +106,10 @@ for material in os.listdir(f.main_dir):
                         # Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7
 
                         # Pulls information from device sweep excell sheet
-                        sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
+                        #sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
 
                         # Pulls information on fabrication from excell file
-                        info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
+                        #info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
 
                         # empty list for storing all measured devices
                         list_of_measured_files_devices_sections = []
@@ -133,7 +135,7 @@ for material in os.listdir(f.main_dir):
                                     if os.path.isdir(device_path):
                                         # Working on individual devices
                                         # print("")
-                                        # print("working in folder ", sample_name, section_folder, device_folder)
+                                        #print("working in folder ", sample_name, section_folder, device_folder)
                                         # print("")
 
 
@@ -154,9 +156,11 @@ for material in os.listdir(f.main_dir):
                                                 # Does work on the file here
                                                 # checks If in excell sheet on file its capacitive or not if
                                                 # capacitive does something else
+                                                #print(file_name)
 
                                                 file_path = os.path.join(device_path, file_name)
                                                 sweep_type = eq.check_sweep_type(file_path)
+                                                #print(sweep_type)
                                                 if sweep_type == 'Iv_sweep':
 
                                                     # Performs analysis on the file given returning the dataframe after
@@ -235,7 +239,7 @@ for material in os.listdir(f.main_dir):
                         #print(sample_stats_dict[f'{sample_name}']['G 200µm'])
 
                         # graphs = some_function_comparing_all_files
-                        pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{sample_name}.pdf",info_dict,sample_stats_dict)
+                        #pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{sample_name}.pdf",info_dict,sample_stats_dict)
 
                         # Saves information for later use
                         with open(sample_path + '/' + sample_name + '_Stats', 'wb') as file:
@@ -290,12 +294,12 @@ print("\nSample with the most sweeps, corresponding sample and its sweeps in hig
 sample_sweeps = eq.get_num_sweeps_ordered(file_info_dict,material_sweeps_dict)
 
 # Counter variable to keep track of the number of items printed
-print("Top 3 measured samples = ")
+print("Top 10 measured samples = ")
 print('-' * 50)
 printed_count = 0
 for file_key, file_info in sample_sweeps.items():
-    # Print only the top 3 items
-    if printed_count < 3:
+    # Print only the top 10 items
+    if printed_count < 10:
         print(f'File Key: {file_key}')
         print(f'Sample Name: {file_info["sample_name"]}')
         print(f'Total Sum: {file_info["total_sum"]}')

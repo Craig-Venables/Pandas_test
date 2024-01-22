@@ -167,6 +167,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         # this info will need passing back to another array for comparision across all devices in the section
         # create dataframe for the device of all the data
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
+
         file_stats = {'file_name': [file_info.get('file_name')],
                       'ps_area': [ps_area],
                       'ng_area': [ng_area],
@@ -399,7 +400,7 @@ def find_top_samples(material_stats_dict: dict, property_name: str = 'ON_OFF_Rat
                         })
 
                 # Sort the devices based on the given property in descending order
-                sample_info.sort(key=lambda x: x['property_value'], reverse=True)
+                sample_info.sort(key=lambda x: x['property_value'] if x['property_value'] is not None else float('-inf'), reverse=True)
 
                 # Store the top samples based on the given property
                 top_samples_individual = sample_info[:top_n]
@@ -808,7 +809,25 @@ def check_sweep_type(filepath):
     with open(filepath, 'r') as file:
         # Read the first line
         first_line = file.readline().strip()
-    #print(first_line)
+
+        # Check if the first line is empty, indicating no more lines
+        if not first_line:
+            print("No more lines after the first. Returning None.")
+            return None
+            # Read the second line
+
+        second_line = file.readline().strip()
+
+        # Check if the second line is empty, indicating no more lines
+        if not second_line:
+            print("No more lines after the second. Returning None.")
+            return None
+        # Check if any of the next three lines contain the word "nan"
+        nan_check_lines = [file.readline().strip() for _ in range(3)]
+        if any('NaN' in line for line in nan_check_lines):
+
+            print("One of the lines contains 'nan'. Returning None.")
+            return None
 
     # Define dictionaries for different types of sweeps and their expected column headings
     sweep_types = {
@@ -956,64 +975,55 @@ def sqrt_array(value_array):
 
 
 # todo change this from class too other
-def statistics(v_data, c_data):
+def statistics(voltage_data, current_data):
     """
-    calculates r on off and v on off values for an individual device
+    Calculates r on off and v on off values for an individual device
     """
     resistance_on_value = []
     resistance_off_value = []
-    voltage_on_value = []
-    voltage_off_value = []
-    # if this breaks maybe add max v / x number
-    # this will need changing later dependent on the max voltage used
-    thresh = 0.2
+    voltage_on_value = 0  # Initialize with a default value
+    voltage_off_value = 0  # Initialize with a default value
+    threshold = 0.2
 
-    # voltage and current magnitude
-    voltage_mag = []
-    current_mag = []
-    if not len(v_data) < 10:
-        for value in range(len(v_data)):
-            if -thresh < v_data[value] < thresh:
-                voltage_mag.append(v_data[value])
-                current_mag.append(c_data[value])
+    # Voltage and current magnitude
+    filtered_voltage = []
+    filtered_current = []
 
-        res_mag = []  # same here but for the resistances
-        for j in range(len(voltage_mag)):
-            if voltage_mag[j] != 0:
-                res_mag.append(voltage_mag[j] / current_mag[j])
+    if not len(voltage_data) < 10:
+        for index in range(len(voltage_data)):
+            if -threshold < voltage_data[index] < threshold:
+                filtered_voltage.append(voltage_data[index])
+                filtered_current.append(current_data[index])
 
-        if not len(v_data) < 10:
-            roff = min(res_mag)
-            ron = max(res_mag)
+        resistance_magnitudes = []
+        for idx in range(len(filtered_voltage)):
+            if filtered_voltage[idx] != 0:
+                resistance_magnitudes.append(filtered_voltage[idx] / filtered_current[idx])
+
+        if not len(voltage_data) < 10:
+            resistance_off_value = min(resistance_magnitudes)
+            resistance_on_value = max(resistance_magnitudes)
         else:
-            roff = 0
-            ron = 0
+            resistance_off_value = 0
+            resistance_on_value = 0
 
-        resistance_off_value = roff
-        resistance_on_value = ron
+        gradients = []
+        for idx in range(len(voltage_data)):
+            if idx != len(voltage_data) - 1:
+                if voltage_data[idx + 1] - voltage_data[idx] != 0:
+                    gradients.append((current_data[idx + 1] - current_data[idx]) / (voltage_data[idx + 1] - voltage_data[idx]))
 
-        grads = []
-        for j in range(len(v_data)):
-            if j != len(v_data) - 1:
-                if v_data[j + 1] - v_data[j] != 0:
-                    grads.append((c_data[j + 1] - c_data[j]) / (v_data[j + 1] - v_data[j]))
+        max_gradient = max(gradients[:(int(len(gradients) / 2))])
+        min_gradient = min(gradients)
 
-        max_grad = max(grads[:(int(len(grads) / 2))])
-        min_grad = min(grads)
+        for idx in range(len(gradients)):
+            if gradients[idx] == max_gradient:
+                voltage_off_value = voltage_data[idx]
+            if gradients[idx] == min_gradient:
+                voltage_on_value = voltage_data[idx]
 
-        for j in range(len(grads)):
-            if grads[j] == max_grad:
-                voltage_off = v_data[j]
-            if grads[j] == min_grad:
-                voltage_on = v_data[j]
-
-        voltage_on_value = voltage_on
-        voltage_off_value = voltage_off
-
-    # print (resistance_on_value, resistance_off_value, voltage_on_value , voltage_off_value)
     return resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value
-    # else:
-    #     return 0, 0, 0, 0
+
 
 
 def save_df_off_data(sample_path, final_data_dict, final_sweeps_dict):
