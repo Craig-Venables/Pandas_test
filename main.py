@@ -12,6 +12,7 @@ import pickle
 import pprint
 import math
 import sys
+import print_info as p
 
 
 
@@ -101,8 +102,8 @@ for material in os.listdir(f.main_dir):
                 for sample_name in os.listdir(polymer_path):
                     sample_path = os.path.join(polymer_path, sample_name)
                     if os.path.isdir(sample_path):
-                        # print("working on ", sample_name)
-                        # print("Path = ", sample_path)
+                        #print("working on ", sample_name)
+                        #print("Path = ", sample_path)
 
                         # Anything to device that doesn't require information on individual sweeps
                         # Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7
@@ -158,7 +159,7 @@ for material in os.listdir(f.main_dir):
                                                 # Does work on the file here
                                                 # checks If in excell sheet on file its capacitive or not if
                                                 # capacitive does something else
-                                                #print(file_name)
+                                                #print(device_path,file_name)
 
                                                 file_path = os.path.join(device_path, file_name)
                                                 sweep_type = eq.check_sweep_type(file_path)
@@ -279,8 +280,8 @@ for material in os.listdir(f.main_dir):
 print("")
 print("-----------------------")
 print("access files using the following")
+print("material_sweeps_dict(['stock'][[f'{polymer}'][f'{sample_name}'][['section']['device_number'])")
 print("material_data['Stock'][f'{polymer}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt']")
-print("material_sweeps_dict(['stock'][[f'{polymer}'][f'{sample_name}'][['G 200µm']['1'])")
 print("-----------------------")
 
 ############################################################################
@@ -321,27 +322,11 @@ on_off_ratio_info = eq.process_property(material_stats_dict, 'ON_OFF_Ratio')
 # Call the function to process 'normalised_area'
 normalised_area_info = eq.process_property(material_stats_dict, 'normalised_area')
 
-# Print the comprehensive information outside the function
-for sample_key, sample_info in on_off_ratio_info.items():
-    print(f"Comprehensive Information for {sample_key}:")
-    print(f"Best Device: #{sample_info['best_device']['device_key']}, Mean ON_OFF_Ratio: {sample_info['mean_ON_OFF_Ratio']}")
-    print(f"Top 3 Devices:")
-    for idx, device_info in enumerate(sample_info['top3_devices'], start=1):
-        print(f"#{idx}: Device: #{device_info['device_key']}, ON_OFF_Ratio: {device_info['ON_OFF_Ratio']}, File Name: {device_info['file_name']}")
-    print(f"Mean ON_OFF_Ratio: {sample_info['mean_ON_OFF_Ratio']}")
-    print(f"Median ON_OFF_Ratio: {sample_info['median_ON_OFF_Ratio']}")
-    print(f"Mode ON_OFF_Ratio: {sample_info['mode_ON_OFF_Ratio']}")
-    print("\n")
+#print(on_off_ratio_info)
 
-# Use the returned information as needed...
-# print("ON_OFF_Ratio Information:")
-# print(on_off_ratio_info)
-#
-# print("\nNormalised Area Information:")
-# print(normalised_area_info)
-
-
-# Function to find the top samples based on a given property (ON-OFF ratio or normalized area)
+# print the values from above
+p.print_on_off_ratio_info(on_off_ratio_info)
+p.print_normalised_area_info(normalised_area_info)
 
 
 # Call the function to find the top 10 samples based on ON-OFF ratio
@@ -374,31 +359,15 @@ for idx, sample_key in enumerate(top_samples_without_repetition_normalized[:10],
     print(f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, Normalized Area: {sample_info['property_value']}")
 
 
-##################################################################
+
+
+
+# ##################################################################
 
 # ignore below this line
 
 ##################################################################
-# # Iterate through the material, polymer, and sample dictionaries finsing the largest ON-OFF ratio for each material, polymer, and sample.
-# for material_key, polymer_dict in material_stats_dict.items():
-#     for polymer_key, sample_dict in polymer_dict.items():
-#         for sample_key, section_dict in sample_dict.items():
-#             for section_key, device_dict in section_dict.items():
-#                 for device_key, stats_df in device_dict.items():
-#                     # Extract the row with the largest ON-OFF ratio
-#                     max_on_off_row = stats_df.loc[stats_df['ON_OFF_Ratio'].idxmax()]
-#
-#                     # Extract relevant information
-#                     largest_on_off_ratio = max_on_off_row['ON_OFF_Ratio']
-#                     file_name = max_on_off_row['file_name']
-#
-#                     # Print or store the information as needed
-#                     print(f"Largest ON-OFF Ratio for {material_key}_{polymer_key}_{sample_key}_{section_key}_{device_key}: {largest_on_off_ratio}")
-#                     print(f"Corresponding File Name: {file_name}")
 
-# ... (continue with your existing code)
-
-#
 # Close the file to ensure that everything is written
 #output_file.close()
 

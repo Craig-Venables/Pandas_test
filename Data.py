@@ -97,7 +97,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             'normalized_areas_avg': [normalized_areas_avg],
             'resistance_on_value': [ron_avg],
             'resistance_off_value': [roff_avg],
-            'ON_OFF_Ratio': [ron_avg / roff_avg],
+            'ON_OFF_Ratio': [zero_devision_check(roff_avg, ron_avg)],
             'voltage_on_value': [von_avg],
             'voltage_off_value': [voff_avg],
         }
@@ -175,7 +175,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
                       'normalised_area': [normalized_area],
                       'resistance_on_value': [resistance_on_value],
                       'resistance_off_value': [resistance_off_value],
-                      'ON_OFF_Ratio': [resistance_on_value / resistance_off_value],
+                      'ON_OFF_Ratio': [zero_devision_check(resistance_off_value,resistance_on_value)],
                       'voltage_on_value': [voltage_on_value],
                       'voltage_off_value': [voltage_off_value],
                       }
@@ -200,105 +200,27 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         looped_array_info = None
     return num_sweeps, short_name, long_name, df, df_file_stats, graph
 
-# Function to process either 'ON_OFF_Ratio' or 'normalised_area'
-# def process_property(material_stats_dict, property_name):
-#     # Dictionary to store information for each unique sample
-#     comprehensive_sample_info = {}
-#
-#     # Iterate through the material, polymer, and sample dictionaries
-#     for material_key, polymer_dict in material_stats_dict.items():
-#         for polymer_key, sample_dict in polymer_dict.items():
-#             for sample_key, section_dict in sample_dict.items():
-#                 # Skip if the sample has already been processed
-#                 if sample_key in comprehensive_sample_info:
-#                     print(f"Skipping processing for already processed sample: {sample_key}")
-#                     continue
-#
-#                 # List to store information for all devices in the sample
-#                 all_devices_info = []
-#
-#                 # Iterate through devices in the sample
-#                 for section_key, device_dict in section_dict.items():
-#                     for device_key, stats_df in device_dict.items():
-#                         # Check if 'file_name' and property_name exist in stats_df
-#                         file_name = stats_df['file_name'].iloc[0] if not stats_df['file_name'].isnull().all() else None
-#                         property_value = stats_df[property_name].iloc[0] if not stats_df[property_name].isnull().all() else None
-#
-#                         # Append device information to the list
-#                         all_devices_info.append({
-#                             'device_key': device_key,
-#                             f'{property_name}s': stats_df[property_name].tolist(),
-#                             'file_name': file_name,
-#                             property_name: property_value
-#                         })
-#
-#                 # Check for NaN values in property_values_all
-#                 if any(math.isnan(value) for device_info in all_devices_info for value in device_info[f'{property_name}s']):
-#                     print(f"NaN values detected in {property_name}s_all for {material_key}_{polymer_key}_{sample_key}.")
-#
-#                 # Check if property_values_all is empty
-#                 if not all_devices_info:
-#                     print(f"{property_name}s_all is an empty list for {material_key}_{polymer_key}_{sample_key}.")
-#                     continue
-#
-#                 # Calculate and store statistical measures for each device
-#                 devices_stats = []
-#                 for device_info in all_devices_info:
-#                     mean_value = stats_module.mean(device_info[f'{property_name}s'])
-#                     median_value = stats_module.median(device_info[f'{property_name}s'])
-#                     mode_value = stats_module.mode(device_info[f'{property_name}s'])
-#                     devices_stats.append({
-#                         'device_key': device_info['device_key'],
-#                         'mean_value': mean_value,
-#                         'median_value': median_value,
-#                         'mode_value': mode_value
-#                     })
-#
-#                 # Calculate and store statistical measures for all devices
-#                 property_values_all = [value for device_info in devices_stats for value in device_info[f'{property_name}s']]
-#                 mean_all = stats_module.mean(property_values_all)
-#                 median_all = stats_module.median(property_values_all)
-#                 mode_all = stats_module.mode(property_values_all)
-#
-#                 # Sort the devices based on mean property_value in descending order
-#                 devices_stats.sort(key=lambda x: x['mean_value'], reverse=True)
-#
-#                 # Store the top 3 devices based on mean property_value
-#                 top3_devices_individual = devices_stats[:3]
-#
-#                 # Store the information for the unique sample name
-#                 comprehensive_sample_info[sample_key] = {
-#                     'best_device': devices_stats[0],
-#                     'top3_devices': top3_devices_individual,
-#                     'mean_all': mean_all,
-#                     'median_all': median_all,
-#                     'mode_all': mode_all
-#                 }
-#
-                # # Print the information for each sample
-                # print(f"Information for {material_key}_{polymer_key}_{sample_key}:")
-                # print(f"Best Device: #{devices_stats[0]['device_key']}, Mean {property_name}: {devices_stats[0]['mean_value']}, File Name: {all_devices_info[0]['file_name']}, {property_name}: {devices_stats[0][property_name]}")
-                # print(f"Top 3 Devices:")
-                # for idx, device_info in enumerate(top3_devices_individual, start=1):
-                #     print(f"#{idx}: Device: #{device_info['device_key']}, {property_name}: {device_info['mean_value']}, File Name: {all_devices_info[0]['file_name']}")
-                # print(f"Mean {property_name} for All Devices: {mean_all}")
-                # print(f"Median {property_name} for All Devices: {median_all}")
-                # print(f"Mode {property_name} for All Devices: {mode_all}")
-                # print("\n")
 
-#     # Return the comprehensive information for all samples
-#     return comprehensive_sample_info
+def process_property(material_stats_dict: dict, property_name: str) -> dict:
+    """
+    This function processes the property of a material(ie, on off ratio).
 
+    Args:
+        material_stats_dict (dict): A dictionary containing the material, polymer, and sample dictionaries.
+        property_name (str): The name of the property to be processed.
 
-# Function to process either 'ON_OFF_Ratio' or 'normalised_area'
-def process_property(material_stats_dict, property_name):
+    Returns:
+        dict: A dictionary containing the comprehensive information for each unique sample.
+    """
     # Dictionary to store comprehensive information for each unique sample
     comprehensive_sample_info = {}
 
     # Iterate through the material, polymer, and sample dictionaries
     for material_key, polymer_dict in material_stats_dict.items():
+
         for polymer_key, sample_dict in polymer_dict.items():
             for sample_key, section_dict in sample_dict.items():
+                #print(sample_key)
                 # Skip if the sample has already been processed
                 if sample_key in comprehensive_sample_info:
                     continue
@@ -308,21 +230,38 @@ def process_property(material_stats_dict, property_name):
 
                 # Iterate through devices in the sample
                 for section_key, device_dict in section_dict.items():
+                    #print(section_key)
                     for device_key, stats_df in device_dict.items():
+                        #print(device_key)
+                        #print(stats_df['file_name'].isnull(),'\n', stats_df[property_name])
+                        #print(row_index)
+                        #device_key, stats_df = dict_items
                         # Check if 'file_name' and property_name exist in stats_df
-                        file_name = stats_df['file_name'].iloc[0] if not stats_df['file_name'].isnull().all() else None
-                        property_value = stats_df[property_name].iloc[0] if not stats_df[property_name].isnull().all() else None
+                        if 'file_name' in stats_df.columns and property_name in stats_df.columns:
+                            #print(stats_df['file_name'].iloc[row_index])
+                            #print(row_index)
+                            '''
+                            Largest on off ratio algorithm:
+                            1)Find a pandas method to find numerical row index of the largest on/off ratio for the current stats dict.
+                            1.5) if there is no method, use a for loop which compares the last on/off ratio with the current one (in this loop),
+                                 and store the whichever is larger and it's index in a variable defined outside of the loop
+                            2)Use that row index to extract the file name for the current device with .iloc
+                            '''
+                            max_property_index = stats_df[property_name].idxmax()
+                            property_value = stats_df[property_name].iloc[max_property_index]
 
-                        # Extract the property values for the current device
-                        property_values = stats_df[property_name]
+                            file_name = stats_df['file_name'].iloc[max_property_index]
 
-                        # Append device information to the list
-                        all_devices_info.append({
-                            'device_key': device_key,
-                            f'{property_name}s': property_values.tolist(),
-                            'file_name': file_name,
-                            property_name: property_value
-                        })
+                            # Extract the property values for the current device
+                            property_values = stats_df[property_name]
+
+                            # Append device information to the list
+                            all_devices_info.append({
+                                'device_key': device_key,
+                                f'{property_name}s': property_values.tolist(),
+                                'file_name': file_name,
+                                property_name: property_value
+                            })
 
                 # Check for NaN values in property_values_all
                 if any(math.isnan(value) for device_info in all_devices_info for value in device_info[f'{property_name}s']):
@@ -341,6 +280,11 @@ def process_property(material_stats_dict, property_name):
 
                 # Sort the devices based on mean property_value in descending order
                 all_devices_info.sort(key=lambda x: stats_module.mean(x[f'{property_name}s']), reverse=True)
+
+                # # Print the sorted list of devices
+                # print(f"Sorted list of devices for {material_key}_{polymer_key}_{sample_key}:")
+                # for device_info in all_devices_info:
+                #     print(device_info)
 
                 # Store the top 3 devices based on individual property_values
                 top3_devices_individual = all_devices_info[:3]
@@ -387,8 +331,13 @@ def find_top_samples(material_stats_dict: dict, property_name: str = 'ON_OFF_Rat
                 for section_key, device_dict in section_dict.items():
                     for device_key, stats_df in device_dict.items():
                         # Check if 'file_name' and property_name exist in stats_df
-                        file_name = stats_df['file_name'].iloc[0] if not stats_df['file_name'].isnull().all() else None
-                        property_value = stats_df[property_name].iloc[0] if not stats_df[property_name].isnull().all() else None
+                        max_property_index = stats_df[property_name].idxmax()
+                        property_value = stats_df[property_name].iloc[max_property_index]
+
+                        file_name = stats_df['file_name'].iloc[max_property_index]
+
+                        # Extract the property values for the current device
+                        property_values = stats_df[property_name]
 
                         # Append sample information to the list
                         sample_info.append({
@@ -509,25 +458,6 @@ def split_loops(v_data, c_data, num_loops):
     split_v_data = [v_data[i:i + size] for i in range(0, total_length, size)]
     split_c_data = [c_data[i:i + size] for i in range(0, total_length, size)]
 
-    # Print the number of arrays and their lengths
-    # for idx, (sub_v_array, sub_c_array) in enumerate(zip(split_v_data, split_c_data)):
-    #     print(f"Split Array {idx + 1}:")
-    #     print(f"v_data Length: {len(sub_v_array)}")
-    #     print(f"c_data Length: {len(sub_c_array)}")
-    #     print("------")
-
-    # # Print each split array in split_v_data
-    # print("Split Arrays for v_data:")
-    # for idx, array in enumerate(split_v_data):
-    #     print(f"Split Array {idx + 1}: {array}")
-
-    # Print a separator
-    # print("\n" + "-" * 40 + "\n")
-    #
-    # # Print each split array in split_c_data
-    # print("Split Arrays for c_data:")
-    # for idx, array in enumerate(split_c_data):
-    #     print(f"Split Array {idx + 1}: {array}")
 
     return split_v_data, split_c_data
 
@@ -910,9 +840,6 @@ def resistance(v_data, c_data):
     return resistance
 
 
-# there is an error ocurring here C:\Users\Craig-Desktop\PycharmProjects\new yes_and_no_sort\Class_single_sweep.py:157: RuntimeWarning: invalid value encountered in log
-# result = np.log(self.resistance[i]) im unsure why
-
 def log_value(array):
     """
     Takes an array and returns an array of the logged values.
@@ -977,56 +904,82 @@ def sqrt_array(value_array):
     return sqrt_array
 
 
-# todo change this from class too other
+
 def statistics(voltage_data, current_data):
     """
     Calculates r on off and v on off values for an individual device
     """
+    # Initialize lists to store Ron and Roff values
     resistance_on_value = []
     resistance_off_value = []
-    voltage_on_value = 0  # Initialize with a default value
-    voltage_off_value = 0  # Initialize with a default value
-    threshold = 0.2
+    # Initialize default values for on and off voltages
+    voltage_on_value = 0
+    voltage_off_value = 0
 
-    # Voltage and current magnitude
+    # Get the maximum voltage value
+    max_voltage = round(max(voltage_data), 1)
+    # Catch edge case for just negative sweep only
+    if max_voltage == 0:
+        max_voltage = abs(round(min(voltage_data), 1))
+
+    # Set the threshold value to 0.2 times the maximum voltage
+    threshold = round(0.2 * max_voltage,2)
+    # print("threshold,max_voltage")
+    # print(threshold,max_voltage)
+    # print(len(voltage_data))
+    # print(voltage_data)
+
+    # Filter the voltage and current data to include values within the threshold
     filtered_voltage = []
     filtered_current = []
+    for index in range(len(voltage_data)):
+        if -threshold < voltage_data[index] < threshold:
+            filtered_voltage.append(voltage_data[index])
+            filtered_current.append(current_data[index])
+    #print(filtered_voltage)
 
-    if not len(voltage_data) < 10:
-        for index in range(len(voltage_data)):
-            if -threshold < voltage_data[index] < threshold:
-                filtered_voltage.append(voltage_data[index])
-                filtered_current.append(current_data[index])
+    resistance_magnitudes = []
+    for idx in range(len(filtered_voltage)):
+        if filtered_voltage[idx] != 0 and filtered_current[idx] != 0:
+            resistance_magnitudes.append(abs(filtered_voltage[idx] / filtered_current[idx]))
 
-        resistance_magnitudes = []
-        for idx in range(len(filtered_voltage)):
-            if filtered_voltage[idx] != 0:
-                resistance_magnitudes.append(filtered_voltage[idx] / filtered_current[idx])
+    if not resistance_magnitudes:
+        # Handle the case when the list is empty, e.g., set default values or raise an exception.
+        print("Error: No valid resistance values found.")
+        return 0, 0, 0, 0
 
-        if not len(voltage_data) < 10:
-            resistance_off_value = min(resistance_magnitudes)
-            resistance_on_value = max(resistance_magnitudes)
-        else:
-            resistance_off_value = 0
-            resistance_on_value = 0
+    # # Calculate the resistance magnitude for each filtered data point
+    # resistance_magnitudes = []
+    # for idx in range(len(filtered_voltage)):
+    #     if filtered_voltage[idx] != 0:
+    #         resistance_magnitudes.append(abs(filtered_voltage[idx] / filtered_current[idx]))
+    # print(resistance_magnitudes)
+    # Store the minimum and maximum resistance values
+    resistance_off_value = min(resistance_magnitudes)
+    resistance_on_value = max(resistance_magnitudes)
 
-        gradients = []
-        for idx in range(len(voltage_data)):
-            if idx != len(voltage_data) - 1:
-                if voltage_data[idx + 1] - voltage_data[idx] != 0:
-                    gradients.append((current_data[idx + 1] - current_data[idx]) / (voltage_data[idx + 1] - voltage_data[idx]))
+    # Calculate the gradients for each data point
+    gradients = []
+    for idx in range(len(voltage_data)):
+        if idx != len(voltage_data) - 1:
+            if voltage_data[idx + 1] - voltage_data[idx] != 0:
+                gradients.append((current_data[idx + 1] - current_data[idx]) / (voltage_data[idx + 1] - voltage_data[idx]))
 
-        max_gradient = max(gradients[:(int(len(gradients) / 2))])
-        min_gradient = min(gradients)
+    # Find the maximum and minimum gradient values
+    max_gradient = max(gradients[:(int(len(gradients) / 2))])
+    min_gradient = min(gradients)
 
-        for idx in range(len(gradients)):
-            if gradients[idx] == max_gradient:
-                voltage_off_value = voltage_data[idx]
-            if gradients[idx] == min_gradient:
-                voltage_on_value = voltage_data[idx]
+    # Use the maximum and minimum gradient values to determine the on and off voltages
+    for idx in range(len(gradients)):
+        if gradients[idx] == max_gradient:
+            voltage_off_value = voltage_data[idx]
+        if gradients[idx] == min_gradient:
+            voltage_on_value = voltage_data[idx]
 
+
+
+    # Return the calculated Ron and Roff values and on and off voltages
     return resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value
-
 
 
 def save_df_off_data(sample_path, final_data_dict, final_sweeps_dict):
