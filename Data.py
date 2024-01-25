@@ -247,7 +247,13 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                                  and store the whichever is larger and it's index in a variable defined outside of the loop
                             2)Use that row index to extract the file name for the current device with .iloc
                             '''
-                            max_property_index = stats_df[property_name].idxmax()
+
+                            # todo this dosnt handle nan values needs fixing
+                            #print(sample_key,section_key,device_key)
+                            #print(stats_df[property_name])
+                            #print(stats_df[property_name].index.get_loc(stats_df[property_name].idxmax()))
+                            #max_property_index = stats_df[property_name].idxmax()
+                            max_property_index = stats_df[property_name].index.get_loc(stats_df[property_name].idxmax())
                             property_value = stats_df[property_name].iloc[max_property_index]
 
                             file_name = stats_df['file_name'].iloc[max_property_index]
@@ -695,42 +701,7 @@ def check_for_loops(v_data):
         # print("multiloop", (num_max + num_min) / 4)
         loops = (num_max + num_min) / 4
         return loops
-    # used for checking with just positive and negative vlaues
-    # if num_max <= 2:
-    #     print("Single sweep", num_max)
-    #     return 1
-    # if num_max <= 1:
-    #     print("half sweep", num_max)
-    #     return 0.5
-    # else:
-    #     loops = num_max / 2
 
-
-# def split_iv_sweep(filepath):
-#     # print(f"{filepath_for_single_sweep}")
-#     with open(filepath, "r") as f:  # open the file as read only
-#         fread = f.readlines()
-#         fread.pop(0)
-#     # B = self.filereader()
-#     # B = fm.directory(self.filepath_for_single_sweep).filereader()
-#     Data = []
-#     for i, line in enumerate(fread):
-#         C = (line.split('\t'))
-#         D = []
-#         for value in C:
-#             if value != '':
-#                 D.append(float(value))
-#         Data.append(D)
-#     v_data_array = []
-#     c_data_array = []
-#     for value in Data:
-#         if value:
-#             v_data_array.append(value[0])
-#             c_data_array.append(value[1])
-#     if len(v_data_array) == 0 or len(v_data_array) < 10:
-#         print('not enough data', filepath)
-#         return None
-#     return v_data_array, c_data_array
 
 def split_iv_sweep(filepath):
     data = np.loadtxt(filepath,unpack=True,skiprows=1)
