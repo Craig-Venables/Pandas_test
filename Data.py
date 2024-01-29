@@ -14,8 +14,7 @@ debugging = False
 ''' all the data manipulation goes here including any dataframe manipulation 
  '''
 
-
-def file_analysis(filepath, plot_graph, save_df, device_path):
+def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
     """ for all info from a single file this determines if it is a s """
 
     file_info = f.extract_folder_names(filepath)
@@ -97,7 +96,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             'normalized_areas_avg': [normalized_areas_avg],
             'resistance_on_value': [ron_avg],
             'resistance_off_value': [roff_avg],
-            'ON_OFF_Ratio': [zero_devision_check(ron_avg,roff_avg)],
+            'ON_OFF_Ratio': [zero_devision_check(ron_avg, roff_avg)],
             'voltage_on_value': [von_avg],
             'voltage_off_value': [voff_avg],
         }
@@ -127,17 +126,17 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         f.check_if_folder_exists(device_path, "python_images")
 
         save_loc = device_path + '\\' + "python_images"
+        crossing_points = "crossing_coming soon"
 
         if plot_graph:
             p = plot.plot(df, file_info, save_loc, filepath)
             count = 0
             for arr_v, arr_c in zip(split_v_data, split_c_data):
                 count += 1
-                p.main_plot_loop(arr_v, arr_c, absolute_val(arr_c),count)
+                p.main_plot_loop(arr_v, arr_c, absolute_val(arr_c), count)
 
             # plot main graph too of all together
-            p.main_plot()
-
+            p.main_plot(crossing_points,re_save_graph)
 
             # p.fig.savefig(f"{file_info.get('file_name')}.png")
             # print("saved graph too" , "###insert file path###")
@@ -157,7 +156,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
 
     # this is for later
     if num_sweeps == 0.5:
-        #print("skipping as half sweep")
+        # print("skipping as half sweep")
         return None
     else:
         # Data Processing for a single sweep
@@ -168,6 +167,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         # create dataframe for the device of all the data
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
 
+        cross_points = categorize_device(v_data, c_data)
+        print(cross_points)
+
         file_stats = {'file_name': [file_info.get('file_name')],
                       'ps_area': [ps_area],
                       'ng_area': [ng_area],
@@ -175,9 +177,10 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
                       'normalised_area': [normalized_area],
                       'resistance_on_value': [resistance_on_value],
                       'resistance_off_value': [resistance_off_value],
-                      'ON_OFF_Ratio': [zero_devision_check(resistance_on_value,resistance_off_value)],
+                      'ON_OFF_Ratio': [zero_devision_check(resistance_on_value, resistance_off_value)],
                       'voltage_on_value': [voltage_on_value],
                       'voltage_off_value': [voltage_off_value],
+                      #'crossing_points': [find_crossings(v_data, c_data)],
                       }
         df_file_stats = pd.DataFrame(file_stats, index=[0])
 
@@ -187,8 +190,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         graph_dict = {}
         if plot_graph:
             p = plot.plot(df, file_info, save_loc, filepath)
-            graph = p.main_plot()
-            #print(type(graph))
+            graph = p.main_plot(cross_points,re_save_graph)
+            # print(type(graph))
         else:
             graph = None
 
@@ -199,6 +202,52 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
         areas_loops = None
         looped_array_info = None
     return num_sweeps, short_name, long_name, df, df_file_stats, graph
+
+def categorize_device(voltage_data, current_data):
+    def find_crossings(voltage_data: np.ndarray, current_data: np.ndarray):
+        """
+        Find the points of intersection between a voltage and current trace.
+        Returns:
+            List[Tuple[float, float]]: A list of tuples containing the intersection points.
+        """
+        crossings = []
+        tolerance = 0.1
+
+        # Ensure both voltage and current data have the same length
+        if len(voltage_data) != len(current_data):
+            raise ValueError("Voltage and current data must have the same length.")
+
+        # Iterate through the data to find crossings
+        for i in range(1, len(voltage_data)):
+            if (
+                    (voltage_data[i - 1] < current_data[i - 1] and voltage_data[i] > current_data[i])
+                    or (voltage_data[i - 1] > current_data[i - 1] and voltage_data[i] < current_data[i])
+            ) and abs(voltage_data[i] - current_data[i]) <= tolerance:
+                crossing_point = (voltage_data[i], current_data[i])
+                crossings.append(crossing_point)
+
+        return crossings
+
+    crossings = find_crossings(voltage_data, current_data)
+
+    if not crossings:
+        return "Capacitive", False
+
+    # Check for one or two crossings for memristive behavior
+    if 1 <= len(crossings) <= 2:
+        # Check if the crossings are close to (0, 0)
+        for point in crossings:
+            if abs(point[0]) <= 0.1 and abs(point[1]) <= 0.1:
+                return "Memristive", True
+
+    # Check for more than 4 crossings for capacitive behavior
+    elif len(crossings) > 4:
+        return "Capacitive", True
+
+    # If there are crossings but none near (0, 0), it's likely ohmic
+    return "Ohmic", True
+
+
 
 
 def process_property(material_stats_dict: dict, property_name: str) -> dict:
@@ -220,7 +269,7 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
 
         for polymer_key, sample_dict in polymer_dict.items():
             for sample_key, section_dict in sample_dict.items():
-                #print(sample_key)
+                # print(sample_key)
                 # Skip if the sample has already been processed
                 if sample_key in comprehensive_sample_info:
                     continue
@@ -230,16 +279,16 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
 
                 # Iterate through devices in the sample
                 for section_key, device_dict in section_dict.items():
-                    #print(section_key)
+                    # print(section_key)
                     for device_key, stats_df in device_dict.items():
-                        #print(device_key)
-                        #print(stats_df['file_name'].isnull(),'\n', stats_df[property_name])
-                        #print(row_index)
-                        #device_key, stats_df = dict_items
+                        # print(device_key)
+                        # print(stats_df['file_name'].isnull(),'\n', stats_df[property_name])
+                        # print(row_index)
+                        # device_key, stats_df = dict_items
                         # Check if 'file_name' and property_name exist in stats_df
                         if 'file_name' in stats_df.columns and property_name in stats_df.columns:
-                            #print(stats_df['file_name'].iloc[row_index])
-                            #print(row_index)
+                            # print(stats_df['file_name'].iloc[row_index])
+                            # print(row_index)
                             '''
                             Largest on off ratio algorithm:
                             1)Find a pandas method to find numerical row index of the largest on/off ratio for the current stats dict.
@@ -249,10 +298,10 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                             '''
 
                             # todo this dosnt handle nan values needs fixing
-                            #print(sample_key,section_key,device_key)
-                            #print(stats_df[property_name])
-                            #print(stats_df[property_name].index.get_loc(stats_df[property_name].idxmax()))
-                            #max_property_index = stats_df[property_name].idxmax()
+                            # print(sample_key,section_key,device_key)
+                            # print(stats_df[property_name])
+                            # print(stats_df[property_name].index.get_loc(stats_df[property_name].idxmax()))
+                            # max_property_index = stats_df[property_name].idxmax()
                             # pri
                             max_property_index = stats_df[property_name].index.get_loc(stats_df[property_name].idxmax())
                             property_value = stats_df[property_name].iloc[max_property_index]
@@ -271,7 +320,8 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                             })
 
                 # Check for NaN values in property_values_all
-                if any(math.isnan(value) for device_info in all_devices_info for value in device_info[f'{property_name}s']):
+                if any(math.isnan(value) for device_info in all_devices_info for value in
+                       device_info[f'{property_name}s']):
                     print(f"NaN values detected in {property_name}s_all for {material_key}_{polymer_key}_{sample_key}.")
 
                 # Check if property_values_all is empty
@@ -280,7 +330,8 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                     continue
 
                 # Calculate and store statistical measures
-                property_values_all = [value for device_info in all_devices_info for value in device_info[f'{property_name}s']]
+                property_values_all = [value for device_info in all_devices_info for value in
+                                       device_info[f'{property_name}s']]
                 mean_value = stats_module.mean(property_values_all)
                 median_value = stats_module.median(property_values_all)
                 mode_value = stats_module.mode(property_values_all)
@@ -307,6 +358,7 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
 
     # Return the comprehensive information for all samples
     return comprehensive_sample_info
+
 
 def find_top_samples(material_stats_dict: dict, property_name: str = 'ON_OFF_Ratio', top_n: int = 10) -> tuple:
     """
@@ -402,6 +454,7 @@ def find_sample_number_sweeps(material_sweeps_dict: dict, material: str, polymer
     # print(total_sum)
     return sample_name, total_sum
 
+
 def get_num_sweeps_ordered(file_info_dict: dict, material_sweeps_dict: dict) -> dict:
     """
     Get the number of sweeps in the data in an ordered dictionary.
@@ -448,8 +501,6 @@ def get_num_sweeps_ordered(file_info_dict: dict, material_sweeps_dict: dict) -> 
     return ordered_dict
 
 
-
-
 def split_loops(v_data, c_data, num_loops):
     """ splits the looped data and outputs each sweep as another array"""
     total_length = len(v_data)  # Assuming both v_data and c_data have the same length
@@ -464,7 +515,6 @@ def split_loops(v_data, c_data, num_loops):
 
     split_v_data = [v_data[i:i + size] for i in range(0, total_length, size)]
     split_c_data = [c_data[i:i + size] for i in range(0, total_length, size)]
-
 
     return split_v_data, split_c_data
 
@@ -705,10 +755,11 @@ def check_for_loops(v_data):
 
 
 def split_iv_sweep(filepath):
-    data = np.loadtxt(filepath,unpack=True,skiprows=1)
+    data = np.loadtxt(filepath, unpack=True, skiprows=1)
     voltage = data[0]
     current = data[1]
-    return voltage,current
+    return voltage, current
+
 
 def check_sweep_type(filepath):
     with open(filepath, 'r') as file:
@@ -730,14 +781,14 @@ def check_sweep_type(filepath):
         # Check if any of the next three lines contain the word "nan"
         nan_check_lines = [file.readline().strip() for _ in range(3)]
         if any('NaN' in line for line in nan_check_lines):
-
             print("One of the lines contains 'nan'. Returning None.")
             return None
 
     # Define dictionaries for different types of sweeps and their expected column headings
     sweep_types = {
         'Iv_sweep': ['voltage', 'current'],
-        'Endurance': ['Iteration #', 'Time (s)', 'Resistance (Set)','Set Voltage','Time (s)','Resistance (Reset)','Reset Voltage'],
+        'Endurance': ['Iteration #', 'Time (s)', 'Resistance (Set)', 'Set Voltage', 'Time (s)', 'Resistance (Reset)',
+                      'Reset Voltage'],
         'Retention': ['Iteration #', 'Time (s)', 'Current (Set)'],
         'type4': ['V', 'I', 'Pressure']
     }
@@ -745,13 +796,14 @@ def check_sweep_type(filepath):
     # Check if the actual headings match any of the expected ones
     for sweep_type, expected_headings in sweep_types.items():
         if all(heading in first_line for heading in expected_headings):
-            #print(f"Column headings match {sweep_type} sweep.")
+            # print(f"Column headings match {sweep_type} sweep.")
             # Perform your action here, e.g., return the sweep type or do something else
             return sweep_type
 
     print("Column headings do not match any expected sweep types.")
     # Perform another action if needed, e.g., return None or do something else
     return None
+
 
 ## ------------------------------------------------------------------------------------##
 
@@ -827,6 +879,7 @@ def log_value(array):
             log_value.append(result)
     return log_value
 
+
 def current_density_eq(v_data, c_data, distance=100E-9, area=100E-6):
     ''' Returns current density array using the current and voltage data arrays'''
     current_density = []
@@ -876,7 +929,6 @@ def sqrt_array(value_array):
     return sqrt_array
 
 
-
 def statistics(voltage_data, current_data):
     """
     Calculates r on off and v on off values for an individual device
@@ -895,7 +947,7 @@ def statistics(voltage_data, current_data):
         max_voltage = abs(round(min(voltage_data), 1))
 
     # Set the threshold value to 0.2 times the maximum voltage
-    threshold = round(0.2 * max_voltage,2)
+    threshold = round(0.2 * max_voltage, 2)
     # print("threshold,max_voltage")
     # print(threshold,max_voltage)
     # print(len(voltage_data))
@@ -908,7 +960,7 @@ def statistics(voltage_data, current_data):
         if -threshold < voltage_data[index] < threshold:
             filtered_voltage.append(voltage_data[index])
             filtered_current.append(current_data[index])
-    #print(filtered_voltage)
+    # print(filtered_voltage)
 
     resistance_magnitudes = []
     for idx in range(len(filtered_voltage)):
@@ -935,7 +987,8 @@ def statistics(voltage_data, current_data):
     for idx in range(len(voltage_data)):
         if idx != len(voltage_data) - 1:
             if voltage_data[idx + 1] - voltage_data[idx] != 0:
-                gradients.append((current_data[idx + 1] - current_data[idx]) / (voltage_data[idx + 1] - voltage_data[idx]))
+                gradients.append(
+                    (current_data[idx + 1] - current_data[idx]) / (voltage_data[idx + 1] - voltage_data[idx]))
 
     # Find the maximum and minimum gradient values
     max_gradient = max(gradients[:(int(len(gradients) / 2))])
@@ -947,8 +1000,6 @@ def statistics(voltage_data, current_data):
             voltage_off_value = voltage_data[idx]
         if gradients[idx] == min_gradient:
             voltage_on_value = voltage_data[idx]
-
-
 
     # Return the calculated Ron and Roff values and on and off voltages
     return resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value

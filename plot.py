@@ -51,14 +51,14 @@ class plot():
         for column in self.file_info.columns:
             setattr(self, column.lower(), self.file_info.get(column))
 
-    def main_plot(self):
+    def main_plot(self,crossing_points,re_save):
         '''
             plots iv and log iv graphs as subplots and saves it
         '''
 
         file_path = os.path.join(self.save_loc, f"{self.short_filename}.png")
 
-        if not os.path.exists(file_path):
+        if not os.path.exists(file_path) or re_save:
             plt.close('all')
             self.fig = plt.figure(figsize=(12, 8))
 
@@ -77,6 +77,8 @@ class plot():
             self.plot_iv_avg(self.voltage, self.current)
 
             plt.subplot(2, 2, 4)
+            text = (crossing_points)
+            plt.text(0.5, 0.5, text, ha='center', va='center', fontsize=12)
             #self.plot_graph_other()
             # self.information()
             # self.plot_array_changes()

@@ -70,10 +70,9 @@ sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 
 # add check for nan values and
 
-
-
 save_df = False
-plot_graph = False
+plot_graph = True
+re_save_graph = False
 re_analyse = True
 eq.set_pandas_display_options()
 
@@ -180,7 +179,7 @@ for material in os.listdir(f.main_dir):
                                                     # Performs analysis on the file given returning the dataframe after
                                                     # analysis
                                                     analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
-                                                                                       device_path)
+                                                                                       device_path,re_save_graph)
 
                                                     if analysis_result is None:
                                                         # if there is an error in reading the file it will jst continue
