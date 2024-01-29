@@ -77,3 +77,23 @@ def extract_folder_names(file_path, base_folder="Memristors", folder_structure=N
 
     return variable_names
 
+class Tee:
+    def __init__(self, file, stdout):
+        self.file = file
+        self.stdout = stdout
+        self.closed = False
+
+    def write(self, data):
+        if not self.closed:
+            self.file.write(data)
+        self.stdout.write(data)
+
+    def flush(self):
+        if not self.closed:
+            self.file.flush()
+        self.stdout.flush()
+
+    def close(self):
+        if not self.closed:
+            self.file.close()
+            self.closed = True

@@ -66,8 +66,6 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
         # Calculates the metrics for each array returning the areas
         ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff = calculate_metrics_for_loops(split_v_data,
                                                                                                         split_c_data)
-        # have it plot each sweep individually for each loop number 1 to n
-        # create a folder named as the file name with the images of each saved inside.
 
         # create dataframe for a device of all the data
         areas_loops = {'ps_area': [ps_areas],

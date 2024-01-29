@@ -1,6 +1,12 @@
 pip install reportlab matplotlib
-
 Read me provided by tabine 
+
+### Important
+
+Make sure that all files are text files you can easily do this using power rename and
+NOT *.txt within the search bar to find all the files in the directory that arnt texts and then rename them
+using power rename, add the last letter into the top search bar and the extension .txt in the one below
+then set to extension only.
 
 # Code Overview
 This code is a script that was created to assist in analyzing the data collected from measuring the capacitance of various materials and devices. The code is designed to be modular, allowing for easy modification and expansion. The main functions of the code are as follows:

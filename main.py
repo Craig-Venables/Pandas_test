@@ -13,29 +13,7 @@ import pprint
 import math
 import sys
 import print_info as p
-
-
-
-class Tee:
-    def __init__(self, file, stdout):
-        self.file = file
-        self.stdout = stdout
-        self.closed = False
-
-    def write(self, data):
-        if not self.closed:
-            self.file.write(data)
-        self.stdout.write(data)
-
-    def flush(self):
-        if not self.closed:
-            self.file.flush()
-        self.stdout.flush()
-
-    def close(self):
-        if not self.closed:
-            self.file.close()
-            self.closed = True
+from file import Tee
 
 ###### Important ######
 # Make sure that all files are text files you can easily do this using power rename and
