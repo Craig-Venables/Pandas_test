@@ -37,6 +37,13 @@ class Tee:
             self.file.close()
             self.closed = True
 
+###### Important ######
+# Make sure that all files are text files you can easily do this using power rename and
+# NOT *.txt within the search bar to find all the files in the directory that arnt texts and then rename them
+# using power rename, add the last letter into the top search bar and the extension .txt in the one below
+# then set to extension only.
+
+
 from file import excel_path
 import excell as ex
 
@@ -155,15 +162,19 @@ for material in os.listdir(f.main_dir):
                                         # add more here into how each array changes over each array
                                         # Process each file in the device_number folder
                                         for file_name in os.listdir(device_path):
+                                            file_path = os.path.join(device_path, file_name)
+                                            # if os.path.isdir(file_path):
+                                            #     # skip directories ie folders
+                                            #     continue
+                                            #if not file_name.endswith(f.ignore_files):
                                             if file_name.endswith('.txt'):
                                                 # Does work on the file here
                                                 # checks If in excell sheet on file its capacitive or not if
                                                 # capacitive does something else
                                                 #print(device_path,file_name)
 
-                                                file_path = os.path.join(device_path, file_name)
                                                 sweep_type = eq.check_sweep_type(file_path)
-                                                #print(sweep_type)
+
                                                 if sweep_type == 'Iv_sweep':
 
                                                     # Performs analysis on the file given returning the dataframe after

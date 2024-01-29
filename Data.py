@@ -97,7 +97,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
             'normalized_areas_avg': [normalized_areas_avg],
             'resistance_on_value': [ron_avg],
             'resistance_off_value': [roff_avg],
-            'ON_OFF_Ratio': [zero_devision_check(roff_avg, ron_avg)],
+            'ON_OFF_Ratio': [zero_devision_check(ron_avg,roff_avg)],
             'voltage_on_value': [von_avg],
             'voltage_off_value': [voff_avg],
         }
@@ -175,7 +175,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path):
                       'normalised_area': [normalized_area],
                       'resistance_on_value': [resistance_on_value],
                       'resistance_off_value': [resistance_off_value],
-                      'ON_OFF_Ratio': [zero_devision_check(resistance_off_value,resistance_on_value)],
+                      'ON_OFF_Ratio': [zero_devision_check(resistance_on_value,resistance_off_value)],
                       'voltage_on_value': [voltage_on_value],
                       'voltage_off_value': [voltage_off_value],
                       }
@@ -253,6 +253,7 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                             #print(stats_df[property_name])
                             #print(stats_df[property_name].index.get_loc(stats_df[property_name].idxmax()))
                             #max_property_index = stats_df[property_name].idxmax()
+                            # pri
                             max_property_index = stats_df[property_name].index.get_loc(stats_df[property_name].idxmax())
                             property_value = stats_df[property_name].iloc[max_property_index]
 

@@ -12,8 +12,18 @@ import os
 # home pc
 
 excel_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
-# main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
+#main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
 main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
+
+# files to ignore when looking through directory add as appropriate
+ignore_files = ('.xlsx',  '.gif', '.bmp', '.tiff', '.ico', '.odt', '.ods', '.odp', '.txt', '.rtf', '.csv', '.json',\
+    '.xml', '.yaml', '.html', '.css', '.js', '.php', '.sql', '.log', '.bak', '.tar', '.gz', '.zip', '.7z', '.rar', \
+    '.tgz', '.java', '.class', '.jar', '.bat', '.sh', '.ps1', '.cmd', '.dll', '.lib', '.obj', '.pdb', '.exe', '.iso',\
+    '.mp3', '.wav', '.flac', '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.pdf', '.epub', '.mobi', '.djvu', '.chm',\
+    '.jpg', '.png', '.svg', '.eps', '.ai', '.psd', '.tif', '.bat', '.cfg', '.ini', '.conf', '.md', '.bak', '.patch',\
+    '.diff', '.sql', '.bak', '.bak2', '.bak3', '.bak4', '.bak5', '.backup', '.old', '.new', '.temp', '.tmp', '.swp', \
+    '.swo', '.swn', '.swo', '.log', '.out', '.err''.doc','.docx','.ogwu','.opju', '.Wdf','.pptx', '.jpeg','.xls')
+
 def check_if_folder_exists(d_path,fol_name):
     if not os.path.exists(str(d_path) + '\\' + f"{fol_name}"):
         os.makedirs(str(d_path) + '\\' + f"{fol_name}")
