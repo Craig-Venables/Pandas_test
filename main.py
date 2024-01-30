@@ -14,6 +14,7 @@ import math
 import sys
 import print_info as p
 from file import Tee
+import shutil
 
 ###### Important ######
 # Make sure that all files are text files you can easily do this using power rename and
@@ -220,6 +221,29 @@ for material in os.listdir(f.main_dir):
                         sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
                         sample_data[f'{sample_name}'] = section_data
 
+                        # try:
+                        #     # Get the folder name without the path
+                        #     folder_name = os.path.basename(subfolder)
+                        #     subfolder = os.path.abspath(subfolder)
+                        #     print("foldername", folder_name)
+                        #     print(subfolder)
+                        #
+                        #
+                        #     # Check if the folder still exists
+                        #     if not os.path.exists(subfolder):
+                        #         print(f"Folder {subfolder} does not exist. Skipping...")
+                        #         continue
+                        #
+                        #     # Check if a file with the same name as the folder already exists
+                        #     dest_file_path = os.path.join(subfolder, folder_name + os.path.splitext(dest_file)[1])
+                        #     if os.path.exists(dest_file_path):
+                        #         print(f"File already exists in {subfolder}. Skipping...")
+                        #         processed_folders.append(subfolder)  # Add the skipped folder to processed_folders
+                        #         continue
+                        #
+                        #     # Copy the file to the destination and rename it
+                        #     shutil.copy(dest_file, dest_file_path)
+                        #     print(f"File copied to {subfolder} and renamed to {folder_name}")
 
                         print("")
                         print("################################")
@@ -242,6 +266,8 @@ for material in os.listdir(f.main_dir):
                         with open(sample_path + '/'+sample_name+'_data', 'wb') as file:
                             # all the data for the given sample
                             pickle.dump(sample_data, file)
+
+
 
                         # save the dataframe for stats within the sample folder in txt format
                         eq.save_df_off_stats(sample_path, sample_stats_dict, sample_sweeps_dict)
