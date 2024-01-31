@@ -1,4 +1,18 @@
-
+# ##########################
+#
+# section = 'G'  # Replace with the desired section
+# device_number = 2  # Replace with the desired device number
+#
+# # Filter the DataFrame based on the given section and device number
+# filtered_data = sample_sweep_excell_dict[section][
+#     (sample_sweep_excell_dict[section]['Device #'] == device_number)]
+#
+# # Extract the classification value
+# classification = filtered_data['Classification'].values[0] if not filtered_data.empty else None
+# print("classification for g,2")
+# print(classification)
+#
+# ################################
 # print(material_sweeps_dict)
 
 # # Assuming material_names_dict is the given dictionary

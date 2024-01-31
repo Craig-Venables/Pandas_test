@@ -95,28 +95,9 @@ for material in os.listdir(f.main_dir):
 
                         # Pulls information from device sweep excell sheet
                         sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
-
+                        # print(sample_sweep_excell_dict['G'])
                         # Pulls information on fabrication from excell file
                         info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
-
-
-                        ##########################
-
-                        section = 'G'  # Replace with the desired section
-                        device_number = 2  # Replace with the desired device number
-
-                        # Filter the DataFrame based on the given section and device number
-                        filtered_data = sample_sweep_excell_dict[section][
-                            (sample_sweep_excell_dict[section]['Device #'] == device_number)]
-
-                        # Extract the classification value
-                        classification = filtered_data['Classification'].values[0] if not filtered_data.empty else None
-                        print("classification for g,2")
-                        print(classification)
-
-                        ################################
-                        #print(filtered_data)
-                        #print(sample_sweep_excell_dict['G'])
 
                         # empty list for storing all measured devices
                         list_of_measured_files_devices_sections = []
@@ -219,13 +200,14 @@ for material in os.listdir(f.main_dir):
                                         # Extract the classification value
                                         classification = filtered_data['Classification'].values[
                                             0] if not filtered_data.empty else None
-                                        print("classification for g,2")
+
                                         print(classification)
 
 
                                         # for the device level, After processing all files in the device_number folder:
                                         if len(list_of_file_stats) >=2:
                                             device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
+
 
                                         device_data[f'{device_folder}'] = file_data
                                         device_sweeps_dict[f'{device_folder}'] = num_of_sweeps

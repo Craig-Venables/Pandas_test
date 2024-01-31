@@ -5,17 +5,17 @@ import os
 
 # notts computers
 
-# excel_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
-# main_dir = r'C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors'
-# #main_dir = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
-# Template_for_device_xls_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
+excel_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
+main_dir = r'C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors'
+#main_dir = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
+Template_for_device_xls_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
 
 # home pc
 
-excel_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
+# excel_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
 # #main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
-main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
-Template_for_device_xls_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
+# main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
+# Template_for_device_xls_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
 # files to ignore when looking through directory add as appropriate
 ignore_files = ('.xlsx',  '.gif', '.bmp', '.tiff', '.ico', '.odt', '.ods', '.odp', '.txt', '.rtf', '.csv', '.json',\
     '.xml', '.yaml', '.html', '.css', '.js', '.php', '.sql', '.log', '.bak', '.tar', '.gz', '.zip', '.7z', '.rar', \
