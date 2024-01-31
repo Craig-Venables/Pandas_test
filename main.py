@@ -15,16 +15,14 @@ import sys
 import print_info as p
 from file import Tee
 import shutil
+import excell as ex
+from file import excel_path
 
 ###### Important ######
 # Make sure that all files are text files you can easily do this using power rename and
-# NOT *.txt within the search bar to find all the files in the directory that arnt texts and then rename them
+# "NOT *.txt" within the search bar to find all the files in the directory that arnt texts and then rename them
 # using power rename, add the last letter into the top search bar and the extension .txt in the one below
 # then set to extension only.
-
-
-from file import excel_path
-import excell as ex
 
 # pip install reportlab matplotlib
 
@@ -50,7 +48,7 @@ sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 # add check for nan values and
 
 save_df = False
-plot_graph = True
+plot_graph = False
 re_save_graph = False
 re_analyse = True
 eq.set_pandas_display_options()
@@ -94,10 +92,10 @@ for material in os.listdir(f.main_dir):
                         # Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7
 
                         # Pulls information from device sweep excell sheet
-                        #sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
+                        sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
 
                         # Pulls information on fabrication from excell file
-                        #info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
+                        info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
 
                         # empty list for storing all measured devices
                         list_of_measured_files_devices_sections = []
@@ -194,15 +192,13 @@ for material in os.listdir(f.main_dir):
 
 
                                         # for the device level, After processing all files in the device_number folder:
-
                                         if len(list_of_file_stats) >=2:
                                             device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
+
                                         device_data[f'{device_folder}'] = file_data
                                         device_sweeps_dict[f'{device_folder}'] = num_of_sweeps
                                         list_of_measured_files_devices.append(list_of_measured_files)
-
                                         #plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
-
 
                                 # for the section level
                                 # this already does all sections correctly
@@ -220,6 +216,32 @@ for material in os.listdir(f.main_dir):
                         sample_stats_dict[f'{sample_name}'] = section_stats_dict
                         sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
                         sample_data[f'{sample_name}'] = section_data
+                        #print(sample_sweeps_dict)
+                        #print(sample_sweep_excell_dict['G'])
+                        #print(sample_sweep_excell_dict)
+
+                        ######################################
+                        # this is for auto adding sweeps into the excell file pls keep
+                        # for section_name, section_data in sample_sweep_excell_dict.items():
+                        #     section_letter = section_name[0]  # Take the first letter of the section name
+                        #     print(section_letter)
+                        #     # Check if the section letter exists
+                        #     #print(section_letter)
+                        #     #print(section_data)
+                        #     # Find the first key containing the letter 'A'
+                        #     matching_key = next((key for key in sample_sweeps_dict if section_letter in key), None)
+                        #     print(matching_key , "matching key")
+                        #     if matching_key is not None:
+                        #         data_s = sample_sweeps_dict[matching_key]
+                        #         print(data_s)
+                        #         #not sure if this works but give it a try
+                        #         #exc.update_and_save_to_excel(sample_name, sample_path, matching_key, data_s)
+                        #     else:
+                        #         print("No key containing", section_letter , " found in sample_sweeps_dict.")
+                        ######################################
+
+
+
 
                         # try:
                         #     # Get the folder name without the path

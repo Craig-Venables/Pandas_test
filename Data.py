@@ -166,7 +166,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
 
         cross_points = categorize_device(v_data, c_data)
-        print(cross_points)
+        #print(cross_points)
 
         file_stats = {'file_name': [file_info.get('file_name')],
                       'ps_area': [ps_area],
