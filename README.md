@@ -8,6 +8,12 @@ NOT *.txt within the search bar to find all the files in the directory that arnt
 using power rename, add the last letter into the top search bar and the extension .txt in the one below
 then set to extension only.
 
+### File structure matters, it needs to go:
+
+_**['top folder]['defining feature 1'][[f'{defining feature 2}'][f'{sample_name}'][['section']['device_number']['sweep_file]]**_
+
+_ie ['Data]['Quantum Dots'][[f'{Ws2}'][f'{D12-0.2mg/ml...}'][['G']['1']['1-fs-1v.txt]]_
+
 # Code Overview
 This code is a script that was created to assist in analyzing the data collected from measuring the capacitance of various materials and devices. The code is designed to be modular, allowing for easy modification and expansion. The main functions of the code are as follows:
 
