@@ -141,7 +141,41 @@ def save_info_from_device_info_excell(device_name,device_fol_location):
                 if not section_data.empty:
                     section_dataframes[section] = section_data
             # print(section_dataframes['G'])
+            #print(section_dataframes['G'])
             return section_dataframes
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+
+def update_and_save_to_excel(device_name, device_fol_location, section_to_update, new_data):
+    '''
+    Takes the device name, looks up the information within the Excel document for device sweeps given,
+    updates the specified section with new data, and saves it back to the Excel sheet.
+
+    :param device_name: Device Name
+    :param device_fol_location: Folder location for the Excel file
+    :param section_to_update: Section to update (e.g., 'G')
+    :param new_data: New data to replace the existing data in the specified section
+
+    :return: None
+    '''
+
+    excel_path = os.path.join(device_fol_location, f"{device_name}.xlsx")
+
+    try:
+        # Read the Excel file into a DataFrame
+        with pd.ExcelFile(excel_path, engine='openpyxl') as xls:
+            df = pd.read_excel(xls, sheet_name='Sheet1')
+
+            # Update the specified section with new data
+            section_data = df[df['Section '] == section_to_update]
+            if not section_data.empty:
+                df.loc[df['Section '] == section_to_update] = new_data
+
+                # Save the updated DataFrame back to Excel
+                df.to_excel(excel_path, sheet_name='Sheet1', index=False)
+                print("Updated")
 
     except Exception as e:
         print(f"Error: {str(e)}")
