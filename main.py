@@ -192,27 +192,32 @@ for material in os.listdir(f.main_dir):
                                                     print("This file isn't a simple IV_Sweep Skipping ")
                                                     continue
 
-                                        # get classification value
 
+                                        # get classification value
+                                        #TODO FIX THIS
+                                        #print(sample_sweep_excell_dict['G'])
                                         # Filter the DataFrame based on the given section and device number
-                                        filtered_data = sample_sweep_excell_dict[section_folder][(sample_sweep_excell_dict[section_folder]['Device #'] == device_folder)]
+                                        #filtered_data = sample_sweep_excell_dict[section_folder][(sample_sweep_excell_dict[section_folder]['Device #'] == device_folder)]
+
+                                        df = sample_sweep_excell_dict[section_folder]
+                                        result_row = df[df["Device #"] == device_folder]
+                                        print(result_row)
 
                                         # Extract the classification value
-                                        classification = filtered_data['Classification'].values[
-                                            0] if not filtered_data.empty else None
+                                        classification = result_row["Classification"].values[0] if not result_row.empty else None
 
                                         print(classification)
-
-
                                         # for the device level, After processing all files in the device_number folder:
                                         if len(list_of_file_stats) >=2:
                                             device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
 
 
                                         device_data[f'{device_folder}'] = file_data
-                                        device_sweeps_dict[f'{device_folder}'] = num_of_sweeps
+                                        #print(device_data)
+                                        device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps':num_of_sweeps, 'classification':classification}
                                         list_of_measured_files_devices.append(list_of_measured_files)
                                         #plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
+
 
                                 # for the section level
                                 # this already does all sections correctly
@@ -302,10 +307,9 @@ for material in os.listdir(f.main_dir):
                             # all the data for the given sample
                             pickle.dump(sample_data, file)
 
-
-
                         # save the dataframe for stats within the sample folder in txt format
                         eq.save_df_off_stats(sample_path, sample_stats_dict, sample_sweeps_dict)
+
                         # saves df in text format for each sample
                         #eq.save_df_off_data(sample_path, sample_data, sample_sweeps_dict)
 
@@ -336,15 +340,20 @@ print("-----------------------")
 ############################################################################
 
 # A Breakpoint below does all the stats on the device
-# VERY CRUDE JUST PRINTS EVERYTHING DOSNT SAVE ANYTHING YET
+# VERY CRUDE JUST PRINTS EVERYTHING DOS-NT SAVE ANYTHING YET
 
 ############################################################################
+
+# calculate yield as well
+print("yield")
+a= eq.calculate_yield(material_sweeps_dict)
+print(a)
 
 print("\nSample with the most sweeps, corresponding sample and its sweeps in high to low")
 
 # Sample with the most sweeps, corresponding sample and its sweeps in high to low
 sample_sweeps = eq.get_num_sweeps_ordered(file_info_dict,material_sweeps_dict)
-
+#print(sample_sweeps)
 # Counter variable to keep track of the number of items printed
 print("Top 10 measured samples = ")
 print('-' * 50)

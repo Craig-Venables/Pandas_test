@@ -357,6 +357,31 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
     # Return the comprehensive information for all samples
     return comprehensive_sample_info
 
+def calculate_yield(material_sweeps_dict: dict) -> dict:
+    """
+    Calculate the yield for each sample name based on the number of measured devices and occurrences of "memristive".
+
+    Args:
+        material_sweeps_dict (dict): Dictionary containing material sweeps.
+
+    Returns:
+        dict: Dictionary with sample names as keys and corresponding yield values.
+    """
+    yield_dict = {}
+
+    for material, polymer_dict in material_sweeps_dict.items():
+        for polymer, sample_dict in polymer_dict.items():
+            for sample_name, data_dict in sample_dict.items():
+                num_measured_devices = len(data_dict)
+                memristive_count = sum(1 for device_data in data_dict.values() if device_data.get('classification') == 'Memristive')
+
+                if num_measured_devices > 0:
+                    yield_value = memristive_count / num_measured_devices
+                    yield_dict[f'{material}_{polymer}_{sample_name}'] = yield_value
+
+    return yield_dict
+
+
 
 def find_top_samples(material_stats_dict: dict, property_name: str = 'ON_OFF_Ratio', top_n: int = 10) -> tuple:
     """
@@ -447,8 +472,9 @@ def find_sample_number_sweeps(material_sweeps_dict: dict, material: str, polymer
         else:
             return 0
 
-    total_sum = sum(recursive_sum(value) for inner_dict in data.values() for value in inner_dict.values() if
-                    isinstance(value, (int, float)))
+    total_sum = sum(
+        recursive_sum(value.get('num_of_sweeps', 0)) for inner_dict in data.values() for value in inner_dict.values() if
+        isinstance(value, dict))
     # print(total_sum)
     return sample_name, total_sum
 
@@ -478,6 +504,8 @@ def get_num_sweeps_ordered(file_info_dict: dict, material_sweeps_dict: dict) -> 
         """
         # Sort the dictionary by 'total_sum' in descending order
         sorted_dict = dict(sorted(input_dict.items(), key=lambda item: item[1]['total_sum'], reverse=True))
+        print("sorted_dict")
+        print(sorted_dict)
         return sorted_dict
 
     for file_key, file_info in file_info_dict.items():
@@ -493,6 +521,7 @@ def get_num_sweeps_ordered(file_info_dict: dict, material_sweeps_dict: dict) -> 
         result_dict[file_key2] = {
             'sample_name': sample_name,
             'total_sum': total_sum
+            #'classification': classification
         }
 
     ordered_dict = order_dict_by_total_sum(result_dict)
