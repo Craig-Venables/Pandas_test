@@ -201,6 +201,28 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
         looped_array_info = None
     return num_sweeps, short_name, long_name, df, df_file_stats, graph
 
+
+def device_clasification(sample_sweep_excell_dict, device_folder, section_folder):
+    """ extracts the classification from the device_number excel sheet for the device level """
+    section_folder = section_folder[0].upper()
+    # Take only the first letter from the section_folder
+    # Take only the first two digits from the device_folder
+    device_folder = device_folder[:2]
+
+    #print(device_folder)
+
+    df = sample_sweep_excell_dict[section_folder]
+    # Convert device_folder to the same type as in the DataFrame (assuming it's numeric)
+    device_folder = int(device_folder)
+    # Find the row where the "Device #" matches the specified device_folder
+    result_row = df[df["Device #"] == device_folder]
+    # Extract the classification value
+    classification = result_row["Classification"].values[
+        0] if not result_row.empty else None
+    #print(classification)
+    return (classification)
+
+
 def categorize_device(voltage_data, current_data):
     def find_crossings(voltage_data: np.ndarray, current_data: np.ndarray):
         """
@@ -285,8 +307,7 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                         # device_key, stats_df = dict_items
                         # Check if 'file_name' and property_name exist in stats_df
                         if 'file_name' in stats_df.columns and property_name in stats_df.columns:
-                            # print(stats_df['file_name'].iloc[row_index])
-                            # print(row_index)
+
                             '''
                             Largest on off ratio algorithm:
                             1)Find a pandas method to find numerical row index of the largest on/off ratio for the current stats dict.
@@ -295,12 +316,6 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                             2)Use that row index to extract the file name for the current device with .iloc
                             '''
 
-                            # todo this dosnt handle nan values needs fixing
-                            # print(sample_key,section_key,device_key)
-                            # print(stats_df[property_name])
-                            # print(stats_df[property_name].index.get_loc(stats_df[property_name].idxmax()))
-                            # max_property_index = stats_df[property_name].idxmax()
-                            # pri
                             max_property_index = stats_df[property_name].index.get_loc(stats_df[property_name].idxmax())
                             property_value = stats_df[property_name].iloc[max_property_index]
 
@@ -365,21 +380,39 @@ def calculate_yield(material_sweeps_dict: dict) -> dict:
         material_sweeps_dict (dict): Dictionary containing material sweeps.
 
     Returns:
-        dict: Dictionary with sample names as keys and corresponding yield values.
+        dict: Dictionary with sample names as keys and corresponding yield values. In decending order
     """
     yield_dict = {}
-
+    yield_dict_sect = {}
     for material, polymer_dict in material_sweeps_dict.items():
         for polymer, sample_dict in polymer_dict.items():
-            for sample_name, data_dict in sample_dict.items():
-                num_measured_devices = len(data_dict)
-                memristive_count = sum(1 for device_data in data_dict.values() if device_data.get('classification') == 'Memristive')
+            for sample_name, section_dict in sample_dict.items():
 
-                if num_measured_devices > 0:
-                    yield_value = memristive_count / num_measured_devices
-                    yield_dict[f'{material}_{polymer}_{sample_name}'] = yield_value
+                measured = 0
+                memristive_device_count = 0
+                for section_name, device_dict in section_dict.items():
+                    num_measured_devices = len(device_dict)
 
-    return yield_dict
+                    memristive_count = sum(
+                        1 for device_data in device_dict.values() if device_data.get('classification') == 'Memristive')
+
+                    # Update measured and memristive_device_count for each section
+                    measured += num_measured_devices
+                    memristive_device_count += memristive_count
+
+                    if num_measured_devices > 0:
+                        yield_value = memristive_count / num_measured_devices
+                        yield_dict_sect[f'{material}_{polymer}_{sample_name}_{section_name}'] = yield_value
+
+                if measured > 0:
+                    yield_value_sample = memristive_device_count / measured
+                    yield_dict[f'{material}_{polymer}_{sample_name}'] = yield_value_sample
+
+    sorted_yield_dict = dict(sorted(yield_dict.items(), key=lambda item: item[1], reverse=True))
+    sorted_yield_dict_sect = dict(sorted(yield_dict_sect.items(), key=lambda item: item[1], reverse=True))
+
+    return sorted_yield_dict, sorted_yield_dict_sect
+
 
 
 
@@ -504,8 +537,7 @@ def get_num_sweeps_ordered(file_info_dict: dict, material_sweeps_dict: dict) -> 
         """
         # Sort the dictionary by 'total_sum' in descending order
         sorted_dict = dict(sorted(input_dict.items(), key=lambda item: item[1]['total_sum'], reverse=True))
-        print("sorted_dict")
-        print(sorted_dict)
+
         return sorted_dict
 
     for file_key, file_info in file_info_dict.items():

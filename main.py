@@ -31,16 +31,11 @@ from file import excel_path
 #  create a file that saves all the data collected from each device an sweeps within the data
 # - histogram all the data
 # - reorganise the functions
-#
 
 # have it created the origin graphs for all files towards the end, however only do this if there isn't already an origin
 # file created for each
 
-# images in, with a full overview of each create a final overview pdf of each device with all the sweeps information
-# ie average enclosed area, average switching
 
-# have the number of devices measured be logged and the number of devices marked "memristive" in my excell file
-# be used for % yield
 
 # Open a file for writing with utf-8 encoding
 output_file = open(f.main_dir + 'printlog.txt', 'w',encoding='utf-8')
@@ -74,9 +69,9 @@ for material in os.listdir(f.main_dir):
         polymer_sweeps_dict = {}
         polymer_data = {}
         polymer_names_dict = {}
+
         for polymer in os.listdir(material_path):
             polymer_path = os.path.join(material_path, polymer)
-
             if os.path.isdir(polymer_path):
                 # Navigate through sample_name folders
                 sample_stats_dict = {}
@@ -95,9 +90,9 @@ for material in os.listdir(f.main_dir):
 
                         # Pulls information from device sweep excell sheet
                         sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
-                        # print(sample_sweep_excell_dict['G'])
+
                         # Pulls information on fabrication from excell file
-                        info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
+                        fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
 
                         # empty list for storing all measured devices
                         list_of_measured_files_devices_sections = []
@@ -149,14 +144,12 @@ for material in os.listdir(f.main_dir):
                                                 # Does work on the file here
                                                 # checks If in excell sheet on file its capacitive or not if
                                                 # capacitive does something else
-                                                #print(device_path,file_name)
 
                                                 sweep_type = eq.check_sweep_type(file_path)
 
                                                 if sweep_type == 'Iv_sweep':
 
-                                                    # Performs analysis on the file given returning the dataframe after
-                                                    # analysis
+                                                    # Performs analysis on the file given returning the dataframe
                                                     analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
                                                                                        device_path,re_save_graph)
 
@@ -193,27 +186,14 @@ for material in os.listdir(f.main_dir):
                                                     continue
 
 
-                                        # get classification value
-                                        #TODO FIX THIS
-                                        #print(sample_sweep_excell_dict['G'])
-                                        # Filter the DataFrame based on the given section and device number
-                                        #filtered_data = sample_sweep_excell_dict[section_folder][(sample_sweep_excell_dict[section_folder]['Device #'] == device_folder)]
 
-                                        df = sample_sweep_excell_dict[section_folder]
-                                        result_row = df[df["Device #"] == device_folder]
-                                        print(result_row)
 
-                                        # Extract the classification value
-                                        classification = result_row["Classification"].values[0] if not result_row.empty else None
-
-                                        print(classification)
                                         # for the device level, After processing all files in the device_number folder:
                                         if len(list_of_file_stats) >=2:
                                             device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
-
-
+                                        classification = eq.device_clasification(sample_sweep_excell_dict,
+                                                                                 device_folder, section_folder)
                                         device_data[f'{device_folder}'] = file_data
-                                        #print(device_data)
                                         device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps':num_of_sweeps, 'classification':classification}
                                         list_of_measured_files_devices.append(list_of_measured_files)
                                         #plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
@@ -313,9 +293,6 @@ for material in os.listdir(f.main_dir):
                         # saves df in text format for each sample
                         #eq.save_df_off_data(sample_path, sample_data, sample_sweeps_dict)
 
-                        #print(sample_data[f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt'])
-
-
                 # More dictionary stuff
                 polymer_stats_dict[f'{polymer}'] = sample_stats_dict
                 polymer_sweeps_dict[f'{polymer}'] = sample_sweeps_dict
@@ -326,34 +303,37 @@ for material in os.listdir(f.main_dir):
         material_sweeps_dict[f'{material}'] = polymer_sweeps_dict
         material_data[f'{material}'] = polymer_data
 
-# material data = all the data extracted forom the sweep (voltage,current,abs_current etc....
-# materials_stats_dict = all the stats like area, resistance on and off etc...
-# materials_sweeps_dicts = all the sweeps per device in dictionary
-
+print('-' * 25)
 print("")
-print("-----------------------")
+print('-' * 25)
 print("access files using the following")
 print("material_sweeps_dict(['stock'][[f'{polymer}'][f'{sample_name}'][['section']['device_number'])")
 print("material_data['Stock'][f'{polymer}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt']")
-print("-----------------------")
+print('-' * 25)
+print("")
 
 ############################################################################
-
+# All sweeps analysed at this point stats are done below
 # A Breakpoint below does all the stats on the device
 # VERY CRUDE JUST PRINTS EVERYTHING DOS-NT SAVE ANYTHING YET
 
 ############################################################################
 
-# calculate yield as well
-print("yield")
-a= eq.calculate_yield(material_sweeps_dict)
-print(a)
+# Calculate yield for each sample
+yield_dict, yield_dict_sect = eq.calculate_yield(material_sweeps_dict)
+print("Yield for each sample, descending order")
+print('-' * 25)
+for key, value in yield_dict.items():
+    print(f'{key}: {value}')
+print('-' * 25)
 
-print("\nSample with the most sweeps, corresponding sample and its sweeps in high to low")
+#####################################
+print('')
+#####################################
 
 # Sample with the most sweeps, corresponding sample and its sweeps in high to low
 sample_sweeps = eq.get_num_sweeps_ordered(file_info_dict,material_sweeps_dict)
-#print(sample_sweeps)
+
 # Counter variable to keep track of the number of items printed
 print("Top 10 measured samples = ")
 print('-' * 50)
@@ -380,12 +360,9 @@ on_off_ratio_info = eq.process_property(material_stats_dict, 'ON_OFF_Ratio')
 # Call the function to process 'normalised_area'
 normalised_area_info = eq.process_property(material_stats_dict, 'normalised_area')
 
-#print(on_off_ratio_info)
-
 # print the values from above
 p.print_on_off_ratio_info(on_off_ratio_info)
 p.print_normalised_area_info(normalised_area_info)
-
 
 # Call the function to find the top 10 samples based on ON-OFF ratio
 on_off_ratio_info, top_samples_with_repetition_on_off, top_samples_without_repetition_on_off = eq.find_top_samples(material_stats_dict, property_name='ON_OFF_Ratio')
@@ -416,9 +393,47 @@ for idx, sample_key in enumerate(top_samples_without_repetition_normalized[:10],
     sample_info = next(info for info in normalized_area_info if info['sample_key'] == sample_key)
     print(f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, Normalized Area: {sample_info['property_value']}")
 
+#####################################
+print('')
+#####################################
 
 
 
+##############################
+"""
+
+Dictionary's;
+
+
+material_sweeps_dict = Contains all the sweeps per device along with the classification
+material_data = Contains all the data extracted from the sweep (voltage,current,abs_current etc....)
+material_stats_dict = Contains stats for each sweep including Area,Ron/roff,Von/off
+yield_dict = Contains the yield for each Sample
+yield_dict_sect = Contains the yield for each Section of a device
+on_off_ratio_info = Contains the ON-OFF ratio for each Sample organised for each section device and sweep
+normalized_area_info = Contains the normalized area for each sample organised for each section device and sweep
+sample_sweeps = Contains the sweeps per sample organised into descending order
+
+
+Per sample:  
+(these are only applicable to current working sample and are not saved elsewhere.)
+sample_sweep_excell_dict = PD dataframe Contains information for each device in sections i.e. Memristive 
+fabrication_info_dict = information from the solutions and devices excell file - Per sample only 
+
+As they sound:
+top_samples_with_repetition_on_off = 
+top_samples_without_repetition_on_off = 
+top_samples_with_repetition_normalized = 
+top_samples_without_repetition_normalized = 
+
+
+
+
+                        # Pulls information on fabrication from excell file
+                        fabrication_information_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
+
+"""
+fabrication_info_dict
 
 # ##################################################################
 
