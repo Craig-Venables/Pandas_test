@@ -97,12 +97,12 @@ class plot():
 
             plt.savefig(file_path, bbox_inches='tight', dpi=200)
 
-            # print(f"File saved successfully at {file_path}")
+            print(f"File saved successfully at {file_path}")
             return self.fig
         else:
-            return None
-            # print(f"File {file_path} already exists. Skipping save.")
 
+            print(f"File {file_path} already exists. Skipping save.")
+            return None
 
 
     def main_plot_loop(self,voltage,current,abs_current,sweep_num):

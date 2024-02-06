@@ -43,9 +43,11 @@ output_file = open(f.main_dir + 'printlog.txt', 'w',encoding='utf-8')
 # Redirect print output to both the file and the console
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 
+# craig - prevents use of solution and devices excell sheet
+craig = True
 save_df = False
-plot_graph = False
-re_save_graph = False
+plot_graph = True
+re_save_graph = True
 re_analyse = True
 eq.set_pandas_display_options()
 
@@ -87,12 +89,16 @@ for material in os.listdir(f.main_dir):
 
                         # Anything to device that doesn't require information on individual sweeps
                         # Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7
+                        if craig:
 
+                            # Pulls information on fabrication from excell file
+                            fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name,
+                                                                                               f.excel_path,
+                                                                                               sample_path)
                         # Pulls information from device sweep excell sheet
                         sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
 
-                        # Pulls information on fabrication from excell file
-                        fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
+
 
                         # empty list for storing all measured devices
                         list_of_measured_files_devices_sections = []
@@ -118,7 +124,7 @@ for material in os.listdir(f.main_dir):
                                     if os.path.isdir(device_path):
                                         # Working on individual devices
                                         # print("")
-                                        #print("working in folder ", sample_name, section_folder, device_folder)
+                                        print("working in folder ", sample_name, section_folder, device_folder)
                                         # print("")
 
 
@@ -136,6 +142,7 @@ for material in os.listdir(f.main_dir):
                                         # Process each file in the device_number folder
                                         for file_name in os.listdir(device_path):
                                             file_path = os.path.join(device_path, file_name)
+                                            print(file_name)
                                             # if os.path.isdir(file_path):
                                             #     # skip directories ie folders
                                             #     continue
