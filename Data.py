@@ -5,6 +5,7 @@ import plot as plot
 import os
 import math
 import statistics as stats_module
+import plotting as plot
 
 import matplotlib.pyplot as plt
 from itertools import zip_longest
@@ -133,6 +134,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
                 count += 1
                 p.main_plot_loop(arr_v, arr_c, absolute_val(arr_c), count)
 
+
             # plot main graph too of all together
             p.main_plot(crossing_points,re_save_graph)
 
@@ -189,6 +191,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
         if plot_graph:
             p = plot.plot(df, file_info, save_loc, filepath)
             graph = p.main_plot(cross_points,re_save_graph)
+
+            # this needs finishing
+            #plot.main_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), )
             # print(type(graph))
         else:
             graph = None

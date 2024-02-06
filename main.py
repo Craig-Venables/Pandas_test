@@ -47,7 +47,7 @@ sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 craig = True
 save_df = False
 plot_graph = True
-re_save_graph = True
+re_save_graph = False
 re_analyse = True
 eq.set_pandas_display_options()
 
