@@ -1,4 +1,5 @@
 pip install reportlab matplotlib
+pip install imageio
 Read me provided by tabine 
 
 ### Important

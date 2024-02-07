@@ -5,7 +5,8 @@ import plot as plot
 import os
 import math
 import statistics as stats_module
-import plotting as plot
+import plotting as plotting
+import time
 
 import matplotlib.pyplot as plt
 from itertools import zip_longest
@@ -132,11 +133,18 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
             count = 0
             for arr_v, arr_c in zip(split_v_data, split_c_data):
                 count += 1
-                p.main_plot_loop(arr_v, arr_c, absolute_val(arr_c), count)
+                folder_path = p.main_plot_loop(arr_v, arr_c, absolute_val(arr_c), count)
+                # return folder path too files
 
 
             # plot main graph too of all together
             p.main_plot(crossing_points,re_save_graph)
+
+            #time.sleep(1)
+            # plots gid of all graphs in looped data
+            save_name = f"{file_info.get('file_name')}" + ".gif"
+            output_gif_loc = os.path.join(save_loc, save_name)
+            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0.2)
 
             # p.fig.savefig(f"{file_info.get('file_name')}.png")
             # print("saved graph too" , "###insert file path###")
@@ -320,7 +328,8 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                                  and store the whichever is larger and it's index in a variable defined outside of the loop
                             2)Use that row index to extract the file name for the current device with .iloc
                             '''
-
+                            print(property_name)
+                            print(stats_df[property_name])
                             max_property_index = stats_df[property_name].index.get_loc(stats_df[property_name].idxmax())
                             property_value = stats_df[property_name].iloc[max_property_index]
 
@@ -700,6 +709,17 @@ def area_under_curves(v_data, c_data):
     ng_area_enclosed = abs(sect4_area) - abs(sect3_area)
     area_enclosed = ps_area_enclosed + ng_area_enclosed
     norm_area_enclosed = area_enclosed / (abs(v_max) + abs(v_min))
+
+    # added nan check as causes issues later if not a value
+    if math.isnan(norm_area_enclosed):
+        norm_area_enclosed = 0
+    if math.isnan(ps_area_enclosed):
+        ps_area_enclosed = 0
+    if math.isnan(ng_area_enclosed):
+        ng_area_enclosed = 0
+    if math.isnan(area_enclosed):
+        area_enclosed = 0
+
     return ps_area_enclosed, ng_area_enclosed, area_enclosed, norm_area_enclosed
 
 

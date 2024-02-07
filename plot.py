@@ -111,7 +111,8 @@ class plot():
         '''
 
         save_name = f"{self.short_filename}" + "- #" + f"{sweep_num}"+ ".png"
-        file_path = os.path.join(self.save_loc, "Extracted sweeps",f"{self.filename}",save_name)
+        folder_path = os.path.join(self.save_loc, "Extracted sweeps",f"{self.filename}")
+        file_path = os.path.join(folder_path,  save_name)
 
 
         if not os.path.exists(file_path):
@@ -150,7 +151,7 @@ class plot():
 
             #print(f"File saved successfully at {file_path}")
         else:
-            return None
+            return folder_path
             #print(f"File {file_path} already exists. Skipping save.")
 
         # uncomment to show for 0.01 sec

@@ -47,7 +47,7 @@ sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 craig = True
 save_df = False
 plot_graph = True
-re_save_graph = False
+re_save_graph = True
 re_analyse = True
 eq.set_pandas_display_options()
 
@@ -142,7 +142,7 @@ for material in os.listdir(f.main_dir):
                                         # Process each file in the device_number folder
                                         for file_name in os.listdir(device_path):
                                             file_path = os.path.join(device_path, file_name)
-                                            print(file_name)
+                                            #print(file_name)
                                             # if os.path.isdir(file_path):
                                             #     # skip directories ie folders
                                             #     continue

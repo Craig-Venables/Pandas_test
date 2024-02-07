@@ -4,7 +4,9 @@ import file as f
 import scipy as sp
 import pathlib as pl
 import os
-
+import imageio
+import os
+from PIL import Image, ImageDraw, ImageFont
 
 def main_plot(voltage , current, abs_current, save_loc, crossing_points, re_save,file_info):
     '''
@@ -275,3 +277,58 @@ def information(on_off_ratio,section_name,device_number,filename):
 
     # Adjust the subplot layout
     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
+
+
+def create_gif_from_folder(folder_path, output_gif, duration=0.2, multi_sweep=True):
+    """
+    Create a GIF from a folder full of images, optionally adding numbers from file names
+    and a black screen at the end to indicate the loop.
+
+    Parameters:
+        folder_path (str): Path to the folder containing the images.
+        output_gif (str): Path for the output GIF file.
+        duration (float): Duration (in seconds) between each frame.
+        multi_sweep (bool): Flag to enable/disable adding numbers from file names.
+    """
+    # List all files in the folder
+    image_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')])
+
+    # Create a list to store the images
+    images = []
+    for idx, image_file in enumerate(image_files, start=1):
+        try:
+            image = Image.open(image_file)
+        except (IOError, SyntaxError) as e:
+            print(f"Error loading {image_file}: {e}")
+            continue
+
+        # Add number to the image if multi_sweep is True
+        if multi_sweep:
+            # Extract number after '#' symbol from file name
+            file_name = os.path.basename(image_file)
+            number = file_name.split('#')[-1].split('.')[0]
+
+            # Add number to the image
+            draw = ImageDraw.Draw(image)
+            font = ImageFont.truetype("arial.ttf", 20)
+            draw.text((10, 10), f"#{number}", fill="white", font=font)  # Adjust position and font size as needed
+
+        # Append the image directly to the list
+        images.append(image)
+
+    # Check if images list is empty
+    if not images:
+        print("No valid images found in the folder. Unable to create GIF.")
+        return
+
+    # Add a black screen (a black image) to indicate the end of the loop
+    black_image = Image.new('RGB', images[0].size, color='black')
+    images.append(black_image)
+
+    # Save the images as a GIF
+    imageio.mimsave(output_gif, images, duration=duration)
+
+    print(f"GIF created successfully at {output_gif}")
+
+
+
