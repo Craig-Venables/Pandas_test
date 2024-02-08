@@ -97,11 +97,11 @@ class plot():
 
             plt.savefig(file_path, bbox_inches='tight', dpi=200)
 
-            print(f"File saved successfully at {file_path}")
+            #print(f"File saved successfully at {file_path}")
             return self.fig
         else:
 
-            print(f"File {file_path} already exists. Skipping save.")
+            #print(f"File {file_path} already exists. Skipping save.")
             return None
 
 
@@ -110,7 +110,7 @@ class plot():
             plots iv and log iv graphs as subplots and saves it
         '''
 
-        save_name = f"{self.short_filename}" + "- #" + f"{sweep_num}"+ ".png"
+        save_name = f"{sweep_num}"+"-"+f"{self.short_filename}" + "- #" + f"{sweep_num}"+ ".png"
         folder_path = os.path.join(self.save_loc, "Extracted sweeps",f"{self.filename}")
         file_path = os.path.join(folder_path,  save_name)
 

@@ -17,6 +17,7 @@ from file import Tee
 import shutil
 import excell as ex
 from file import excel_path
+import plotting
 
 ###### Important ######
 # Make sure that all files are text files you can easily do this using power rename and
@@ -46,8 +47,8 @@ sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 # craig - prevents use of solution and devices excell sheet
 craig = True
 save_df = False
-plot_graph = True
-re_save_graph = True
+plot_graph = False
+re_save_graph = False
 re_analyse = True
 eq.set_pandas_display_options()
 
@@ -124,7 +125,7 @@ for material in os.listdir(f.main_dir):
                                     if os.path.isdir(device_path):
                                         # Working on individual devices
                                         # print("")
-                                        print("working in folder ", sample_name, section_folder, device_folder)
+                                        #print("working in folder ", sample_name, section_folder, device_folder)
                                         # print("")
 
 
@@ -196,6 +197,14 @@ for material in os.listdir(f.main_dir):
 
 
                                         # for the device level, After processing all files in the device_number folder:
+
+                                        save_name = "_Device"+f"{device_folder}" + ".gif"
+                                        folder_path = device_path + '\\' + "python_images"
+                                        output_gif_loc = os.path.join(folder_path, save_name)
+
+
+                                        plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,
+                                                                        restart_duration=10)
                                         if len(list_of_file_stats) >=2:
                                             device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
                                         classification = eq.device_clasification(sample_sweep_excell_dict,

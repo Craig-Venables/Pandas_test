@@ -7,6 +7,11 @@ import os
 import imageio
 import os
 from PIL import Image, ImageDraw, ImageFont
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+
+
 
 def main_plot(voltage , current, abs_current, save_loc, crossing_points, re_save,file_info):
     '''
@@ -278,57 +283,242 @@ def information(on_off_ratio,section_name,device_number,filename):
     # Adjust the subplot layout
     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
 
+#
+# def create_gif_from_folder(folder_path, output_gif, frame_rate=10, restart_duration=2):
+#     """
+#     Create a GIF from a folder full of images, with a black screen added at the end.
+#
+#     Parameters:
+#         folder_path (str): Path to the folder containing the images.
+#         output_gif (str): Path for the output GIF file.
+#         frame_rate (int): Frame rate (frames per second) of the GIF.
+#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
+#     """
+#     # List all files in the folder
+#     image_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')])
+#
+#     # Create a list to store the images
+#     images = [Image.open(image_file) for image_file in image_files]
+#
+#     # Ensure all images have the same width and height
+#     max_width = max(image.width for image in images)
+#     max_height = max(image.height for image in images)
+#     resized_images = [image.resize((max_width, max_height)) for image in images]
+#
+#     # Convert images to numpy arrays
+#     image_arrays = [np.array(image) for image in resized_images]
+#
+#     # Add a black screen at the end to indicate restart
+#     black_image = np.zeros_like(image_arrays[0])
+#     frames = image_arrays + [black_image]
+#
+#     # Save the images as a GIF using moviepy
+#     clip = ImageSequenceClip(frames, fps=frame_rate)
+#     clip.write_gif(output_gif, fps=frame_rate)
+#
+#     print(f"GIF created successfully at {output_gif}")
 
-def create_gif_from_folder(folder_path, output_gif, duration=0.2, multi_sweep=True):
+
+
+# def create_gif_from_folder(folder_path, output_gif, frame_rate=10, restart_duration=2, compression=10):
+#     """
+#     Create a GIF from a folder full of images, with a black screen added at the end.
+#
+#     Parameters:
+#         folder_path (str): Path to the folder containing the images.
+#         output_gif (str): Path for the output GIF file.
+#         frame_rate (int): Frame rate (frames per second) of the GIF.
+#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
+#         compression (int): Compression level for the GIF (0-9), where 0 is no compression and 9 is maximum compression.
+#     """
+#     # List all files in the folder
+#     image_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')])
+#
+#     # Create a list to store the images
+#     images = [Image.open(image_file) for image_file in image_files]
+#
+#     # Ensure all images have the same width and height
+#     max_width = max(image.width for image in images)
+#     max_height = max(image.height for image in images)
+#     resized_images = [image.resize((max_width, max_height)) for image in images]
+#
+#     # Convert images to numpy arrays
+#     image_arrays = [np.array(image) for image in resized_images]
+#
+#     # Add a black screen at the end to indicate restart
+#     black_image = np.zeros_like(image_arrays[0])
+#     frames = image_arrays + [black_image]
+#
+#     # Calculate frame duration based on frame rate
+#     frame_duration = 1 / frame_rate
+#
+#     # Save the images as a GIF using moviepy with specified compression
+#     clip = ImageSequenceClip(frames, fps=frame_rate)
+#     clip.write_videofile(output_gif, codec='gif', preset='default', bitrate=f"{compression}k", program='ffmpeg')
+#     print(f"GIF created successfully at {output_gif}")
+
+#old - works but too fast
+# def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
+#     """
+#     Create a GIF from a folder full of images, with a black screen added at the end.
+#
+#     Parameters:
+#         folder_path (str): Path to the folder containing the images.
+#         output_gif (str): Path for the output GIF file.
+#         duration (float): Duration (in seconds) between each frame.
+#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
+#     """
+#     # List all files in the folder
+#     image_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')])
+#
+#     # Load all images
+#     images = [Image.open(image_file) for image_file in image_files]
+#
+#     # Ensure all images have the same width and height
+#     max_width = max(image.width for image in images)
+#     max_height = max(image.height for image in images)
+#     resized_images = [image.resize((max_width, max_height)) for image in images]
+#
+#     # Add a black screen at the end to indicate restart
+#     black_image = Image.new('RGB', resized_images[0].size, color='black')
+#     frames = resized_images + [black_image]
+#
+#     # Set duration for each frame
+#     frame_durations = [duration] * len(resized_images)
+#     frame_durations.append(restart_duration)
+#
+#     # Save the images as a GIF
+#     frames[0].save(output_gif, save_all=True, append_images=frames[1:], duration=frame_durations, loop=0)
+#
+#
+#
+#
+#     print(f"GIF created successfully at {output_gif}")
+
+
+# def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
+#     """
+#     Create a GIF from a folder full of images, with a black screen added at the end.
+#
+#     Parameters:
+#         folder_path (str): Path to the folder containing the images.
+#         output_gif (str): Path for the output GIF file.
+#         duration (float): Duration (in seconds) between each frame.
+#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
+#     """
+#     # List all files in the folder
+#     image_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')])
+#
+#     # Load all images
+#     images = [imageio.imread(image_file) for image_file in image_files]
+#
+#     # Add a black screen at the end to indicate restart
+#     black_image = np.zeros_like(images[0])
+#     images.append(black_image)
+#
+#     # Save the images as a GIF using imageio
+#     imageio.mimsave(output_gif, images, format='GIF', fps=2)
+#
+#     print(f"GIF created successfully at {output_gif}")
+
+import re
+
+
+# def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
+#     """
+#     Create a GIF from a folder full of images, with a black screen added at the end.
+#
+#     Parameters:
+#         folder_path (str): Path to the folder containing the images.
+#         output_gif (str): Path for the output GIF file.
+#         duration (float): Duration (in seconds) between each frame.
+#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
+#     """
+#     try:
+#         # List all files in the folder and sort them numerically
+#         image_files = sorted(
+#             [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')],
+#             key=lambda x: int(re.search(r'\d+', x).group()))
+#
+#         # Check if there are no image files
+#         if not image_files:
+#             raise FileNotFoundError("No image files found in the folder.")
+#
+#         # Load all images
+#         images = [imageio.imread(image_file) for image_file in image_files]
+#
+#         # Add a black screen at the end to indicate restart
+#         black_image = np.zeros_like(images[0])
+#         images.append(black_image)
+#
+#         # Calculate the number of frames needed for restart duration
+#         restart_frames = int(restart_duration * 2)  # Assuming the default frame rate is 2 frames per second
+#
+#         # Add additional black screens for restart indication
+#         for _ in range(restart_frames):
+#             images.append(black_image)
+#
+#         # Save the images as a GIF using imageio
+#         imageio.mimsave(output_gif, images, format='GIF', fps=2)
+#
+#         print(f"GIF created successfully at {output_gif}")
+#
+#     except FileNotFoundError as e:
+#         print(f"Error: {e}")
+#         print("Continuing without creating the GIF.")
+#
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
+
+def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
     """
-    Create a GIF from a folder full of images, optionally adding numbers from file names
-    and a black screen at the end to indicate the loop.
+    Create a GIF from a folder full of images, with a black screen added at the end.
 
     Parameters:
         folder_path (str): Path to the folder containing the images.
         output_gif (str): Path for the output GIF file.
         duration (float): Duration (in seconds) between each frame.
-        multi_sweep (bool): Flag to enable/disable adding numbers from file names.
+        restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
     """
-    # List all files in the folder
-    image_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')])
+    try:
+        # List all files in the folder and sort them numerically
+        image_files = sorted(
+            [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')],
+            key=lambda x: int(re.search(r'\d+', os.path.basename(x)).group()))  # Custom sorting key
 
-    # Create a list to store the images
-    images = []
-    for idx, image_file in enumerate(image_files, start=1):
-        try:
-            image = Image.open(image_file)
-        except (IOError, SyntaxError) as e:
-            print(f"Error loading {image_file}: {e}")
-            continue
 
-        # Add number to the image if multi_sweep is True
-        if multi_sweep:
-            # Extract number after '#' symbol from file name
-            file_name = os.path.basename(image_file)
-            number = file_name.split('#')[-1].split('.')[0]
+        # Check if there are no image files
+        if not image_files:
+            pass
+            #raise FileNotFoundError("No image files found in the folder.")
 
-            # Add number to the image
-            draw = ImageDraw.Draw(image)
-            font = ImageFont.truetype("arial.ttf", 20)
-            draw.text((10, 10), f"#{number}", fill="white", font=font)  # Adjust position and font size as needed
+        # Load all images
+        images = [imageio.imread(image_file) for image_file in image_files]
 
-        # Append the image directly to the list
-        images.append(image)
+        # Add a black screen at the end to indicate restart
+        black_image = np.zeros_like(images[0])
+        images.append(black_image)
 
-    # Check if images list is empty
-    if not images:
-        print("No valid images found in the folder. Unable to create GIF.")
-        return
+        # Calculate the number of frames needed for restart duration
+        restart_frames = int(restart_duration * 2)  # Assuming the default frame rate is 2 frames per second
 
-    # Add a black screen (a black image) to indicate the end of the loop
-    black_image = Image.new('RGB', images[0].size, color='black')
-    images.append(black_image)
+        # Add additional black screens for restart indication
+        for _ in range(restart_frames):
+            images.append(black_image)
 
-    # Save the images as a GIF
-    imageio.mimsave(output_gif, images, duration=duration)
+        # Save the images as a GIF using imageio
+        imageio.mimsave(output_gif, images, format='GIF', fps=2)
 
-    print(f"GIF created successfully at {output_gif}")
+        #print(f"GIF created successfully at {output_gif}")
+
+    except FileNotFoundError as e:
+        pass
+        # print(f"Error: {e}")
+        # print("Continuing without creating the GIF.")
+
+    except Exception as e:
+        pass
+        #print(f"An error occurred: {e}")
 
 
 

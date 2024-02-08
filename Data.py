@@ -144,7 +144,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
             # plots gid of all graphs in looped data
             save_name = f"{file_info.get('file_name')}" + ".gif"
             output_gif_loc = os.path.join(save_loc, save_name)
-            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0.2)
+            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=5, restart_duration=10)
 
             # p.fig.savefig(f"{file_info.get('file_name')}.png")
             # print("saved graph too" , "###insert file path###")
@@ -328,8 +328,8 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                                  and store the whichever is larger and it's index in a variable defined outside of the loop
                             2)Use that row index to extract the file name for the current device with .iloc
                             '''
-                            print(property_name)
-                            print(stats_df[property_name])
+                            #print(property_name)
+                            #print(stats_df[property_name])
                             max_property_index = stats_df[property_name].index.get_loc(stats_df[property_name].idxmax())
                             property_value = stats_df[property_name].iloc[max_property_index]
 
