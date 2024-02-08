@@ -421,7 +421,7 @@ def information(on_off_ratio,section_name,device_number,filename):
 #
 #     print(f"GIF created successfully at {output_gif}")
 
-import re
+
 
 
 # def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
@@ -435,10 +435,10 @@ import re
 #         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
 #     """
 #     try:
-#         # List all files in the folder and sort them numerically
+#          # List all files in the folder and sort them numerically
 #         image_files = sorted(
 #             [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')],
-#             key=lambda x: int(re.search(r'\d+', x).group()))
+#             key=lambda x: int(re.search(r'\d+', os.path.basename(x)).group()))  # Custom sorting key
 #
 #         # Check if there are no image files
 #         if not image_files:
@@ -469,6 +469,67 @@ import re
 #
 #     except Exception as e:
 #         print(f"An error occurred: {e}")
+#
+import re
+
+# good one dont delete
+# def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
+#     """
+#     Create a GIF from a folder full of images, with a black screen added at the end.
+#
+#     Parameters:
+#         folder_path (str): Path to the folder containing the images.
+#         output_gif (str): Path for the output GIF file.
+#         duration (float): Duration (in seconds) between each frame.
+#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
+#     """
+#     try:
+#         # List all files in the folder and sort them numerically
+#         image_files = sorted(
+#             [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')],
+#             key=lambda x: int(re.search(r'\d+', os.path.basename(x)).group()))  # Custom sorting key
+#
+#         # Check if there are no image files
+#         if not image_files:
+#             pass
+#             #raise FileNotFoundError("No image files found in the folder.")
+#
+#         # # Load all images
+#         # images = [imageio.imread(image_file) for image_file in image_files]
+#
+#         # Load all images
+#         images = []
+#         for image_file in image_files:
+#             image = imageio.imread(image_file)
+#             #print(f"Image file: {image_file}, shape: {image.shape}")  # Print the shape of each loaded image
+#             images.append(image)
+#
+#         # # Add a black screen at the end to indicate restart
+#         # black_image = np.zeros_like(images[0])
+#         # images.append(black_image)
+#
+#         # Calculate the number of frames needed for restart duration
+#         restart_frames = int(restart_duration * 2)  # Assuming the default frame rate is 2 frames per second
+#
+#         # # Add additional black screens for restart indication
+#         # for _ in range(restart_frames):
+#         #     images.append(black_image)
+#
+#         # Save the images as a GIF using imageio
+#         imageio.mimsave(output_gif, images, format='GIF', fps=2)
+#
+#         #print(f"GIF created successfully at {output_gif}")
+#
+#     except FileNotFoundError as e:
+#         #pass
+#         print(f"Error: {e}")
+#         print("Continuing without creating the GIF.")
+#
+#     except Exception as e:
+#         #pass
+#         print(f"An error occurred: {e}")
+# #
+
 
 def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
     """
@@ -480,12 +541,14 @@ def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration
         duration (float): Duration (in seconds) between each frame.
         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
     """
+    # Specify the desired width and height for resizing the images
+    width = 1046  # Adjust as needed
+    height = 759  # Adjust as needed
     try:
         # List all files in the folder and sort them numerically
         image_files = sorted(
             [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')],
             key=lambda x: int(re.search(r'\d+', os.path.basename(x)).group()))  # Custom sorting key
-
 
         # Check if there are no image files
         if not image_files:
@@ -493,7 +556,15 @@ def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration
             #raise FileNotFoundError("No image files found in the folder.")
 
         # Load all images
-        images = [imageio.imread(image_file) for image_file in image_files]
+        images = []
+        for image_file in image_files:
+            # Read the image using PIL
+            image = Image.open(image_file)
+            # Resize the image to a common shape
+            image = image.resize((width, height))  # Specify the desired width and height
+            # Convert the image to numpy array
+            image = np.array(image)
+            images.append(image)
 
         # Add a black screen at the end to indicate restart
         black_image = np.zeros_like(images[0])
@@ -509,16 +580,72 @@ def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration
         # Save the images as a GIF using imageio
         imageio.mimsave(output_gif, images, format='GIF', fps=2)
 
-        #print(f"GIF created successfully at {output_gif}")
+        print(f"GIF created successfully at {output_gif}")
 
     except FileNotFoundError as e:
-        pass
-        # print(f"Error: {e}")
-        # print("Continuing without creating the GIF.")
+        print(f"Error: {e}")
+        print("Continuing without creating the GIF.")
 
     except Exception as e:
-        pass
-        #print(f"An error occurred: {e}")
+        print(f"An error occurred: {e}")
 
-
+# def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
+#     """
+#     Create a GIF from a folder full of images, with a black screen added at the end.
+#
+#     Parameters:
+#         folder_path (str): Path to the folder containing the images.
+#         output_gif (str): Path for the output GIF file.
+#         duration (float): Duration (in seconds) between each frame.
+#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
+#     """
+#     try:
+#         # List all files in the folder and sort them numerically
+#         image_files = sorted(
+#             [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')],
+#             key=lambda x: int(re.search(r'\d+', os.path.basename(x)).group()))  # Custom sorting key
+#
+#         # Check if there are no image files
+#         if not image_files:
+#             pass
+#             #raise FileNotFoundError("No image files found in the folder.")
+#
+#         # Set a common canvas size
+#         canvas_width = 2500
+#         canvas_height = 2000
+#         canvas_channels = 3  # Assuming RGB images
+#
+#         # Create a blank canvas
+#         canvas = np.zeros((canvas_height, canvas_width, canvas_channels), dtype=np.uint8)
+#
+#         # Set the starting position to paste the images onto the canvas
+#         start_x = 0
+#         start_y = 0
+#
+#         # Iterate through each image and paste it onto the canvas
+#         for image_file in image_files:
+#             image = imageio.imread(image_file)
+#             if len(image.shape) == 3 and image.shape[2] == 4:  # Check if image has alpha channel
+#                 image = image[:, :, :3]  # Remove alpha channel
+#             # Get the dimensions of the image
+#             height, width, _ = image.shape
+#             # Paste the image onto the canvas
+#             canvas[start_y:start_y + height, start_x:start_x + width, :] = image
+#             # Update the starting position for the next image
+#             start_x += width
+#
+#         # Save the canvas as a single GIF
+#         imageio.mimsave(output_gif, [canvas], format='GIF', fps=2)
+#
+#         #print(f"GIF created successfully at {output_gif}")
+#
+#     except FileNotFoundError as e:
+#         #pass
+#         print(f"Error: {e}")
+#         print("Continuing without creating the GIF.")
+#
+#     except Exception as e:
+#         #pass
+#         print(f"An error occurred: {e}")
+#
 

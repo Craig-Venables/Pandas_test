@@ -142,7 +142,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
 
             #time.sleep(1)
             # plots gid of all graphs in looped data
-            save_name = f"{file_info.get('file_name')}" + ".gif"
+            save_name = "_"+f"{file_info.get('file_name')}" + ".gif"
             output_gif_loc = os.path.join(save_loc, save_name)
             plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=5, restart_duration=10)
 

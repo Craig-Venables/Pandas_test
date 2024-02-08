@@ -95,7 +95,8 @@ class plot():
             file_path = os.path.join(self.save_loc, f"{self.short_filename}.png")
 
 
-            plt.savefig(file_path, bbox_inches='tight', dpi=200)
+            plt.savefig(file_path, bbox_inches='tight')
+            #dpi=200
 
             #print(f"File saved successfully at {file_path}")
             return self.fig
@@ -147,8 +148,8 @@ class plot():
             plt.ioff()
 
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            plt.savefig(file_path, bbox_inches='tight', dpi=200)
-
+            plt.savefig(file_path, bbox_inches='tight')
+            #dpi=200
             #print(f"File saved successfully at {file_path}")
         else:
             return folder_path
