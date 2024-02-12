@@ -8,12 +8,13 @@ import imageio
 import os
 from PIL import Image, ImageDraw, ImageFont
 from PIL import ImageFile
+import re
+import matplotlib.gridspec as gridspec
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-
-
-def main_plot(voltage , current, abs_current, save_loc, crossing_points, re_save,file_info):
+def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save, file_info):
     '''
         plots iv and log iv graphs as subplots and saves it
     '''
@@ -47,17 +48,14 @@ def main_plot(voltage , current, abs_current, save_loc, crossing_points, re_save
         plt.subplot(2, 2, 3)
         plot_iv_avg(voltage, current)
 
+        # Create subplot for the final plot with two graphs
         plt.subplot(2, 2, 4)
-        text = (crossing_points)
-        plt.text(0.5, 0.5, text, ha='center', va='center', fontsize=12)
-        # self.plot_graph_other()
-        # self.information()
-        # self.plot_array_changes()
+        plot_iv_subplots(voltage, current)
 
-        # add label underneath plots for on-off ratio
-        # self.fig.text(0.5, 0.01, " ON/OFF Ratio @0.2v - " + f'{round(self.on_off_ratio, 4)}', ha='center', fontsize=10)
-        # plt.show()
-        # add subplot title
+        # text = (crossing_points)
+        # plt.text(0.5, 0.5, text, ha='center', va='center', fontsize=12)
+
+        plt.show()
 
         # Turn off interactive mode
         plt.ioff()
@@ -73,8 +71,25 @@ def main_plot(voltage , current, abs_current, save_loc, crossing_points, re_save
         print(f"File {file_path} already exists. Skipping save.")
         return None
 
+def plot_iv_subplots(voltage,current):
+    '''
+        plots iv and log iv graphs as subplots and saves it
+    '''
+    # Generate some data
+    x = np.linspace(0, 10, 100)
+    y1 = np.sin(x)
+    y2 = np.cos(x)
 
-def main_plot_loop(voltage,current,abs_current,sweep_num, save_loc, crossing_points, re_save,file_info):
+    # Create subplots
+    fig, axs = plt.subplots(2)  # 2 rows of subplots
+
+    # Plot data on the subplots
+    axs[0].plot(x, y1, color='blue')
+    axs[0].set_title('Sin(x)')
+    axs[1].plot(x, y2, color='red')
+    axs[1].set_title('Cos(x)')
+
+def main_plot_loop(voltage, current, abs_current, sweep_num, save_loc, crossing_points, re_save, file_info):
     '''
         plots iv and log iv graphs as subplots and saves it
     '''
@@ -86,9 +101,8 @@ def main_plot_loop(voltage,current,abs_current,sweep_num, save_loc, crossing_poi
     filename = file_info.get('file_name')
     save_loc = save_loc
     short_filename = os.path.splitext(filename)[0]
-    save_name = f"{short_filename}" + "- #" + f"{sweep_num}"+ ".png"
-    file_path = os.path.join(save_loc, "Extracted sweeps",f"{filename}",save_name)
-
+    save_name = f"{short_filename}" + "- #" + f"{sweep_num}" + ".png"
+    file_path = os.path.join(save_loc, "Extracted sweeps", f"{filename}", save_name)
 
     if not os.path.exists(file_path):
         plt.close('all')
@@ -124,20 +138,21 @@ def main_plot_loop(voltage,current,abs_current,sweep_num, save_loc, crossing_poi
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         plt.savefig(file_path, bbox_inches='tight', dpi=200)
 
-        #print(f"File saved successfully at {file_path}")
+        # print(f"File saved successfully at {file_path}")
     else:
         return None
-        #print(f"File {file_path} already exists. Skipping save.")
+        # print(f"File {file_path} already exists. Skipping save.")
 
-    # uncomment to show for 0.01 sec
-    # plt.pause(0.01)
+        # uncomment to show for 0.01 sec
+        # plt.pause(0.01)
 
-    # uncomment to keep on screen
-    # plt.show()
+        # uncomment to keep on screen
+        # plt.show()
 
         return fig
 
-def plot_iv(voltage,current):
+
+def plot_iv(voltage, current):
     """
      Plots voltage against abs current using Matplotlib.
 
@@ -153,7 +168,7 @@ def plot_iv(voltage,current):
     plt.title('Voltage vs. Current Graph')
 
 
-def plot_logiv(voltage,abs_current):
+def plot_logiv(voltage, abs_current):
     """
         Plots voltage against abs current using Matplotlib.
 
@@ -176,8 +191,7 @@ def plot_logiv(voltage,abs_current):
     # plt.show()
 
 
-def plot_iv_avg(voltage,current, num_points=20, ax=None):
-
+def plot_iv_avg(voltage, current, num_points=20, ax=None):
     # Calculate the length of the data
     data_len = len(voltage)
 
@@ -215,7 +229,7 @@ def plot_graph_other(self):
     """ code got from raven"""
     data = {"t": [], "V": [], "I": [], "dIdt": []}
 
-    #print(self.data["voltage"].to_numpy()) #dataframe
+    # print(self.data["voltage"].to_numpy()) #dataframe
 
     data["V"] = (self.data["voltage"].to_numpy())
     data["I"] = (self.data["current"].to_numpy())
@@ -233,11 +247,10 @@ def plot_graph_other(self):
 
     data["t"] = np.arange(start=0, stop=step_num * total_delay, step=total_delay)
 
-    print(step_num,total_delay)
+    print(step_num, total_delay)
     print(data)
 
     data["dIdt"] = np.gradient(data["I"], total_delay)
-
 
     # just need to plot graphs now
 
@@ -252,8 +265,77 @@ def plot_graph_other(self):
     # axs[1].plot(data[1]["t"][0:82], data[1]["dIdt"][0:82], color="b")
     # axs[2].plot(data[1]["V"][0:82], data[1]["dIdt"][0:82], color="b")
 
+def sclc_ps(voltage,current_density):
+    # create scatter
+    plt.plot(voltage, current_density, color='black')
+    # Add labels and a title
+    plt.ylabel('current density positive (A/cm^2) ')
+    plt.xlabel('Voltage (V)')
+    plt.title('SCLC')
 
-def information(on_off_ratio,section_name,device_number,filename):
+def sclc_ng(voltage, abs_current_density):
+    # create scatter
+    plt.plot(voltage, abs_current_density, color='black')
+    # Add labels and a title
+    plt.ylabel('Current density negative (A/cm^2)')
+    plt.xlabel('abs(Voltage) (V)')
+    plt.title('SCLC')
+
+def schottky_emission_ps(voltage_half,current):
+    # create scatter
+    plt.plot(voltage_half, current, color='black')
+    # Add labels and a title
+    plt.ylabel('Current (A) ')
+    plt.xlabel('Voltage (V^1/2)')
+    plt.title('Schottky Emission (positive)')
+
+def schottky_emission_ng(voltage_half, abs_current):
+    # create scatter
+    plt.plot(voltage_half, abs_current, color='black')
+    # Add labels and a title
+    plt.ylabel('abs(Current) (A) ')
+    plt.xlabel('Voltage (V^1/2)')
+    plt.title('Schottky Emission (Negative)')
+
+def poole_frenkel_ps(current_voltage, voltage_half):
+    # create scatter
+    plt.plot(current_voltage, voltage_half, color='black')
+    # Add labels and a title
+    plt.ylabel('Current/Voltage (A/V) ')
+    plt.xlabel('Voltage (V^1/2)')
+    plt.title('Poole-Frenkel (Positive')
+
+def poole_frenkel_ng(abs_current_voltage, voltage_half):
+    # create scatter
+    plt.plot(abs_current_voltage, voltage_half, color='black')
+    # Add labels and a title
+    plt.ylabel('abs(Current/Voltage) (A/V) ')
+    plt.xlabel('Voltage (V^1/2)')
+    plt.title('Poole-Frenkel (negative')
+
+
+def grid_spec():
+
+    gs = gridspec.GridSpec(4, 4)
+    ax1 = plt.subplot(gs[0, :2])
+    ax2 = plt.subplot(gs[2, :])
+    ax3 = plt.subplot(gs[2, :])
+
+
+    ax2 = plt.subplot(gs[1, :-1])
+    ax3 = plt.subplot(gs[1:, -1])
+    ax4 = plt.subplot(gs[-1, 0])
+    ax5 = plt.subplot(gs[-1, -2])
+
+
+def polar_subplot(x,y):
+    fig, (ax1, ax2) = plt.subplots(1, 2, subplot_kw=dict(projection='polar'))
+    ax1.plot(x, y)
+    ax2.plot(x, y ** 2)
+
+plt.show()
+
+def information(on_off_ratio, section_name, device_number, filename):
     '''
     Add text information to the final section of the subplot.
 
@@ -283,194 +365,6 @@ def information(on_off_ratio,section_name,device_number,filename):
     # Adjust the subplot layout
     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
 
-#
-# def create_gif_from_folder(folder_path, output_gif, frame_rate=10, restart_duration=2):
-#     """
-#     Create a GIF from a folder full of images, with a black screen added at the end.
-#
-#     Parameters:
-#         folder_path (str): Path to the folder containing the images.
-#         output_gif (str): Path for the output GIF file.
-#         frame_rate (int): Frame rate (frames per second) of the GIF.
-#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
-#     """
-#     # List all files in the folder
-#     image_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')])
-#
-#     # Create a list to store the images
-#     images = [Image.open(image_file) for image_file in image_files]
-#
-#     # Ensure all images have the same width and height
-#     max_width = max(image.width for image in images)
-#     max_height = max(image.height for image in images)
-#     resized_images = [image.resize((max_width, max_height)) for image in images]
-#
-#     # Convert images to numpy arrays
-#     image_arrays = [np.array(image) for image in resized_images]
-#
-#     # Add a black screen at the end to indicate restart
-#     black_image = np.zeros_like(image_arrays[0])
-#     frames = image_arrays + [black_image]
-#
-#     # Save the images as a GIF using moviepy
-#     clip = ImageSequenceClip(frames, fps=frame_rate)
-#     clip.write_gif(output_gif, fps=frame_rate)
-#
-#     print(f"GIF created successfully at {output_gif}")
-
-
-
-# def create_gif_from_folder(folder_path, output_gif, frame_rate=10, restart_duration=2, compression=10):
-#     """
-#     Create a GIF from a folder full of images, with a black screen added at the end.
-#
-#     Parameters:
-#         folder_path (str): Path to the folder containing the images.
-#         output_gif (str): Path for the output GIF file.
-#         frame_rate (int): Frame rate (frames per second) of the GIF.
-#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
-#         compression (int): Compression level for the GIF (0-9), where 0 is no compression and 9 is maximum compression.
-#     """
-#     # List all files in the folder
-#     image_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')])
-#
-#     # Create a list to store the images
-#     images = [Image.open(image_file) for image_file in image_files]
-#
-#     # Ensure all images have the same width and height
-#     max_width = max(image.width for image in images)
-#     max_height = max(image.height for image in images)
-#     resized_images = [image.resize((max_width, max_height)) for image in images]
-#
-#     # Convert images to numpy arrays
-#     image_arrays = [np.array(image) for image in resized_images]
-#
-#     # Add a black screen at the end to indicate restart
-#     black_image = np.zeros_like(image_arrays[0])
-#     frames = image_arrays + [black_image]
-#
-#     # Calculate frame duration based on frame rate
-#     frame_duration = 1 / frame_rate
-#
-#     # Save the images as a GIF using moviepy with specified compression
-#     clip = ImageSequenceClip(frames, fps=frame_rate)
-#     clip.write_videofile(output_gif, codec='gif', preset='default', bitrate=f"{compression}k", program='ffmpeg')
-#     print(f"GIF created successfully at {output_gif}")
-
-#old - works but too fast
-# def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
-#     """
-#     Create a GIF from a folder full of images, with a black screen added at the end.
-#
-#     Parameters:
-#         folder_path (str): Path to the folder containing the images.
-#         output_gif (str): Path for the output GIF file.
-#         duration (float): Duration (in seconds) between each frame.
-#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
-#     """
-#     # List all files in the folder
-#     image_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')])
-#
-#     # Load all images
-#     images = [Image.open(image_file) for image_file in image_files]
-#
-#     # Ensure all images have the same width and height
-#     max_width = max(image.width for image in images)
-#     max_height = max(image.height for image in images)
-#     resized_images = [image.resize((max_width, max_height)) for image in images]
-#
-#     # Add a black screen at the end to indicate restart
-#     black_image = Image.new('RGB', resized_images[0].size, color='black')
-#     frames = resized_images + [black_image]
-#
-#     # Set duration for each frame
-#     frame_durations = [duration] * len(resized_images)
-#     frame_durations.append(restart_duration)
-#
-#     # Save the images as a GIF
-#     frames[0].save(output_gif, save_all=True, append_images=frames[1:], duration=frame_durations, loop=0)
-#
-#
-#
-#
-#     print(f"GIF created successfully at {output_gif}")
-
-
-# def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
-#     """
-#     Create a GIF from a folder full of images, with a black screen added at the end.
-#
-#     Parameters:
-#         folder_path (str): Path to the folder containing the images.
-#         output_gif (str): Path for the output GIF file.
-#         duration (float): Duration (in seconds) between each frame.
-#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
-#     """
-#     # List all files in the folder
-#     image_files = sorted([os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')])
-#
-#     # Load all images
-#     images = [imageio.imread(image_file) for image_file in image_files]
-#
-#     # Add a black screen at the end to indicate restart
-#     black_image = np.zeros_like(images[0])
-#     images.append(black_image)
-#
-#     # Save the images as a GIF using imageio
-#     imageio.mimsave(output_gif, images, format='GIF', fps=2)
-#
-#     print(f"GIF created successfully at {output_gif}")
-
-
-
-
-# def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
-#     """
-#     Create a GIF from a folder full of images, with a black screen added at the end.
-#
-#     Parameters:
-#         folder_path (str): Path to the folder containing the images.
-#         output_gif (str): Path for the output GIF file.
-#         duration (float): Duration (in seconds) between each frame.
-#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
-#     """
-#     try:
-#          # List all files in the folder and sort them numerically
-#         image_files = sorted(
-#             [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')],
-#             key=lambda x: int(re.search(r'\d+', os.path.basename(x)).group()))  # Custom sorting key
-#
-#         # Check if there are no image files
-#         if not image_files:
-#             raise FileNotFoundError("No image files found in the folder.")
-#
-#         # Load all images
-#         images = [imageio.imread(image_file) for image_file in image_files]
-#
-#         # Add a black screen at the end to indicate restart
-#         black_image = np.zeros_like(images[0])
-#         images.append(black_image)
-#
-#         # Calculate the number of frames needed for restart duration
-#         restart_frames = int(restart_duration * 2)  # Assuming the default frame rate is 2 frames per second
-#
-#         # Add additional black screens for restart indication
-#         for _ in range(restart_frames):
-#             images.append(black_image)
-#
-#         # Save the images as a GIF using imageio
-#         imageio.mimsave(output_gif, images, format='GIF', fps=2)
-#
-#         print(f"GIF created successfully at {output_gif}")
-#
-#     except FileNotFoundError as e:
-#         print(f"Error: {e}")
-#         print("Continuing without creating the GIF.")
-#
-#     except Exception as e:
-#         print(f"An error occurred: {e}")
-#
-import re
 
 # good one dont delete
 # def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
@@ -553,7 +447,7 @@ def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration
         # Check if there are no image files
         if not image_files:
             pass
-            #raise FileNotFoundError("No image files found in the folder.")
+            # raise FileNotFoundError("No image files found in the folder.")
 
         # Load all images
         images = []
@@ -587,6 +481,8 @@ def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration
         print("Continuing without creating the GIF.")
 
     except Exception as e:
+        print("check create gif fom folder final")
+        print(folder_path)
         print(f"An error occurred: {e}")
 
 # def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
@@ -648,4 +544,3 @@ def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration
 #         #pass
 #         print(f"An error occurred: {e}")
 #
-

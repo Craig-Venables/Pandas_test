@@ -16,7 +16,8 @@ debugging = False
 ''' all the data manipulation goes here including any dataframe manipulation 
  '''
 
-def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
+
+def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
     """ for all info from a single file this determines if it is a s """
 
     file_info = f.extract_folder_names(filepath)
@@ -126,23 +127,24 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
         f.check_if_folder_exists(device_path, "python_images")
 
         save_loc = device_path + '\\' + "python_images"
-        crossing_points = "crossing_coming soon"
+        cross_points = "crossing_coming soon"
 
         if plot_graph:
-            p = plot.plot(df, file_info, save_loc, filepath)
+            # p = plot.plot(df, file_info, save_loc, filepath)
             count = 0
             for arr_v, arr_c in zip(split_v_data, split_c_data):
                 count += 1
-                folder_path = p.main_plot_loop(arr_v, arr_c, absolute_val(arr_c), count)
+                #folder_path = p.main_plot_loop(arr_v, arr_c, absolute_val(arr_c), count)
                 # return folder path too files
-
-
+                folder_path = plotting.main_plot_loop(arr_v, arr_c, absolute_val(arr_c),count ,save_loc,
+                                            cross_points, re_save_graph, file_info)
             # plot main graph too of all together
-            p.main_plot(crossing_points,re_save_graph)
+            # p.main_plot(crossing_points, re_save_graph)
+            graph = plotting.main_plot_loop(data.get('voltage'), data.get('current'), data.get('abs_current'),count,save_loc,
+                                            cross_points, re_save_graph, file_info)
 
-            #time.sleep(1)
             # plots gid of all graphs in looped data
-            save_name = "_"+f"{file_info.get('file_name')}" + ".gif"
+            save_name = "_" + f"{file_info.get('file_name')}" + ".gif"
             output_gif_loc = os.path.join(save_loc, save_name)
             plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=5, restart_duration=10)
 
@@ -176,7 +178,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
 
         cross_points = categorize_device(v_data, c_data)
-        #print(cross_points)
+        # print(cross_points)
 
         file_stats = {'file_name': [file_info.get('file_name')],
                       'ps_area': [ps_area],
@@ -188,7 +190,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
                       'ON_OFF_Ratio': [zero_devision_check(resistance_on_value, resistance_off_value)],
                       'voltage_on_value': [voltage_on_value],
                       'voltage_off_value': [voltage_off_value],
-                      #'crossing_points': [find_crossings(v_data, c_data)],
+                      # 'crossing_points': [find_crossings(v_data, c_data)],
                       }
         df_file_stats = pd.DataFrame(file_stats, index=[0])
 
@@ -197,11 +199,12 @@ def file_analysis(filepath, plot_graph, save_df, device_path,re_save_graph):
 
         graph_dict = {}
         if plot_graph:
-            p = plot.plot(df, file_info, save_loc, filepath)
-            graph = p.main_plot(cross_points,re_save_graph)
+            # p = plot.plot(df, file_info, save_loc, filepath)
+            # graph = p.main_plot(cross_points, re_save_graph)
 
             # this needs finishing
-            #plot.main_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), )
+            graph = plotting.main_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc,
+                                       cross_points, re_save_graph, file_info)
             # print(type(graph))
         else:
             graph = None
@@ -222,7 +225,7 @@ def device_clasification(sample_sweep_excell_dict, device_folder, section_folder
     # Take only the first two digits from the device_folder
     device_folder = device_folder[:2]
 
-    #print(device_folder)
+    # print(device_folder)
 
     df = sample_sweep_excell_dict[section_folder]
     # Convert device_folder to the same type as in the DataFrame (assuming it's numeric)
@@ -232,7 +235,7 @@ def device_clasification(sample_sweep_excell_dict, device_folder, section_folder
     # Extract the classification value
     classification = result_row["Classification"].values[
         0] if not result_row.empty else None
-    #print(classification)
+    # print(classification)
     return (classification)
 
 
@@ -281,8 +284,6 @@ def categorize_device(voltage_data, current_data):
     return "Ohmic", True
 
 
-
-
 def process_property(material_stats_dict: dict, property_name: str) -> dict:
     """
     This function processes the property of a material(ie, on off ratio).
@@ -320,7 +321,6 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                         # device_key, stats_df = dict_items
                         # Check if 'file_name' and property_name exist in stats_df
                         if 'file_name' in stats_df.columns and property_name in stats_df.columns:
-
                             '''
                             Largest on off ratio algorithm:
                             1)Find a pandas method to find numerical row index of the largest on/off ratio for the current stats dict.
@@ -328,8 +328,8 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
                                  and store the whichever is larger and it's index in a variable defined outside of the loop
                             2)Use that row index to extract the file name for the current device with .iloc
                             '''
-                            #print(property_name)
-                            #print(stats_df[property_name])
+                            # print(property_name)
+                            # print(stats_df[property_name])
                             max_property_index = stats_df[property_name].index.get_loc(stats_df[property_name].idxmax())
                             property_value = stats_df[property_name].iloc[max_property_index]
 
@@ -386,6 +386,7 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
     # Return the comprehensive information for all samples
     return comprehensive_sample_info
 
+
 def calculate_yield(material_sweeps_dict: dict) -> dict:
     """
     Calculate the yield for each sample name based on the number of measured devices and occurrences of "memristive".
@@ -426,8 +427,6 @@ def calculate_yield(material_sweeps_dict: dict) -> dict:
     sorted_yield_dict_sect = dict(sorted(yield_dict_sect.items(), key=lambda item: item[1], reverse=True))
 
     return sorted_yield_dict, sorted_yield_dict_sect
-
-
 
 
 def find_top_samples(material_stats_dict: dict, property_name: str = 'ON_OFF_Ratio', top_n: int = 10) -> tuple:
@@ -567,7 +566,7 @@ def get_num_sweeps_ordered(file_info_dict: dict, material_sweeps_dict: dict) -> 
         result_dict[file_key2] = {
             'sample_name': sample_name,
             'total_sum': total_sum
-            #'classification': classification
+            # 'classification': classification
         }
 
     ordered_dict = order_dict_by_total_sum(result_dict)
