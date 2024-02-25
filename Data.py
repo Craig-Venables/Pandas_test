@@ -37,6 +37,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
     # checks for looped data and calculates the number of loops
     num_sweeps = check_for_loops(v_data)
 
+
+
     # create a dataframe for the device of all the data
     data = {'voltage': v_data,
             'current': c_data,
@@ -49,12 +51,12 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
             'log_Resistance': log_value(resistance(v_data, c_data)),
             'abs_Current_ps': absolute_val(c_data_ps),
             'abs_Current_ng': absolute_val(c_data_ng),
-            'current_Density_ps': current_density_eq(v_data_ps, c_data_ps),
-            'current_Density_ng': current_density_eq(v_data_ng, c_data_ng),
+            'current_Density_ps': absolute_val(current_density_eq(v_data_ps, c_data_ps)),
+            'current_Density_ng': absolute_val(current_density_eq(v_data_ng, c_data_ng)),
             'electric_field_ps': electric_field_eq(v_data_ps),
-            'electric_field_ng': electric_field_eq(v_data_ng),
+            'electric_field_ng': absolute_val(electric_field_eq(v_data_ng)),
             'inverse_resistance_ps': inverse_resistance_eq(v_data_ps, c_data_ps),
-            'inverse_resistance_ng': inverse_resistance_eq(v_data_ng, c_data_ng),
+            'inverse_resistance_ng': absolute_val(inverse_resistance_eq(v_data_ng, c_data_ng)),
             'sqrt_Voltage': sqrt_array(v_data),
             }
 
@@ -196,6 +198,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
 
         f.check_if_folder_exists(device_path, "python_images")
         save_loc = os.path.join(device_path, "python_images")
+
+        #plotting.grid_spec(data)
 
         graph_dict = {}
         if plot_graph:

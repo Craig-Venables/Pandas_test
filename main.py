@@ -18,6 +18,7 @@ import shutil
 import excell as ex
 from file import excel_path
 import plotting
+import Origin as origin
 
 ###### Important ######
 # Make sure that all files are text files you can easily do this using power rename and
@@ -45,12 +46,13 @@ output_file = open(f.main_dir + 'printlog.txt', 'w',encoding='utf-8')
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 
 # craig - prevents use of solution and devices excell sheet
+origin_graphs = True
 craig = False
 save_df = False
-plot_graph = True
-re_save_graph = True
+plot_graph = False
+re_save_graph = False
 re_analyse = True
-eq.set_pandas_display_options()
+#eq.set_pandas_display_options()
 
 # Main for loop for parsing through folders
 
@@ -63,6 +65,8 @@ file_info_dict = {}
 sample_name_arr = []
 
 print("Starting...")
+
+#plotting.grid_spec()
 
 for material in os.listdir(f.main_dir):
     material_path = os.path.join(f.main_dir, material)
@@ -203,8 +207,10 @@ for material in os.listdir(f.main_dir):
                                         output_gif_loc = os.path.join(folder_path, save_name)
 
 
-                                        plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,
-                                                                        restart_duration=10)
+                                        if plot_graph:
+                                            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,
+                                                                            restart_duration=10)
+
                                         if len(list_of_file_stats) >=2:
                                             device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
                                         classification = eq.device_clasification(sample_sweep_excell_dict,
@@ -212,9 +218,20 @@ for material in os.listdir(f.main_dir):
                                         device_data[f'{device_folder}'] = file_data
                                         device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps':num_of_sweeps, 'classification':classification}
                                         list_of_measured_files_devices.append(list_of_measured_files)
-                                        #plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
+
+                                #print(device_path)
+                                #print(file_data)
+                                #print('################################')
+                                #print(  '################################')
+                                #break
 
 
+                                if origin_graphs:
+                                    #has to be device level to run have all the data
+                                    origin.plot_in_origin(device_data,device_path)
+                                #         #plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
+
+                                #os.exit(1)
                                 # for the section level
                                 # this already does all sections correctly
                                 section_stats_dict[f'{section_folder}'] = device_stats_dict
@@ -449,7 +466,7 @@ top_samples_without_repetition_normalized =
                         fabrication_information_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
 
 """
-fabrication_info_dict
+#fabrication_info_dict
 
 # ##################################################################
 
