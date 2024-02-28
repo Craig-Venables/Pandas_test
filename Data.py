@@ -57,7 +57,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
             'electric_field_ng': absolute_val(electric_field_eq(v_data_ng)),
             'inverse_resistance_ps': inverse_resistance_eq(v_data_ps, c_data_ps),
             'inverse_resistance_ng': absolute_val(inverse_resistance_eq(v_data_ng, c_data_ng)),
-            'sqrt_Voltage': sqrt_array(v_data),
+            'sqrt_Voltage_ps': sqrt_array(v_data_ps),
+            'sqrt_Voltage_ng': absolute_val(sqrt_array(v_data_ng)),
+
             }
 
     df = pd.DataFrame(data)

@@ -29,34 +29,31 @@ import Origin as origin
 # pip install reportlab matplotlib
 
 # to add
-# Todo Statistics- pull data from the statisitcs sheet i fill out when measuring the devices
-#  create a file that saves all the data collected from each device an sweeps within the data
 # - histogram all the data
 # - reorganise the functions
 
-# have it created the origin graphs for all files towards the end, however only do this if there isn't already an origin
-# file created for each
-
-
 
 # Open a file for writing with utf-8 encoding
-output_file = open(f.main_dir + 'printlog.txt', 'w',encoding='utf-8')
+output_file = open(f.main_dir + 'printlog.txt', 'w', encoding='utf-8')
 
 # Redirect print output to both the file and the console
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 
-# craig - prevents use of solution and devices excell sheet
-origin_graphs = False
-craig = False
+
+origin_graphs = True
+pull_fabrication_info_excell = False
 save_df = False
 plot_graph = False
+plot_gif = False
 re_save_graph = False
 re_analyse = True
-#eq.set_pandas_display_options()
+
+# set Pandas display options to display all data in dataframe?
+# eq.set_pandas_display_options()
 
 # Main for loop for parsing through folders
 
-# empty dictionary's
+# empty dictionary's for later use
 material_stats_dict = {}
 material_sweeps_dict = {}
 material_data = {}
@@ -66,7 +63,6 @@ sample_name_arr = []
 
 print("Starting...")
 
-#plotting.grid_spec()
 
 for material in os.listdir(f.main_dir):
     material_path = os.path.join(f.main_dir, material)
@@ -89,21 +85,19 @@ for material in os.listdir(f.main_dir):
                 for sample_name in os.listdir(polymer_path):
                     sample_path = os.path.join(polymer_path, sample_name)
                     if os.path.isdir(sample_path):
-                        #print("working on ", sample_name)
-                        #print("Path = ", sample_path)
+                        """ working on a sample folders, here do anything for work on the device that dosnt 
+                        involve analysis of data:
+                        Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7 """
 
-                        # Anything to device that doesn't require information on individual sweeps
-                        # Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7
-                        if craig:
-
+                        # print("working on ", sample_name)
+                        # print("Path = ", sample_path)
+                        if pull_fabrication_info_excell:
                             # Pulls information on fabrication from excell file
                             fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name,
                                                                                                f.excel_path,
                                                                                                sample_path)
                         # Pulls information from device sweep excell sheet
                         sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
-
-
 
                         # empty list for storing all measured devices
                         list_of_measured_files_devices_sections = []
@@ -116,9 +110,10 @@ for material in os.listdir(f.main_dir):
                             # Anything to section that doesn't require information on individual sweeps
                             section_path = os.path.join(sample_path, section_folder)
                             if os.path.isdir(section_path):
-                                # Navigate through device_number folders
-                                #print("working on ", sample_name, section_folder)
+                                """ working on section folder"""
+                                # print("working on ", sample_name, section_folder)
 
+                                # More empty arrays for storing all measured devices
                                 list_of_measured_files_devices = []
                                 device_sweeps_dict = {}
                                 device_stats_dict = {}
@@ -127,11 +122,9 @@ for material in os.listdir(f.main_dir):
                                 for device_folder in os.listdir(section_path):
                                     device_path = os.path.join(section_path, device_folder)
                                     if os.path.isdir(device_path):
-                                        # Working on individual devices
-                                        # print("")
-                                        print("working in folder ", sample_name, section_folder, device_folder)
-                                        # print("")
+                                        """ Working on individual devices"""
 
+                                        print("working in folder ", sample_name, section_folder, device_folder)
 
                                         # keeps a list of all files processed for each device
                                         list_of_measured_files = []
@@ -147,26 +140,22 @@ for material in os.listdir(f.main_dir):
                                         # Process each file in the device_number folder
                                         for file_name in os.listdir(device_path):
                                             file_path = os.path.join(device_path, file_name)
-                                            #print(file_name)
-                                            # if os.path.isdir(file_path):
-                                            #     # skip directories ie folders
-                                            #     continue
-                                            #if not file_name.endswith(f.ignore_files):
                                             if file_name.endswith('.txt'):
-                                                # Does work on the file here
-                                                # checks If in excell sheet on file its capacitive or not if
-                                                # capacitive does something else
+                                                """Loops through each file in the folder and analyses them using the 
+                                                functions here"""
 
+                                                # Checks and returns the sweep type of the file
                                                 sweep_type = eq.check_sweep_type(file_path)
 
                                                 if sweep_type == 'Iv_sweep':
+                                                    """ for simple iv sweeps"""
 
                                                     # Performs analysis on the file given returning the dataframe
                                                     analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
-                                                                                       device_path,re_save_graph)
+                                                                                       device_path, re_save_graph)
 
                                                     if analysis_result is None:
-                                                        # if there is an error in reading the file it will jst continue
+                                                        # if there is an error in reading the file it will just continue
                                                         # skipping
                                                         continue
 
@@ -197,60 +186,51 @@ for material in os.listdir(f.main_dir):
                                                     print("This file isn't a simple IV_Sweep Skipping ")
                                                     continue
 
+                                        ###############################################################################
+                                        """ For the device level only place in here any information that needs to be 
+                                        done on an individual device """
 
-
-
-                                        # for the device level, After processing all files in the device_number folder:
-
-                                        save_name = "_Device"+f"{device_folder}" + ".gif"
+                                        save_name = "_Device" + f"{device_folder}" + ".gif"
                                         folder_path = device_path + '\\' + "python_images"
                                         output_gif_loc = os.path.join(folder_path, save_name)
 
+                                        if plot_graph and plot_gif:
+                                            # Creates Gifs of any sample with multiple sweeps
+                                            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,restart_duration=10)
 
-                                        if plot_graph:
-                                            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,
-                                                                            restart_duration=10)
+                                        if len(list_of_file_stats) >= 2:
+                                            device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats,ignore_index=True)
 
-                                        if len(list_of_file_stats) >=2:
-                                            device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
-                                        classification = eq.device_clasification(sample_sweep_excell_dict,
-                                                                                 device_folder, section_folder)
+                                        # determines the classification of a device from the excell sheet
+                                        classification = eq.device_clasification(sample_sweep_excell_dict, device_folder, section_folder)
+
                                         device_data[f'{device_folder}'] = file_data
-                                        device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps':num_of_sweeps, 'classification':classification}
-                                        list_of_measured_files_devices.append(list_of_measured_files)
 
-                                #print(device_path)
-                                #print(file_data)
-                                #print('################################')
-                                #print(  '################################')
-                                #break
+                                        device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps': num_of_sweeps,'classification': classification}
 
+                                        if origin_graphs:
+                                            # plot the data in origin for use later
+                                            origin.plot_in_origin(device_data, device_path, 'transport')
 
-                                if origin_graphs:
-                                    #has to be device level to run have all the data
-                                    origin.plot_in_origin(device_data,device_path)
-                                #         #plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
+                                        # plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
 
-                                #os.exit(1)
-                                # for the section level
-                                # this already does all sections correctly
+                                ###############################################################################
+                                """ For the Section level only place in here any information that needs to be 
+                                done on an individual section """
+
+                                # Creating Dictionary's for device stats as a section
                                 section_stats_dict[f'{section_folder}'] = device_stats_dict
                                 section_sweeps_dict[f'{section_folder}'] = device_sweeps_dict
-                                section_data[f'{section_folder}']=device_data
+                                section_data[f'{section_folder}'] = device_data
 
-
-                                # calculation for each section and the statistics of each
-                                # pdf.create_pdf_with_graphs_and_data_for_section()
-                                # section name
-                                list_of_measured_files_devices_sections.append(list_of_measured_files_devices)
+                        ###############################################################################
+                        """ For the Sample level only place in here any information that needs to be 
+                        done on an individual Sample level """
 
                         # Names the final dictionary the sample name for storage later if necessary
                         sample_stats_dict[f'{sample_name}'] = section_stats_dict
                         sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
                         sample_data[f'{sample_name}'] = section_data
-                        #print(sample_sweeps_dict)
-                        #print(sample_sweep_excell_dict['G'])
-                        #print(sample_sweep_excell_dict)
 
 
 
@@ -304,10 +284,10 @@ for material in os.listdir(f.main_dir):
                         print("################################")
 
                         # access the dataframe for specific bits
-                        #print(sample_stats_dict[f'{sample_name}']['G 200µm'])
+                        # print(sample_stats_dict[f'{sample_name}']['G 200µm'])
 
                         # graphs = some_function_comparing_all_files
-                        #pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{sample_name}.pdf",info_dict,sample_stats_dict)
+                        # pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{sample_name}.pdf",info_dict,sample_stats_dict)
 
                         # Saves information for later use
                         with open(sample_path + '/' + sample_name + '_Stats', 'wb') as file:
@@ -316,7 +296,7 @@ for material in os.listdir(f.main_dir):
                         with open(sample_path + '/material_stats_dict.pkl', 'wb') as file:
                             pickle.dump(material_stats_dict, file)
 
-                        with open(sample_path + '/'+sample_name+'_data', 'wb') as file:
+                        with open(sample_path + '/' + sample_name + '_data', 'wb') as file:
                             # all the data for the given sample
                             pickle.dump(sample_data, file)
 
@@ -324,7 +304,7 @@ for material in os.listdir(f.main_dir):
                         eq.save_df_off_stats(sample_path, sample_stats_dict, sample_sweeps_dict)
 
                         # saves df in text format for each sample
-                        #eq.save_df_off_data(sample_path, sample_data, sample_sweeps_dict)
+                        # eq.save_df_off_data(sample_path, sample_data, sample_sweeps_dict)
 
                 # More dictionary stuff
                 polymer_stats_dict[f'{polymer}'] = sample_stats_dict
@@ -365,7 +345,7 @@ print('')
 #####################################
 
 # Sample with the most sweeps, corresponding sample and its sweeps in high to low
-sample_sweeps = eq.get_num_sweeps_ordered(file_info_dict,material_sweeps_dict)
+sample_sweeps = eq.get_num_sweeps_ordered(file_info_dict, material_sweeps_dict)
 
 # Counter variable to keep track of the number of items printed
 print("Top 10 measured samples = ")
@@ -398,41 +378,43 @@ p.print_on_off_ratio_info(on_off_ratio_info)
 p.print_normalised_area_info(normalised_area_info)
 
 # Call the function to find the top 10 samples based on ON-OFF ratio
-on_off_ratio_info, top_samples_with_repetition_on_off, top_samples_without_repetition_on_off = eq.find_top_samples(material_stats_dict, property_name='ON_OFF_Ratio')
+on_off_ratio_info, top_samples_with_repetition_on_off, top_samples_without_repetition_on_off = eq.find_top_samples(
+    material_stats_dict, property_name='ON_OFF_Ratio')
 
 # Call the function to find the top 10 samples based on normalized area
-normalized_area_info, top_samples_with_repetition_normalized, top_samples_without_repetition_normalized = eq.find_top_samples(material_stats_dict, property_name='normalised_area')
-
+normalized_area_info, top_samples_with_repetition_normalized, top_samples_without_repetition_normalized = eq.find_top_samples(
+    material_stats_dict, property_name='normalised_area')
 
 # Print the results for ON-OFF ratio
 print("Top Samples (With Repetition) - ON-OFF Ratio:")
 for idx, sample_info in enumerate(on_off_ratio_info[:10], start=1):
-    print(f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, ON-OFF Ratio: {sample_info['property_value']}")
+    print(
+        f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, ON-OFF Ratio: {sample_info['property_value']}")
 
 print("\nTop Samples (Without Repetition) - ON-OFF Ratio:")
 for idx, sample_key in enumerate(top_samples_without_repetition_on_off[:10], start=1):
     # Find the corresponding sample info for samples without repetition
     sample_info = next(info for info in on_off_ratio_info if info['sample_key'] == sample_key)
-    print(f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, ON-OFF Ratio: {sample_info['property_value']}")
+    print(
+        f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, ON-OFF Ratio: {sample_info['property_value']}")
 
 # Print the results for normalized area
 print("\nTop Samples (With Repetition) - Normalized Area:")
 for idx, sample_info in enumerate(normalized_area_info[:10], start=1):
-    print(f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, Normalized Area: {sample_info['property_value']}")
+    print(
+        f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, Normalized Area: {sample_info['property_value']}")
 
 print("\nTop Samples (Without Repetition) - Normalized Area:")
 for idx, sample_key in enumerate(top_samples_without_repetition_normalized[:10], start=1):
     # Find the corresponding sample info for samples without repetition
     sample_info = next(info for info in normalized_area_info if info['sample_key'] == sample_key)
-    print(f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, Normalized Area: {sample_info['property_value']}")
+    print(
+        f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, Normalized Area: {sample_info['property_value']}")
 
 #####################################
 print('')
 #####################################
 
-
-
-##############################
 """
 
 Dictionary's;
@@ -462,11 +444,11 @@ top_samples_without_repetition_normalized =
 
 
 
-                        # Pulls information on fabrication from excell file
-                        fabrication_information_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
+# Pulls information on fabrication from excell file
+fabrication_information_dict = exc.save_info_from_solution_devices_excell(sample_name, f.excel_path, sample_path)
 
 """
-#fabrication_info_dict
+# fabrication_info_dict
 
 # ##################################################################
 
@@ -475,7 +457,7 @@ top_samples_without_repetition_normalized =
 ##################################################################
 
 # Close the file to ensure that everything is written
-#output_file.close()
+# output_file.close()
 
 
 # if __name__ == '__main__':
