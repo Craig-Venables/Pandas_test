@@ -46,7 +46,7 @@ output_file = open(f.main_dir + 'printlog.txt', 'w',encoding='utf-8')
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 
 # craig - prevents use of solution and devices excell sheet
-origin_graphs = True
+origin_graphs = False
 craig = False
 save_df = False
 plot_graph = False

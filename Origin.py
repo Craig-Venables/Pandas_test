@@ -12,11 +12,13 @@ def plot_in_origin(device_data,device_path):
     print("inside function")
     # Unpack 'device_data' on the other side within a loop
     for device_folder, device_data_dict in device_data.items():
+        print(device_folder)
         # Access 'data' within 'device_data_dict'
         for file_name, data_dict in device_data_dict.items():
             # Access 'data' dictionary
-            print(device_folder,file_name)
-            print(data_dict)
+            print(file_name)
+            print(data_dict.get('current'))
+            #print(data_dict)
     #         for key, value in data_dict.items():
     #             # Access data elements
     #             print(f"Device: {device_folder}, File: {file_name}, Key: {key}, Value: {value}")
