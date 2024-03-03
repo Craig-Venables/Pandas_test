@@ -66,6 +66,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
 
     # if there is more than one loop adds
     if num_sweeps > 1:
+        loops=True
         # Data processing for multiple sweeps
 
         # splits the loops depending on the number of sweeps
@@ -131,6 +132,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
         f.check_if_folder_exists(device_path, "python_images")
 
         save_loc = device_path + '\\' + "python_images"
+        save_loc_iv = device_path + '\\' + "Iv only"
+        #save_loc_iv = device_path + '\\' + "Iv only"
+
         cross_points = "crossing_coming soon"
 
         if plot_graph:
@@ -138,16 +142,17 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
             count = 0
             for arr_v, arr_c in zip(split_v_data, split_c_data):
                 count += 1
-                #folder_path = p.main_plot_loop(arr_v, arr_c, absolute_val(arr_c), count)
-                # return folder path too files
-                folder_path = plotting.main_plot_loop(arr_v, arr_c, absolute_val(arr_c),count ,save_loc,
-                                            cross_points, re_save_graph, file_info)
-            # plot main graph too of all together
-            # p.main_plot(crossing_points, re_save_graph)
-            graph = plotting.main_plot_loop(data.get('voltage'), data.get('current'), data.get('abs_current'),count,save_loc,
-                                            cross_points, re_save_graph, file_info)
+                # Plots all the graphs individually
 
-            # plots gid of all graphs in looped data
+                folder_path = plotting.main_plot_loop(arr_v, arr_c, absolute_val(arr_c),count ,save_loc,cross_points, re_save_graph, file_info)
+
+            #print("post loop")
+            # Plots all the loops on one graph outside of the loop
+
+            graph = plotting.main_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc,
+                                       cross_points, re_save_graph, file_info,True,num_sweeps)
+            #print("post save")
+            # plots GIF of all graphs in looped data
             save_name = "_" + f"{file_info.get('file_name')}" + ".gif"
             output_gif_loc = os.path.join(save_loc, save_name)
             plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=5, restart_duration=10)
@@ -173,6 +178,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
         # print("skipping as half sweep")
         return None
     else:
+        loops = False
         # Data Processing for a single sweep
         # if the xcell document states capacitive return
         ps_area, ng_area, area, normalized_area = area_under_curves(v_data, c_data)
@@ -200,18 +206,18 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
 
         f.check_if_folder_exists(device_path, "python_images")
         save_loc = os.path.join(device_path, "python_images")
+        save_loc_iv = device_path + '\\' + "Iv only"
 
         #plotting.grid_spec(data)
 
         graph_dict = {}
         if plot_graph:
-            # p = plot.plot(df, file_info, save_loc, filepath)
-            # graph = p.main_plot(cross_points, re_save_graph)
-
             # this needs finishing
             graph = plotting.main_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc,
                                        cross_points, re_save_graph, file_info)
-            # print(type(graph))
+            #plotting.iv_and_log_iv_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc_iv,
+#                                       cross_points, re_save_graph, file_info)
+
         else:
             graph = None
 

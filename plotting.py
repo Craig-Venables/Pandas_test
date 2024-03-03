@@ -16,7 +16,7 @@ from matplotlib.ticker import FuncFormatter
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save, file_info):
+def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save, file_info,loop=False,num_sweeps=0):
     '''
         plots iv and log iv graphs as subplots and saves it
     '''
@@ -31,8 +31,7 @@ def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save,
     short_filename = os.path.splitext(filename)[0]
 
     file_path = os.path.join(save_loc, f"{short_filename}.png")
-
-    if not os.path.exists(file_path) or re_save:
+    def create_graph():
         plt.close('all')
         fig = plt.figure(figsize=(12, 8))
 
@@ -48,16 +47,78 @@ def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save,
         plot_logiv(voltage, abs_current)
 
         plt.subplot(2, 2, 3)
-        plot_iv_avg(voltage, current)
+        if loop:
+            # This dosnt save correctly it shows the correct image, but dosnt save
+            split_v_data, split_c_data = split_loops(voltage, current, num_sweeps)
+            plot_iv_avg(split_v_data[0], split_c_data[0])
+
+        else:
+            plot_iv_avg(voltage, current)
 
         # Create subplot for the final plot with two graphs
         plt.subplot(2, 2, 4)
-        #plot_iv_subplots(voltage, current)
+        #plt.show()
+        # plot_iv_subplots(voltage, current)
 
         # text = (crossing_points)
         # plt.text(0.5, 0.5, text, ha='center', va='center', fontsize=12)
 
-        #plt.show()
+        # plt.show()
+
+        # Turn off interactive mode
+        plt.ioff()
+
+        file_path = os.path.join(save_loc, f"{short_filename}.png")
+
+        plt.savefig(file_path, bbox_inches='tight', dpi=200)
+
+        print(f"File saved successfully at {file_path}")
+
+    if os.path.exists(file_path):
+        # File exists
+        if re_save:
+            create_graph()
+            # Plot the graph
+            # Re-save is True, so create the file (overwriting if it exists)
+        if not re_save:
+            # Re-save is False wit file exists, skip plot
+            pass
+    # Save the graph
+    else:
+        # File doesn't exist
+        create_graph()
+
+
+def iv_and_log_iv_plot(voltage, current, abs_current, save_loc, crossing_points, re_save, file_info):
+    '''
+        plots iv and log iv graphs as subplots and saves it
+    '''
+
+    type = file_info.get('type')
+    polymer = file_info.get('polymer')
+    sample_name = file_info.get('sample_name')
+    section = file_info.get('section')
+    device_number = file_info.get('device_number')
+    filename = file_info.get('file_name')
+    save_loc = save_loc
+    short_filename = os.path.splitext(filename)[0]
+
+    file_path = os.path.join(save_loc, f"{short_filename}.png")
+
+    def create_graph():
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 8))
+
+        plt.suptitle(
+            f'{polymer} -' + f'{sample_name} -' + ' ' + f'{section} -' + ' '
+            + f'{device_number} -' + ' ' + filename)
+
+        # using the functions main_plot the graphs
+        plt.subplot(2, 1, 1)
+        plot_iv(voltage, current)
+
+        plt.subplot(2, 1, 2)
+        plot_logiv(voltage, abs_current)
 
         # Turn off interactive mode
         plt.ioff()
@@ -68,10 +129,20 @@ def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save,
 
         print(f"File saved successfully at {file_path}")
         return fig
-    else:
 
-        print(f"File {file_path} already exists. Skipping save.")
-        return None
+    if os.path.exists(file_path):
+        # File exists
+        if re_save:
+            create_graph()
+            # Plot the graph
+            # Re-save is True, so create the file (overwriting if it exists)
+        if not re_save:
+            # Re-save is False wit file exists, skip plot
+            pass
+    # Save the graph
+    else:
+        # File doesn't exist
+        create_graph()
 
 
 def plot_iv_subplots(voltage, current):
@@ -107,8 +178,10 @@ def main_plot_loop(voltage, current, abs_current, sweep_num, save_loc, crossing_
     short_filename = os.path.splitext(filename)[0]
     save_name = f"{short_filename}" + "- #" + f"{sweep_num}" + ".png"
     file_path = os.path.join(save_loc, "Extracted sweeps", f"{filename}", save_name)
+    folder_path = os.path.join(save_loc, "Extracted sweeps",f"{filename}")
 
-    if not os.path.exists(file_path):
+
+    def create_graph():
         plt.close('all')
         fig = plt.figure(figsize=(12, 8))
 
@@ -124,6 +197,7 @@ def main_plot_loop(voltage, current, abs_current, sweep_num, save_loc, crossing_
         plot_logiv(voltage, abs_current)
 
         plt.subplot(2, 2, 3)
+
         plot_iv_avg(voltage, current)
 
         plt.subplot(2, 2, 4)
@@ -139,21 +213,27 @@ def main_plot_loop(voltage, current, abs_current, sweep_num, save_loc, crossing_
         # Turn off interactive mode
         plt.ioff()
 
+
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         plt.savefig(file_path, bbox_inches='tight', dpi=200)
 
         # print(f"File saved successfully at {file_path}")
+
+    if os.path.exists(file_path):
+        # File exists
+        if re_save:
+            create_graph()
+            # Plot the graph
+            # Re-save is True, so create the file (overwriting if it exists)
+        if not re_save:
+            # Re-save is False wit file exists, skip plot
+            pass
+    # Save the graph
     else:
-        return None
-        # print(f"File {file_path} already exists. Skipping save.")
+        # File doesn't exist
+        create_graph()
 
-        # uncomment to show for 0.01 sec
-        # plt.pause(0.01)
-
-        # uncomment to keep on screen
-        # plt.show()
-
-        return fig
+    return folder_path
 
 
 def plot_iv(voltage, current, fontsize = 8):
@@ -424,8 +504,6 @@ def polar_subplot(x, y):
     ax2.plot(x, y ** 2)
 
 
-plt.show()
-
 
 def information(on_off_ratio, section_name, device_number, filename):
     '''
@@ -458,65 +536,6 @@ def information(on_off_ratio, section_name, device_number, filename):
     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1)
 
 
-# good one dont delete
-# def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
-#     """
-#     Create a GIF from a folder full of images, with a black screen added at the end.
-#
-#     Parameters:
-#         folder_path (str): Path to the folder containing the images.
-#         output_gif (str): Path for the output GIF file.
-#         duration (float): Duration (in seconds) between each frame.
-#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
-#     """
-#     try:
-#         # List all files in the folder and sort them numerically
-#         image_files = sorted(
-#             [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')],
-#             key=lambda x: int(re.search(r'\d+', os.path.basename(x)).group()))  # Custom sorting key
-#
-#         # Check if there are no image files
-#         if not image_files:
-#             pass
-#             #raise FileNotFoundError("No image files found in the folder.")
-#
-#         # # Load all images
-#         # images = [imageio.imread(image_file) for image_file in image_files]
-#
-#         # Load all images
-#         images = []
-#         for image_file in image_files:
-#             image = imageio.imread(image_file)
-#             #print(f"Image file: {image_file}, shape: {image.shape}")  # Print the shape of each loaded image
-#             images.append(image)
-#
-#         # # Add a black screen at the end to indicate restart
-#         # black_image = np.zeros_like(images[0])
-#         # images.append(black_image)
-#
-#         # Calculate the number of frames needed for restart duration
-#         restart_frames = int(restart_duration * 2)  # Assuming the default frame rate is 2 frames per second
-#
-#         # # Add additional black screens for restart indication
-#         # for _ in range(restart_frames):
-#         #     images.append(black_image)
-#
-#         # Save the images as a GIF using imageio
-#         imageio.mimsave(output_gif, images, format='GIF', fps=2)
-#
-#         #print(f"GIF created successfully at {output_gif}")
-#
-#     except FileNotFoundError as e:
-#         #pass
-#         print(f"Error: {e}")
-#         print("Continuing without creating the GIF.")
-#
-#     except Exception as e:
-#         #pass
-#         print(f"An error occurred: {e}")
-# #
-
-
 def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
     """
     Create a GIF from a folder full of images, with a black screen added at the end.
@@ -541,41 +560,26 @@ def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration
             pass
             # raise FileNotFoundError("No image files found in the folder.")
 
-
+        font_size = 40
         #old s
         # Load all images
         images = []
-        for image_file in image_files:
+        for idx, image_file in enumerate(image_files):
             # Read the image using PIL
             image = Image.open(image_file)
             # Resize the image to a common shape
             image = image.resize((width, height))  # Specify the desired width and height
+
+            # Draw index of the image_file to the left-hand corner
+            draw = ImageDraw.Draw(image)
+            font = ImageFont.load_default()  # You can adjust the font and size here if needed
+            font = ImageFont.truetype("arial.ttf", font_size)  # Change the font size here
+            text_color = "red"
+            draw.text((30, 30), str(idx+1), fill=text_color, font=font)  # Adjust position as needed
+
             # Convert the image to numpy array
             image = np.array(image)
             images.append(image)
-
-        # Load all images
-        # images = []
-        # for idx, image_file in enumerate(image_files):
-        #     # Read the image using PIL
-        #     image = Image.open(image_file)
-        #     # Resize the image to a common shape
-        #     image = image.resize((width, height))  # Specify the desired width and height
-        #
-        #     # Draw "GIF" text in the left-hand corner in red
-        #     draw = ImageDraw.Draw(image)
-        #     font = ImageFont.load_default()  # You can adjust the font and size here if needed
-        #     text = "GIF"
-        #     text_color = "red"
-        #     draw.text((10, 10), text, fill=text_color, font=font)
-        #
-        #     # Draw index of the image_file to the right-hand side just underneath the file name
-        #     file_name = os.path.basename(image_file)
-        #     draw.text((width - 10, 10), str(idx), fill="white", font=font)  # Adjust position as needed
-        #
-        #     # Convert the image to numpy array
-        #     image = np.array(image)
-        #     images.append(image)
 
 
         # Add a black screen at the end to indicate restart
@@ -599,66 +603,23 @@ def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration
         print("Continuing without creating the GIF.")
 
     except Exception as e:
-        print("check create gif fom folder final")
+        print("check create_gif_from_folder either error or no files")
         print(folder_path)
         print(f"An error occurred: {e}")
 
-# def create_gif_from_folder(folder_path, output_gif, duration=5, restart_duration=2):
-#     """
-#     Create a GIF from a folder full of images, with a black screen added at the end.
-#
-#     Parameters:
-#         folder_path (str): Path to the folder containing the images.
-#         output_gif (str): Path for the output GIF file.
-#         duration (float): Duration (in seconds) between each frame.
-#         restart_duration (float): Duration (in seconds) of the black screen at the end to indicate restart.
-#     """
-#     try:
-#         # List all files in the folder and sort them numerically
-#         image_files = sorted(
-#             [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.png')],
-#             key=lambda x: int(re.search(r'\d+', os.path.basename(x)).group()))  # Custom sorting key
-#
-#         # Check if there are no image files
-#         if not image_files:
-#             pass
-#             #raise FileNotFoundError("No image files found in the folder.")
-#
-#         # Set a common canvas size
-#         canvas_width = 2500
-#         canvas_height = 2000
-#         canvas_channels = 3  # Assuming RGB images
-#
-#         # Create a blank canvas
-#         canvas = np.zeros((canvas_height, canvas_width, canvas_channels), dtype=np.uint8)
-#
-#         # Set the starting position to paste the images onto the canvas
-#         start_x = 0
-#         start_y = 0
-#
-#         # Iterate through each image and paste it onto the canvas
-#         for image_file in image_files:
-#             image = imageio.imread(image_file)
-#             if len(image.shape) == 3 and image.shape[2] == 4:  # Check if image has alpha channel
-#                 image = image[:, :, :3]  # Remove alpha channel
-#             # Get the dimensions of the image
-#             height, width, _ = image.shape
-#             # Paste the image onto the canvas
-#             canvas[start_y:start_y + height, start_x:start_x + width, :] = image
-#             # Update the starting position for the next image
-#             start_x += width
-#
-#         # Save the canvas as a single GIF
-#         imageio.mimsave(output_gif, [canvas], format='GIF', fps=2)
-#
-#         #print(f"GIF created successfully at {output_gif}")
-#
-#     except FileNotFoundError as e:
-#         #pass
-#         print(f"Error: {e}")
-#         print("Continuing without creating the GIF.")
-#
-#     except Exception as e:
-#         #pass
-#         print(f"An error occurred: {e}")
-#
+def split_loops(v_data, c_data, num_loops):
+    """ splits the looped data and outputs each sweep as another array coppied from data"""
+    total_length = len(v_data)  # Assuming both v_data and c_data have the same length
+    size = total_length // num_loops  # Calculate the size based on the number of loops
+
+    # Convert size to integer
+    size = int(size)
+
+    # Handle the case when the division leaves a remainder
+    if total_length % num_loops != 0:
+        size += 1
+
+    split_v_data = [v_data[i:i + size] for i in range(0, total_length, size)]
+    split_c_data = [c_data[i:i + size] for i in range(0, total_length, size)]
+
+    return split_v_data, split_c_data
