@@ -19,6 +19,7 @@ import excell as ex
 from file import excel_path
 import plotting
 import Origin as origin
+import re
 
 ###### Important ######
 # Make sure that all files are text files you can easily do this using power rename and
@@ -40,7 +41,7 @@ output_file = open(f.main_dir + 'printlog.txt', 'w', encoding='utf-8')
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 
 
-origin_graphs = True
+origin_graphs = False
 pull_fabrication_info_excell = False
 save_df = False
 plot_graph = False
@@ -119,12 +120,14 @@ for material in os.listdir(f.main_dir):
                                 device_stats_dict = {}
                                 device_data = {}
 
-                                for device_folder in os.listdir(section_path):
+
+
+                                for device_folder in sorted(os.listdir(section_path), key=lambda x: int(x.split('_')[0])):
                                     device_path = os.path.join(section_path, device_folder)
                                     if os.path.isdir(device_path):
+                                        #print(device_folder)
                                         """ Working on individual devices"""
-
-                                        print("working in folder ", sample_name, section_folder, device_folder)
+                                        # print("working in folder ", sample_name, section_folder, device_folder)
 
                                         # keeps a list of all files processed for each device
                                         list_of_measured_files = []
@@ -136,11 +139,13 @@ for material in os.listdir(f.main_dir):
                                         num_of_sweeps = 0
                                         file_data = {}
 
+
                                         # add more here into how each array changes over each array
                                         # Process each file in the device_number folder
-                                        for file_name in os.listdir(device_path):
+                                        for file_name in sorted(os.listdir(device_path), key=lambda x: int(re.split(r'[-_]', x)[0]) if re.match(r'^\d+', re.split(r'[-_]', x)[0]) else float('inf')):
                                             file_path = os.path.join(device_path, file_name)
                                             if file_name.endswith('.txt'):
+                                                #print(file_name)
                                                 """Loops through each file in the folder and analyses them using the 
                                                 functions here"""
 
@@ -164,6 +169,7 @@ for material in os.listdir(f.main_dir):
                                                     # keeps count of the number of sweeps by each device
                                                     num_of_sweeps += num_sweeps
 
+
                                                     # storing information from analysis
                                                     list_of_measured_files.append(long_name)
                                                     list_of_graphs.append(graph)
@@ -183,7 +189,7 @@ for material in os.listdir(f.main_dir):
                                                         'file_path': os.path.join(device_path, file_name)
                                                     }
                                                 else:
-                                                    print("This file isn't a simple IV_Sweep Skipping ")
+                                                    #print("This file isn't a simple IV_Sweep Skipping ")
                                                     continue
 
                                         ###############################################################################
@@ -324,6 +330,8 @@ print("material_sweeps_dict(['stock'][[f'{polymer}'][f'{sample_name}'][['section
 print("material_data['Stock'][f'{polymer}'][f'{sample_name}']['G 200µm']['1']['1-Fs_0.5v_0.01s.txt']")
 print('-' * 25)
 print("")
+print("Finished sample analysis below is information about the samples")
+print("")
 
 ############################################################################
 # All sweeps analysed at this point stats are done below
@@ -331,6 +339,8 @@ print("")
 # VERY CRUDE JUST PRINTS EVERYTHING DOS-NT SAVE ANYTHING YET
 
 ############################################################################
+
+
 
 # Calculate yield for each sample
 yield_dict, yield_dict_sect = eq.calculate_yield(material_sweeps_dict)
