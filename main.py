@@ -6,7 +6,6 @@ import Data as eq
 import pdf as pdf
 import matplotlib.pyplot as plt
 import excell as exc
-import plot as plot
 import file as f
 import pickle
 import pprint
@@ -40,7 +39,7 @@ output_file = open(f.main_dir + 'printlog.txt', 'w', encoding='utf-8')
 # Redirect print output to both the file and the console
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 
-
+sort_graphs = False
 origin_graphs = False
 pull_fabrication_info_excell = False
 save_df = False
