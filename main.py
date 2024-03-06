@@ -142,6 +142,8 @@ for material in os.listdir(f.main_dir):
 
                                         # add more here into how each array changes over each array
                                         # Process each file in the device_number folder
+                                        print(os.listdir(device_path))
+
                                         for file_name in sorted(os.listdir(device_path), key=lambda x: int(re.split(r'[-_]', x)[0]) if re.match(r'^\d+', re.split(r'[-_]', x)[0]) else float('inf')):
                                             file_path = os.path.join(device_path, file_name)
                                             if file_name.endswith('.txt'):
@@ -188,7 +190,7 @@ for material in os.listdir(f.main_dir):
                                                         'file_name': file_name,
                                                         'file_path': os.path.join(device_path, file_name)
                                                     }
-                                                    print(file_info_dict[f'{file_key}'])
+                                                    #print(file_info_dict[f'{file_key}'])
                                                     if sort_graphs:
                                                         cg.yes_no(file_data[f'{file_name}'], file_info_dict[file_key])
 
