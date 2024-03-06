@@ -19,6 +19,7 @@ from file import excel_path
 import plotting
 import Origin as origin
 import re
+import copy_graph_class as cg
 
 ###### Important ######
 # Make sure that all files are text files you can easily do this using power rename and
@@ -187,6 +188,10 @@ for material in os.listdir(f.main_dir):
                                                         'file_name': file_name,
                                                         'file_path': os.path.join(device_path, file_name)
                                                     }
+                                                    print(file_info_dict[f'{file_key}'])
+
+                                                    sort = cg.yes_no(file_data[f'{file_name}'], file_info_dict[file_key])
+
                                                 else:
                                                     #print("This file isn't a simple IV_Sweep Skipping ")
                                                     continue
