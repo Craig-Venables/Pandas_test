@@ -350,6 +350,69 @@ def plot_graph_other(self):
     # axs[2].plot(data[1]["V"][0:82], data[1]["dIdt"][0:82], color="b")
 
 
+
+
+def graph_temp(voltage, current, abs_current, type,polymer,sample_name,section,device_number,filename):
+    '''
+        plots iv and log iv graphs as subplots and saves it
+    '''
+
+
+    short_filename = os.path.splitext(filename)[0]
+
+
+    def create_graph():
+        plt.close('all')
+        fig = plt.figure(figsize=(12, 8))
+
+        plt.suptitle(
+            f'{polymer} -' + f'{sample_name} -' + ' ' + f'{section} -' + ' '
+            + f'{device_number} -' + ' ' + filename)
+
+        # using the functions main_plot the graphs
+        plt.subplot(2, 2, 1)
+        plot_iv(voltage, current)
+
+        plt.subplot(2, 2, 2)
+        plot_logiv(voltage, abs_current)
+
+        plt.subplot(2, 2, 3)
+        # if loop:
+        #     # This dosnt save correctly it shows the correct image, but dosnt save
+        #     split_v_data, split_c_data = split_loops(voltage, current, num_sweeps)
+        #     plot_iv_avg(split_v_data[0], split_c_data[0])
+        #
+        # else:
+        #
+        plot_iv_avg(voltage, current)
+
+        # Create subplot for the final plot with two graphs
+        plt.subplot(2, 2, 4)
+        #plt.show()
+        # plot_iv_subplots(voltage, current)
+
+        # text = (crossing_points)
+        # plt.text(0.5, 0.5, text, ha='center', va='center', fontsize=12)
+
+
+
+        # Turn off interactive mode
+        plt.ioff()
+        plt.pause(0.01)
+        plt.show(block=False)
+        plt.pause(0.01)
+        return fig
+        #file_path = os.path.join(save_loc, f"{short_filename}.png")
+
+        #plt.savefig(file_path, bbox_inches='tight', dpi=200)
+
+        #print(f"File saved successfully at {file_path}")
+
+    fig = create_graph()
+    return fig
+
+
+
 def sclc_ps(voltage, current_density, fontsize = 8):
     # create scatter
     plt.plot(voltage, current_density, color='black')
