@@ -44,13 +44,13 @@ sort_graphs = False
 origin_graphs = False
 pull_fabrication_info_excell = False
 save_df = False
-plot_graph = False
-plot_gif = False
-re_save_graph = False
+plot_graph = True
+plot_gif = True
+re_save_graph = True
 re_analyse = True
 
 # set Pandas display options to display all data in dataframe?
-# eq.set_pandas_display_options()
+#eq.set_pandas_display_options()
 
 # Main for loop for parsing through folders
 
@@ -112,20 +112,28 @@ for material in os.listdir(f.main_dir):
                             section_path = os.path.join(sample_path, section_folder)
                             if os.path.isdir(section_path):
                                 """ working on section folder"""
-                                # print("working on ", sample_name, section_folder)
+                                print("working on ", sample_name, section_folder)
 
                                 # More empty arrays for storing all measured devices
                                 list_of_measured_files_devices = []
                                 device_sweeps_dict = {}
                                 device_stats_dict = {}
                                 device_data = {}
+                                #print(section_path)
 
 
+                                def extract_numeric_part(filename):
+                                    match = re.search(r'\d+', filename)
+                                    return int(match.group()) if match else float('inf')
 
-                                for device_folder in sorted(os.listdir(section_path), key=lambda x: int(x.split('_')[0])):
+
+                                # Sort the list of filenames based on the numeric part
+                                sorted_files = sorted(os.listdir(section_path), key=extract_numeric_part)
+
+                                for device_folder in sorted_files:
                                     device_path = os.path.join(section_path, device_folder)
                                     if os.path.isdir(device_path):
-                                        #print(device_folder)
+                                        print(device_folder)
                                         """ Working on individual devices"""
                                         # print("working in folder ", sample_name, section_folder, device_folder)
 
@@ -142,17 +150,20 @@ for material in os.listdir(f.main_dir):
 
                                         # add more here into how each array changes over each array
                                         # Process each file in the device_number folder
-                                        print(os.listdir(device_path))
-
-                                        for file_name in sorted(os.listdir(device_path), key=lambda x: int(re.split(r'[-_]', x)[0]) if re.match(r'^\d+', re.split(r'[-_]', x)[0]) else float('inf')):
+                                        #print(os.listdir(device_path))
+                                        # sorted(os.listdir(device_path), key=lambda x: int(re.split(r'[-_]', x)[0]) if re.match(r'^\d+', re.split(r'[-_]', x)[0]) else float('inf')):
+                                        for file_name in (os.listdir(device_path)):
                                             file_path = os.path.join(device_path, file_name)
                                             if file_name.endswith('.txt'):
                                                 #print(file_name)
                                                 """Loops through each file in the folder and analyses them using the 
                                                 functions here"""
 
-                                                # Checks and returns the sweep type of the file
+                                                # Checks and returns the sweep type of the file also checks for nan
+                                                # values if nan values are present returns None
+
                                                 sweep_type = eq.check_sweep_type(file_path)
+                                                #print(sweep_type)
 
                                                 if sweep_type == 'Iv_sweep':
                                                     """ for simple iv sweeps"""
@@ -206,7 +217,7 @@ for material in os.listdir(f.main_dir):
                                         folder_path = device_path + '\\' + "python_images"
                                         output_gif_loc = os.path.join(folder_path, save_name)
 
-                                        if plot_graph and plot_gif:
+                                        if plot_gif:
                                             # Creates Gifs of any sample with multiple sweeps
                                             plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,restart_duration=10)
 
@@ -214,7 +225,7 @@ for material in os.listdir(f.main_dir):
                                             device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats,ignore_index=True)
 
                                         # determines the classification of a device from the excell sheet
-                                        classification = eq.device_clasification(sample_sweep_excell_dict, device_folder, section_folder)
+                                        classification = eq.device_clasification(sample_sweep_excell_dict, device_folder, section_folder,device_path)
 
                                         device_data[f'{device_folder}'] = file_data
 

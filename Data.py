@@ -62,6 +62,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
             }
 
     df = pd.DataFrame(data)
+    df = df.dropna()
+    #print(df['voltage'])
 
     # if there is more than one loop adds
     if num_sweeps > 1:
@@ -69,7 +71,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
         # Data processing for multiple sweeps
 
         # splits the loops depending on the number of sweeps
-        split_v_data, split_c_data = split_loops(v_data, c_data, num_sweeps)
+        split_v_data, split_c_data = split_loops(df['voltage'], df["current"], num_sweeps)
         # Calculates the metrics for each array returning the areas
         ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff = calculate_metrics_for_loops(split_v_data,
                                                                                                         split_c_data)
@@ -137,7 +139,10 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
         cross_points = "crossing_coming soon"
 
         if plot_graph:
-            # p = plot.plot(df, file_info, save_loc, filepath)
+
+            f.check_if_folder_exists(save_loc, "Looped_Data_in_row")
+            row_save = os.path.join(save_loc, "Looped_Data_in_row")
+
             count = 0
             for arr_v, arr_c in zip(split_v_data, split_c_data):
                 count += 1
@@ -145,20 +150,25 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
 
                 folder_path = plotting.main_plot_loop(arr_v, arr_c, absolute_val(arr_c),count ,save_loc,cross_points, re_save_graph, file_info)
 
-            #print("post loop")
+                #plotting.images_in_row(arr_v, arr_c, absolute_val(arr_c) ,file_info, row_save)
+
             # Plots all the loops on one graph outside of the loop
 
-            graph = plotting.main_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc,
+            f.check_if_folder_exists(save_loc, "GIFS",)
+            gif_save_loc = os.path.join(save_loc,"GIFS")
+            graph = plotting.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc,
                                        cross_points, re_save_graph, file_info,True,num_sweeps)
-            #print("post save")
-            # plots GIF of all graphs in looped data
-            save_name = "_" + f"{file_info.get('file_name')}" + ".gif"
-            output_gif_loc = os.path.join(save_loc, save_name)
-            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=5, restart_duration=10)
 
-            # p.fig.savefig(f"{file_info.get('file_name')}.png")
-            # print("saved graph too" , "###insert file path###")
-            # this will plot graphs specific too looped data
+            # plots GIF of all graphs in looped data
+            file_name = os.path.splitext(file_info.get('file_name'))[0]
+            save_name_gif = "_" + file_name + ".gif"
+            output_gif_loc = os.path.join(gif_save_loc, save_name_gif)
+            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=5, restart_duration=10)
+            save_name_row = file_name + ".png"
+
+            plotting.plot_images_in_folder(folder_path,os.path.join(row_save,save_name_row))
+
+
         else:
             graph = None
 
@@ -172,21 +182,21 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
         # plot_array_changes(normalized_areas)
         # info = None
 
-    # this is for later
-    if num_sweeps == 0.5:
-        # print("skipping as half sweep")
-        return None
+    # # this is for later
+    # if num_sweeps == 0.5:
+    #     # print("skipping as half sweep")
+    #     return None
     else:
         loops = False
         # Data Processing for a single sweep
         # if the xcell document states capacitive return
-        ps_area, ng_area, area, normalized_area = area_under_curves(v_data, c_data)
+        ps_area, ng_area, area, normalized_area = area_under_curves(df['voltage'], df["current"])
         # print("total info enclosed within the hysteresis normalised to voltage = ", normalized_area)
         # this info will need passing back to another array for comparision across all devices in the section
         # create dataframe for the device of all the data
-        resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(v_data, c_data)
+        resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(df['voltage'], df["current"])
 
-        cross_points = categorize_device(v_data, c_data)
+        cross_points = categorize_device(df['voltage'], df["current"])
         # print(cross_points)
 
         file_stats = {'file_name': [file_info.get('file_name')],
@@ -212,7 +222,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
         graph_dict = {}
         if plot_graph:
             # this needs finishing
-            graph = plotting.main_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc,
+            graph = plotting.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc,
                                        cross_points, re_save_graph, file_info)
             #plotting.iv_and_log_iv_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc_iv,
 #                                       cross_points, re_save_graph, file_info)
@@ -229,25 +239,29 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
     return num_sweeps, short_name, long_name, df, df_file_stats, graph
 
 
-def device_clasification(sample_sweep_excell_dict, device_folder, section_folder):
+def device_clasification(sample_sweep_excell_dict, device_folder, section_folder,path):
     """ extracts the classification from the device_number excel sheet for the device level """
-    section_folder = section_folder[0].upper()
-    # Take only the first letter from the section_folder
-    # Take only the first two digits from the device_folder
-    device_folder = device_folder[:2]
+    try:
+        section_folder = section_folder[0].upper()
+        # Take only the first letter from the section_folder
+        # Take only the first two digits from the device_folder
+        device_folder = device_folder[:2]
 
-    # print(device_folder)
-
-    df = sample_sweep_excell_dict[section_folder]
-    # Convert device_folder to the same type as in the DataFrame (assuming it's numeric)
-    device_folder = int(device_folder)
-    # Find the row where the "Device #" matches the specified device_folder
-    result_row = df[df["Device #"] == device_folder]
-    # Extract the classification value
-    classification = result_row["Classification"].values[
-        0] if not result_row.empty else None
-    # print(classification)
-    return (classification)
+        # print(device_folder)
+        #print(sample_sweep_excell_dict[section_folder])
+        df = sample_sweep_excell_dict[section_folder]
+        # Convert device_folder to the same type as in the DataFrame (assuming it's numeric)
+        device_folder = int(device_folder)
+        # Find the row where the "Device #" matches the specified device_folder
+        result_row = df[df["Device #"] == device_folder]
+        # Extract the classification value
+        classification = result_row["Classification"].values[
+            0] if not result_row.empty else None
+        # print(classification)
+        return (classification)
+    except:
+        print("please add xls too ", path)
+        return None
 
 
 def categorize_device(voltage_data, current_data):
@@ -257,6 +271,9 @@ def categorize_device(voltage_data, current_data):
         Returns:
             List[Tuple[float, float]]: A list of tuples containing the intersection points.
         """
+        voltage_data = voltage_data.to_numpy()
+        current_data = current_data.to_numpy()
+
         crossings = []
         tolerance = 0.1
 
@@ -652,6 +669,8 @@ def calculate_metrics_for_loops(split_v_data, split_c_data):
         sub_v_array = split_v_data[idx]
         sub_c_array = split_c_data[idx]
 
+        #print(sub_v_array)
+
         # Call the area_under_curves function for the current split arrays
         ps_area, ng_area, area, norm_area = area_under_curves(sub_v_array, sub_c_array)
 
@@ -859,6 +878,7 @@ def check_sweep_type(filepath):
     with open(filepath, 'r') as file:
         # Read the first line
         first_line = file.readline().strip()
+        #print(first_line)
 
         # Check if the first line is empty, indicating no more lines
         if not first_line:
@@ -877,24 +897,48 @@ def check_sweep_type(filepath):
         if any('NaN' in line for line in nan_check_lines):
             # print("One of the lines contains 'nan'. Returning None.")
             return None
+        # # Check if any line in the file contains the word "nan"
+        # if any('NaN' in line.lower() for line in file.readlines()):
+        #     print("The file contains 'nan'.")
+        #     return None
 
     # Define dictionaries for different types of sweeps and their expected column headings
+    # sweep_types = {
+    #     'Iv_sweep': ['voltage', 'current'],
+    #     'Endurance': ['Iteration #', 'Time (s)', 'Resistance (Set)', 'Set Voltage', 'Time (s)', 'Resistance (Reset)',
+    #                   'Reset Voltage'],
+    #     'Retention': ['Iteration #', 'Time (s)', 'Current (Set)'],
+    #     'type4': ['V', 'I', 'Pressure'], }
     sweep_types = {
-        'Iv_sweep': ['voltage', 'current'],
+        'Iv_sweep': [
+            ['voltage', 'current'],  # Pattern 1
+            ['vOLTAGE', 'cURRENT'],  # Pattern 2
+            ['VSOURC - Plot 0', 'IMEAS - Plot 0'],
+            # Add more patterns if needed
+        ],
         'Endurance': ['Iteration #', 'Time (s)', 'Resistance (Set)', 'Set Voltage', 'Time (s)', 'Resistance (Reset)',
                       'Reset Voltage'],
         'Retention': ['Iteration #', 'Time (s)', 'Current (Set)'],
-        'type4': ['V', 'I', 'Pressure']
+        #'type4': ['V', 'z', 'Pressure'],
     }
 
+    # # Check if the actual headings match any of the expected ones
+    # for sweep_type, expected_headings in sweep_types.items():
+    #     if all(heading in first_line for heading in expected_headings):
+    #         # print(f"Column headings match {sweep_type} sweep.")
+    #         # Perform your action here, e.g., return the sweep type or do something else
+    #         return sweep_type
     # Check if the actual headings match any of the expected ones
-    for sweep_type, expected_headings in sweep_types.items():
-        if all(heading in first_line for heading in expected_headings):
-            # print(f"Column headings match {sweep_type} sweep.")
-            # Perform your action here, e.g., return the sweep type or do something else
-            return sweep_type
-
-    print("Column headings do not match any expected sweep types.")
+    # Check if the actual headings match any of the expected ones
+    for sweep_type, expected_patterns in sweep_types.items():
+        for pattern in expected_patterns:
+            if all(heading in first_line for heading in pattern):
+                if pattern == ['VSOURC - Plot 0', 'IMEAS - Plot 0']:
+                    print("Warning: Pattern 3 matched for Iv_sweep. Consider updating the data format. check data, check_sweep_type")
+                    print("file found at",filepath)
+                #print(f"Column headings match {sweep_type} sweep.")
+                return sweep_type
+    #print("Column headings do not match any expected sweep types.")
     # Perform another action if needed, e.g., return None or do something else
     return None
 
@@ -1027,6 +1071,9 @@ def statistics(voltage_data, current_data):
     """
     Calculates r on off and v on off values for an individual device
     """
+    # Convert DataFrame columns to lists
+    voltage_data = voltage_data.to_numpy()
+    current_data = current_data.to_numpy()
     # Initialize lists to store Ron and Roff values
     resistance_on_value = []
     resistance_off_value = []
@@ -1051,6 +1098,7 @@ def statistics(voltage_data, current_data):
     filtered_voltage = []
     filtered_current = []
     for index in range(len(voltage_data)):
+        #print(index)
         if -threshold < voltage_data[index] < threshold:
             filtered_voltage.append(voltage_data[index])
             filtered_current.append(current_data[index])
