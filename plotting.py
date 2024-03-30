@@ -235,29 +235,6 @@ def main_plot_loop(voltage, current, abs_current, sweep_num, save_loc, crossing_
 
     return folder_path
 
-# def images_in_row(v_arr, c_arr,abs_c_arr ,file_info,save_location):
-#     num_plots = len(v_arr)
-#     num_cols = 10
-#     num_rows = -(-num_plots // num_cols)  # Ceiling division to get the number of rows
-#
-#     fig, axs = plt.subplots(num_rows, num_cols, figsize=(15, 5 * num_rows))
-#
-#     for i in range(num_plots):
-#         row = i // num_cols
-#         col = i % num_cols
-#         ax = axs[row, col] if num_rows > 1 else axs[col]
-#         iv_and_log_iv_plot(v_arr[i], c_arr[i], abs_c_arr[i],file_info)
-#         ax.set_title(f"Plot {i + 1}")
-#
-#     # Remove empty subplots
-#     for i in range(num_plots, num_rows * num_cols):
-#         row = i // num_cols
-#         col = i % num_cols
-#         fig.delaxes(axs[row, col])
-#
-#     plt.tight_layout()
-#     plt.savefig(save_location)
-#     plt.show()
 
 def plot_images_in_folder(folder_path,save_loc):
     # Get a list of all files in the folder

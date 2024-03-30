@@ -15,7 +15,7 @@ import os
 excel_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
 main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
 #main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
-main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\1) Memristors"
+#main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\1) Memristors"
 # Template_for_device_xls_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
 # files to ignore when looking through directory add as appropriate
 ignore_files = ('.xlsx',  '.gif', '.bmp', '.tiff', '.ico', '.odt', '.ods', '.odp', '.txt', '.rtf', '.csv', '.json',\

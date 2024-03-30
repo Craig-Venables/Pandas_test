@@ -21,18 +21,20 @@ import Origin as origin
 import re
 import copy_graph_class as cg
 
-###### Important ######
-# Make sure that all files are text files you can easily do this using power rename and
-# "NOT *.txt" within the search bar to find all the files in the directory that arnt texts and then rename them
-# using power rename, add the last letter into the top search bar and the extension .txt in the one below
-# then set to extension only.
-
-# pip install reportlab matplotlib
-
 # to add
 # - histogram all the data
 # - reorganise the functions
 
+
+plot_graph = False
+plot_gif = False
+sort_graphs = False
+# Plot all the data into origin?
+origin_graphs = False
+pull_fabrication_info_excell = False
+save_df = False
+re_save_graph = True
+re_analyse = True
 
 # Open a file for writing with utf-8 encoding
 output_file = open(f.main_dir + 'printlog.txt', 'w', encoding='utf-8')
@@ -40,17 +42,8 @@ output_file = open(f.main_dir + 'printlog.txt', 'w', encoding='utf-8')
 # Redirect print output to both the file and the console
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 
-sort_graphs = False
-origin_graphs = False
-pull_fabrication_info_excell = False
-save_df = False
-plot_graph = True
-plot_gif = True
-re_save_graph = True
-re_analyse = True
-
 # set Pandas display options to display all data in dataframe?
-#eq.set_pandas_display_options()
+# eq.set_pandas_display_options()
 
 # Main for loop for parsing through folders
 
@@ -63,7 +56,6 @@ file_info_dict = {}
 sample_name_arr = []
 
 print("Starting...")
-
 
 for material in os.listdir(f.main_dir):
     material_path = os.path.join(f.main_dir, material)
@@ -97,7 +89,7 @@ for material in os.listdir(f.main_dir):
                             fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name,
                                                                                                f.excel_path,
                                                                                                sample_path)
-                        # Pulls information from device sweep excell sheet
+                        # Pulls information from the device sweep excell sheet
                         sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
 
                         # empty list for storing all measured devices
@@ -119,7 +111,6 @@ for material in os.listdir(f.main_dir):
                                 device_sweeps_dict = {}
                                 device_stats_dict = {}
                                 device_data = {}
-                                #print(section_path)
 
 
                                 def extract_numeric_part(filename):
@@ -133,7 +124,7 @@ for material in os.listdir(f.main_dir):
                                 for device_folder in sorted_files:
                                     device_path = os.path.join(section_path, device_folder)
                                     if os.path.isdir(device_path):
-                                        print(device_folder)
+                                        # print(device_folder)
                                         """ Working on individual devices"""
                                         # print("working in folder ", sample_name, section_folder, device_folder)
 
@@ -147,15 +138,14 @@ for material in os.listdir(f.main_dir):
                                         num_of_sweeps = 0
                                         file_data = {}
 
-
                                         # add more here into how each array changes over each array
                                         # Process each file in the device_number folder
-                                        #print(os.listdir(device_path))
+                                        # print(os.listdir(device_path))
                                         # sorted(os.listdir(device_path), key=lambda x: int(re.split(r'[-_]', x)[0]) if re.match(r'^\d+', re.split(r'[-_]', x)[0]) else float('inf')):
                                         for file_name in (os.listdir(device_path)):
                                             file_path = os.path.join(device_path, file_name)
                                             if file_name.endswith('.txt'):
-                                                #print(file_name)
+                                                # print(file_name)
                                                 """Loops through each file in the folder and analyses them using the 
                                                 functions here"""
 
@@ -163,7 +153,7 @@ for material in os.listdir(f.main_dir):
                                                 # values if nan values are present returns None
 
                                                 sweep_type = eq.check_sweep_type(file_path)
-                                                #print(sweep_type)
+                                                # print(sweep_type)
 
                                                 if sweep_type == 'Iv_sweep':
                                                     """ for simple iv sweeps"""
@@ -181,7 +171,6 @@ for material in os.listdir(f.main_dir):
 
                                                     # keeps count of the number of sweeps by each device
                                                     num_of_sweeps += num_sweeps
-
 
                                                     # storing information from analysis
                                                     list_of_measured_files.append(long_name)
@@ -201,13 +190,13 @@ for material in os.listdir(f.main_dir):
                                                         'file_name': file_name,
                                                         'file_path': os.path.join(device_path, file_name)
                                                     }
-                                                    #print(file_info_dict[f'{file_key}'])
-                                                    if sort_graphs:
-                                                        cg.yes_no(file_data[f'{file_name}'], file_info_dict[file_key])
+                                                    # print(file_info_dict[f'{file_key}'])
+                                                    # if sort_graphs:
+                                                    #     cg.yes_no(file_data[f'{file_name}'], file_info_dict[file_key])
 
-                                                else:
-                                                    #print("This file isn't a simple IV_Sweep Skipping ")
-                                                    continue
+                                                # else:
+                                                #     #print("This file isn't a simple IV_Sweep Skipping ")
+                                                #     continue
 
                                         ###############################################################################
                                         """ For the device level only place in here any information that needs to be 
@@ -219,17 +208,22 @@ for material in os.listdir(f.main_dir):
 
                                         if plot_gif:
                                             # Creates Gifs of any sample with multiple sweeps
-                                            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,restart_duration=10)
+                                            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,
+                                                                            restart_duration=10)
 
                                         if len(list_of_file_stats) >= 2:
-                                            device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats,ignore_index=True)
+                                            device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats,
+                                                                                              ignore_index=True)
 
                                         # determines the classification of a device from the excell sheet
-                                        classification = eq.device_clasification(sample_sweep_excell_dict, device_folder, section_folder,device_path)
+                                        classification = eq.device_clasification(sample_sweep_excell_dict,
+                                                                                 device_folder, section_folder,
+                                                                                 device_path)
 
                                         device_data[f'{device_folder}'] = file_data
 
-                                        device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps': num_of_sweeps,'classification': classification}
+                                        device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps': num_of_sweeps,
+                                                                                  'classification': classification}
 
                                         if origin_graphs:
                                             # plot the data in origin for use later
@@ -254,8 +248,6 @@ for material in os.listdir(f.main_dir):
                         sample_stats_dict[f'{sample_name}'] = section_stats_dict
                         sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
                         sample_data[f'{sample_name}'] = section_data
-
-
 
                         ######################################
                         # this is for auto adding sweeps into the excell file pls keep
@@ -350,6 +342,19 @@ print("")
 print("Finished sample analysis below is information about the samples")
 print("")
 
+# needs too sort the data here, taking the data_dict and file_info_dict but full (see above) parsing through and
+# material_sweeps_dict = Contains all the sweeps per device along with the classification
+# material_data = Contains all the data extracted from the sweep (voltage,current,abs_current etc....)
+
+# file_key = f'{material}_{polymer}_{sample_name}_{section_folder}_{device_folder}_{file_name}'
+#
+# for file_key,file_info in material_data.keys():
+#
+#
+
+# if sort_graphs:
+#     cg.yes_no(file_data[f'{file_name}'], file_info_dict[file_key])
+
 ############################################################################
 # All sweeps analysed at this point stats are done below
 # A Breakpoint below does all the stats on the device
@@ -357,7 +362,54 @@ print("")
 
 ############################################################################
 
+print(material_data['Stock']['PVA']['D20-Stock-Gold-PVA(2%)-Gold-s4']['G']['1'])
 
+
+# parses through the dictionary
+# def traverse_dict(dictionary):
+#     for filename, data in dictionary.items():
+#         if isinstance(data, dict):
+#             traverse_dict(data)
+#         else:
+#             print(filename, ":", data)
+#
+# traverse_dict(material_data)
+##############
+def data_sort(dictionary):
+    def traverse_dict(dictionary):
+        all_data = []
+
+        def _traverse_dict(data, keys_parsed=None):
+            if keys_parsed is None:
+                keys_parsed = []
+
+            for filename, data in data.items():
+                keys_parsed.append(filename)
+                if isinstance(data, dict):
+                    _traverse_dict(data, keys_parsed)
+                else:
+                    all_data.append((filename, data, keys_parsed.copy()))
+                keys_parsed.pop()  # Remove the last key after processing
+
+        _traverse_dict(dictionary)
+        return all_data
+
+    result = traverse_dict(dictionary)
+
+    for filename, data, keys_parsed in result:
+        print("Filename:", filename)
+        print("Data:", data)
+        print("Keys parsed through:", keys_parsed)
+        material = keys_parsed[0]
+        polymer = keys_parsed[1]
+        sample_name = keys_parsed[2]
+        section = keys_parsed[3]
+        device = keys_parsed[0]
+        print(material, polymer, sample_name, section, device)
+        print("\n")
+
+
+data_sort(material_data)
 
 # Calculate yield for each sample
 yield_dict, yield_dict_sect = eq.calculate_yield(material_sweeps_dict)

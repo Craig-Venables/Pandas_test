@@ -934,7 +934,7 @@ def check_sweep_type(filepath):
         for pattern in expected_patterns:
             if all(heading in first_line for heading in pattern):
                 if pattern == ['VSOURC - Plot 0', 'IMEAS - Plot 0']:
-                    print("Warning: Pattern 3 matched for Iv_sweep. Consider updating the data format. check data, check_sweep_type")
+                    print("Warning: Pattern 3 matched for Iv_sweep. Consider updating the data format. check data, check_sweep_type, filepath below:")
                     print("file found at",filepath)
                 #print(f"Column headings match {sweep_type} sweep.")
                 return sweep_type
