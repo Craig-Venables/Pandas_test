@@ -4,6 +4,7 @@ import keyboard
 import shutil
 import plotting as plotting
 import pickle
+import sys
 
 
 class yes_no():
@@ -14,25 +15,23 @@ class yes_no():
     :returns
     '''
 
-    def __init__(self, data_dict,file_info_dict) -> None:
-
-
-        self.data_dict = data_dict
-        self.file_info_dict = file_info_dict
+    #def __init__(self, data_dict,file_info_dict) -> None:
+    def __init__(self, filename,keys_parsed,dataframe,filepath_file,checked_files) -> None:
+        self.filename = filename
+        self.material = keys_parsed[0]
+        self.polymer = keys_parsed[1]
+        self.sample_name = keys_parsed[2]
+        self.section_folder = keys_parsed[3]
+        self.device_folder = keys_parsed[4]
+        self.dataframe = dataframe
+        self.filepath = filepath_file
+        self.checked_files = checked_files
 
         self._unpack_dataframe_dd()
         #self._unpack_dataframe_fid()
 
-        self.material = file_info_dict['material']
-        self.polymer = file_info_dict['polymer']
-        self.sample_name = file_info_dict['sample_name']
-        self.section_folder = file_info_dict['section_folder']
-        self.device_folder = file_info_dict['device_folder']
-        self.file_name = file_info_dict['file_name']
-        self.file_path = file_info_dict['file_path']
-
-        #print(self.voltage)
-
+        # need filepath here somewhere
+        #self.file_path = file_info_dict['file_path']
 
         self.output_folder = (
             r'C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data')
@@ -41,14 +40,8 @@ class yes_no():
 
     def _unpack_dataframe_dd(self):
         """ Unpacks dataframe with the names given """
-        for column in self.data_dict.columns:
-            setattr(self, column.lower(), self.data_dict.get(column))
-
-    def _unpack_dataframe_fid(self):
-        """ Unpacks dataframe with the names given """
-        for file_key, file_info in self.file_info_dict.items():
-            for key, value in file_info.items():
-                setattr(self, key.lower(), value)
+        for column in self.dataframe.columns:
+            setattr(self, column.lower(), self.dataframe.get(column))
 
 
     def create_folder_if_not_exists(self, folder):
@@ -61,47 +54,75 @@ class yes_no():
             print(f"Folder already exists: {folder_path}")
 
     def yes_no_to_data(self):
-        checked_files = self.load_checked_files()
-        name_in_checked_files = f"{self.material} - {self.polymer} - {self.sample_name} - {self.section_folder} - {self.device_folder} - {self.file_name}"
+        checked_files = self.checked_files
+        name_in_checked_files = f"{self.material} - {self.polymer} - {self.sample_name} - {self.section_folder} - {self.device_folder} - {self.filename}"
 
-        if name_in_checked_files in checked_files:
-            print(f"Graph {self.file_name} has already been checked and marked.")
-            print("")
-        else:
-            base_filename = os.path.basename(self.file_name)
-            output_file_path = os.path.join(self.output_folder, self.file_name)
 
-            fig = plotting.graph_temp(self.voltage, self.current, self.abs_current, self.material, self.polymer,
-                                      self.sample_name, self.section_folder, self.device_folder, self.file_name)
+        base_filename = os.path.basename(self.filename)
+        output_file_path = os.path.join(self.output_folder, self.filename)
 
-            print("Do you want to copy this file? (y/n): ")
-            event = keyboard.read_event(suppress=True)
+        fig = plotting.graph_temp(self.voltage, self.current, self.abs_current, self.material, self.polymer,
+                                  self.sample_name, self.section_folder, self.device_folder, self.filename)
 
-            if event.name == "y" and event.event_type == keyboard.KEY_DOWN:
-                output_folder2 = os.path.join(self.output_folder, self.material, self.polymer, self.sample_name)
-                self.create_folder_if_not_exists(output_folder2)
+        print(self.dataframe)
+        print(os.path.join(self.output_folder, self.material, self.polymer, self.sample_name))
 
-                modified_filename = self.modify_filename(self.file_name)
+        print("Do you want to copy this file? (y/n): or exit (s) ")
+        event = keyboard.read_event(suppress=True)
 
-                output_file_path = os.path.join(output_folder2, modified_filename)
-                shutil.copy(self.file_path, output_file_path)
-                checked_files[name_in_checked_files] = "y"
+        if event.name == "y" and event.event_type == keyboard.KEY_DOWN:
+            # yes is pressed
 
-                calculations_folder = os.path.join(output_folder2, "device_data_calculations")
-                self.create_folder_if_not_exists(calculations_folder)
+            # Create the output folder in the new destination
+            output_folder2 = os.path.join(self.output_folder, self.material, self.polymer, self.sample_name)
+            self.create_folder_if_not_exists(output_folder2)
 
-                python_images_folder = os.path.join(output_folder2, "Python_images")
-                self.create_folder_if_not_exists(python_images_folder)
-                figure_path = os.path.join(python_images_folder, f"{modified_filename}.png")
-                fig.savefig(figure_path)
+            # modify the filename for the new location
+            modified_filename = self.modify_filename(self.filename)
+            output_file_path = os.path.join(output_folder2, modified_filename)
 
-            elif event.name == "n" and event.event_type == keyboard.KEY_DOWN:
-                checked_files[name_in_checked_files] = "n"
+            # copy the file to the output folder
+            shutil.copy(self.filepath, output_file_path)
+            # Add y to the checked files
+            checked_files[name_in_checked_files] = "y"
 
-            plt.close()
+            # save sata from dataframe
+            calculations_folder = os.path.join(output_folder2, "device_data_calculations")
+            self.create_folder_if_not_exists(calculations_folder)
 
-            print("")
-        self.save_checked_files(checked_files)
+            # create images folder within the curated data
+            python_images_folder = os.path.join(output_folder2, "Python_images")
+            self.create_folder_if_not_exists(python_images_folder)
+            # save the figure
+            figure_path = os.path.join(python_images_folder, f"{modified_filename}.png")
+            fig.savefig(figure_path)
+            print(f"File saved successfully at {figure_path}")
+
+            # save the data for use later
+            calculations_file_path = os.path.join(calculations_folder, f"{modified_filename}.txt")
+            self.dataframe.to_csv(calculations_file_path, sep='\t', index=False)
+
+            # with open(calculations_file_path, "w") as calculations_file:
+            #     calculations_file.write(self.data.to_string(index=False))
+            #
+            # with open(calculations_file_path,'w',encoding='utf-8') as file:
+            #     file.write(self.data)
+
+
+
+
+        if event.name == "s" and event.event_type == keyboard.KEY_DOWN:
+            self.save_checked_files(checked_files)
+            sys.exit()
+
+
+        elif event.name == "n" and event.event_type == keyboard.KEY_DOWN:
+            checked_files[name_in_checked_files] = "n"
+
+        plt.close()
+
+        print("")
+        #self.save_checked_files(checked_files)
 
     def load_checked_files(self):
         try:
@@ -193,7 +214,7 @@ class yes_no():
     #             fig.savefig(figure_path)
     #
     #         elif event.name == "n" and event.event_type == keyboard.KEY_DOWN:
-    #             checked_files[name_in_checked_files] = "n"
+    #             checked_files[name_in_checked_files] = "n"sss
     #
     #         plt.close()
     #

@@ -28,7 +28,7 @@ import copy_graph_class as cg
 
 plot_graph = False
 plot_gif = False
-sort_graphs = False
+sort_graphs = True
 # Plot all the data into origin?
 origin_graphs = False
 pull_fabrication_info_excell = False
@@ -168,6 +168,8 @@ for material in os.listdir(f.main_dir):
                                                         continue
 
                                                     num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
+
+
 
                                                     # keeps count of the number of sweeps by each device
                                                     num_of_sweeps += num_sweeps
@@ -342,6 +344,7 @@ print("")
 print("Finished sample analysis below is information about the samples")
 print("")
 
+
 # needs too sort the data here, taking the data_dict and file_info_dict but full (see above) parsing through and
 # material_sweeps_dict = Contains all the sweeps per device along with the classification
 # material_data = Contains all the data extracted from the sweep (voltage,current,abs_current etc....)
@@ -362,7 +365,7 @@ print("")
 
 ############################################################################
 
-print(material_data['Stock']['PVA']['D20-Stock-Gold-PVA(2%)-Gold-s4']['G']['1'])
+# print(material_data['Stock']['PVA']['D20-Stock-Gold-PVA(2%)-Gold-s4']['G']['1'])
 
 
 # parses through the dictionary
@@ -375,7 +378,9 @@ print(material_data['Stock']['PVA']['D20-Stock-Gold-PVA(2%)-Gold-s4']['G']['1'])
 #
 # traverse_dict(material_data)
 ##############
-def data_sort(dictionary):
+def data_sort(material_data):
+    """ function for sorting and moving the good files."""
+
     def traverse_dict(dictionary):
         all_data = []
 
@@ -394,22 +399,58 @@ def data_sort(dictionary):
         _traverse_dict(dictionary)
         return all_data
 
-    result = traverse_dict(dictionary)
+    def load_checked_files():
+        try:
+            with open('checked_files.pkl', 'rb') as f:
 
-    for filename, data, keys_parsed in result:
-        print("Filename:", filename)
-        print("Data:", data)
-        print("Keys parsed through:", keys_parsed)
+                return pickle.load(f)
+        except FileNotFoundError:
+            return {}
+
+    def save_checked_files(checked_files):
+        with open('checked_files.pkl', 'wb') as f:
+            pickle.dump(checked_files, f)
+
+    data_transverse = traverse_dict(material_data)
+
+    # import-checked files here
+    checked_files = load_checked_files()
+
+    for filename, data, keys_parsed in data_transverse:
+        """ Here the data for each file is given as data 
+        data = pd dataframe """
+
+        # Pull info on the files from the database of information as follows:
         material = keys_parsed[0]
         polymer = keys_parsed[1]
         sample_name = keys_parsed[2]
         section = keys_parsed[3]
-        device = keys_parsed[0]
-        print(material, polymer, sample_name, section, device)
-        print("\n")
+        device = keys_parsed[4]
+        print(material, polymer, sample_name, section, device, filename)
+
+        key = f"{material} - {polymer} - {sample_name} - {section} - {device} - {filename}"
+
+        # filepath for the current file
+        filepath_file = os.path.join(f.main_dir, material, polymer, sample_name, section, device, filename)
+
+        # check if file has been checked already if no move on
+        if key in checked_files:
+            print(f"Graph {file_name} has already been checked and marked.")
+            print("")
+        else:
+            print("file not in checked_files")
+
+            # read in the checked_files here keeping it in memory adding too it below:
+
+            # call the class for sorting the files
+            cg.yes_no(filename, keys_parsed, data, filepath_file, checked_files)
+            # append the checked files array with the names and return saving the iterations
+    # save the checked files once finished
+    save_checked_files(checked_files)
 
 
-data_sort(material_data)
+if sort_graphs:
+    data_sort(material_data)
 
 # Calculate yield for each sample
 yield_dict, yield_dict_sect = eq.calculate_yield(material_sweeps_dict)

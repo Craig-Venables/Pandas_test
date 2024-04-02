@@ -17,12 +17,14 @@ debugging = False
 
 
 def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
-    """ for all info from a single file this determines if it is a s """
+    """ For all info from a single file this determines if a file is a single sweep or multiple sweep and does
+     the appropriate action  """
 
     file_info = f.extract_folder_names(filepath)
     short_name = f.short_name(filepath)
     long_name = f.long_name(filepath)
 
+    # Read the information from the file
     try:
         # Pull voltage and current data from file
         v_data, c_data = split_iv_sweep(filepath)
@@ -126,9 +128,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
         # print(f"Average relative change: {avg_relative_change:.5e}")
         # print(f"Standard deviation of relative change: {std_relative_change:.5e}")
 
-        # print variable names dd too dataframe
-        for variable_name, folder_name in file_info.items():
-            df[variable_name] = folder_name
+        # # print variable names dd too dataframe
+        # for variable_name, folder_name in file_info.items():
+        #     df[variable_name] = folder_name
 
         f.check_if_folder_exists(device_path, "python_images")
 
