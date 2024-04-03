@@ -154,6 +154,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
 
                 #plotting.images_in_row(arr_v, arr_c, absolute_val(arr_c) ,file_info, row_save)
 
+
+
             # Plots all the loops on one graph outside of the loop
 
             f.check_if_folder_exists(save_loc, "GIFS",)
@@ -165,10 +167,16 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
             file_name = os.path.splitext(file_info.get('file_name'))[0]
             save_name_gif = "_" + file_name + ".gif"
             output_gif_loc = os.path.join(gif_save_loc, save_name_gif)
-            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=5, restart_duration=10)
-            save_name_row = file_name + ".png"
 
-            plotting.plot_images_in_folder(folder_path,os.path.join(row_save,save_name_row))
+            if does_it_exist(output_gif_loc,re_save_graph):
+                plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=5, restart_duration=10)
+
+            save_name_row = file_name + ".png"
+            save_loc_images_in_folder = os.path.join(row_save,save_name_row)
+            if does_it_exist(save_loc_images_in_folder,re_save_graph):
+                plotting.plot_images_in_folder(folder_path,save_loc_images_in_folder)
+
+
 
 
         else:
@@ -240,6 +248,21 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
         looped_array_info = None
     return num_sweeps, short_name, long_name, df, df_file_stats, graph
 
+
+def does_it_exist(filepath, re_save):
+    if os.path.exists(filepath):
+        # File exists
+        if re_save:
+            return True
+            # Plot the graph
+            # Re-save is True, so create the file (overwriting if it exists)
+        if not re_save:
+            # Re-save is False wit file exists, skip plot
+            pass
+    # Save the graph
+    else:
+        # File doesn't exist
+        return True
 
 def device_clasification(sample_sweep_excell_dict, device_folder, section_folder,path):
     """ extracts the classification from the device_number excel sheet for the device level """

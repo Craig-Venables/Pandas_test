@@ -5,6 +5,78 @@ import shutil
 import plotting as plotting
 import pickle
 import sys
+import file as f
+
+def data_copy(material_data):
+    """ function for sorting and moving the good files."""
+
+    def traverse_dict(dictionary):
+        all_data = []
+
+        def _traverse_dict(data, keys_parsed=None):
+            if keys_parsed is None:
+                keys_parsed = []
+
+            for filename, data in data.items():
+                keys_parsed.append(filename)
+                if isinstance(data, dict):
+                    _traverse_dict(data, keys_parsed)
+                else:
+                    all_data.append((filename, data, keys_parsed.copy()))
+                keys_parsed.pop()  # Remove the last key after processing
+
+        _traverse_dict(dictionary)
+        return all_data
+
+    def load_checked_files():
+        try:
+            with open('checked_files.pkl', 'rb') as f:
+
+                return pickle.load(f)
+        except FileNotFoundError:
+            return {}
+
+    def save_checked_files(checked_files):
+        with open('checked_files.pkl', 'wb') as f:
+            pickle.dump(checked_files, f)
+
+    data_transverse = traverse_dict(material_data)
+
+    # import-checked files here
+    checked_files = load_checked_files()
+
+    for filename, data, keys_parsed in data_transverse:
+        """ Here the data for each file is given as data 
+        data = pd dataframe """
+
+        # Pull info on the files from the database of information as follows:
+        material = keys_parsed[0]
+        polymer = keys_parsed[1]
+        sample_name = keys_parsed[2]
+        section = keys_parsed[3]
+        device = keys_parsed[4]
+        print(material, polymer, sample_name, section, device, filename)
+
+        key = f"{material} - {polymer} - {sample_name} - {section} - {device} - {filename}"
+
+        # filepath for the current file
+        filepath_file = os.path.join(f.main_dir, material, polymer, sample_name, section, device, filename)
+
+        # check if file has been checked already if no move on
+        if key in checked_files:
+            print(f"Graph {filename} has already been checked and marked.")
+            print("")
+        else:
+            print("file not in checked_files")
+
+            # read in the checked_files here keeping it in memory adding too it below:
+
+            # call the class for sorting the files
+            yes_no(filename, keys_parsed, data, filepath_file, checked_files)
+            # append the checked files array with the names and return saving the iterations
+    # save the checked files once finished
+    save_checked_files(checked_files)
+
 
 
 class yes_no():

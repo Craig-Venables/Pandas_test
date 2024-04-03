@@ -26,15 +26,15 @@ import copy_graph_class as cg
 # - reorganise the functions
 
 
-plot_graph = False
-plot_gif = False
+plot_graph = True
+plot_gif = True
 sort_graphs = True
 # Plot all the data into origin?
 origin_graphs = False
 pull_fabrication_info_excell = False
 save_df = False
-re_save_graph = True
-re_analyse = True
+re_save_graph = False
+re_analyse = False
 
 # Open a file for writing with utf-8 encoding
 output_file = open(f.main_dir + 'printlog.txt', 'w', encoding='utf-8')
@@ -209,9 +209,10 @@ for material in os.listdir(f.main_dir):
                                         output_gif_loc = os.path.join(folder_path, save_name)
 
                                         if plot_gif:
-                                            # Creates Gifs of any sample with multiple sweeps
-                                            plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,
-                                                                            restart_duration=10)
+                                            if eq.does_it_exist(output_gif_loc,re_save_graph):
+                                                # Creates Gifs of any sample with multiple sweeps
+                                                plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,
+                                                                                restart_duration=10)
 
                                         if len(list_of_file_stats) >= 2:
                                             device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats,
@@ -271,29 +272,6 @@ for material in os.listdir(f.main_dir):
                         #         print("No key containing", section_letter , " found in sample_sweeps_dict.")
                         ######################################
 
-                        # try:
-                        #     # Get the folder name without the path
-                        #     folder_name = os.path.basename(subfolder)
-                        #     subfolder = os.path.abspath(subfolder)
-                        #     print("foldername", folder_name)
-                        #     print(subfolder)
-                        #
-                        #
-                        #     # Check if the folder still exists
-                        #     if not os.path.exists(subfolder):
-                        #         print(f"Folder {subfolder} does not exist. Skipping...")
-                        #         continue
-                        #
-                        #     # Check if a file with the same name as the folder already exists
-                        #     dest_file_path = os.path.join(subfolder, folder_name + os.path.splitext(dest_file)[1])
-                        #     if os.path.exists(dest_file_path):
-                        #         print(f"File already exists in {subfolder}. Skipping...")
-                        #         processed_folders.append(subfolder)  # Add the skipped folder to processed_folders
-                        #         continue
-                        #
-                        #     # Copy the file to the destination and rename it
-                        #     shutil.copy(dest_file, dest_file_path)
-                        #     print(f"File copied to {subfolder} and renamed to {folder_name}")
 
                         print("")
                         print("################################")
@@ -311,7 +289,7 @@ for material in os.listdir(f.main_dir):
                             pickle.dump(sample_stats_dict, file)
 
                         with open(sample_path + '/material_stats_dict.pkl', 'wb') as file:
-                            pickle.dump(material_stats_dict, file)
+                            pickle.dump(sample_stats_dict, file)
 
                         with open(sample_path + '/' + sample_name + '_data', 'wb') as file:
                             # all the data for the given sample
@@ -333,6 +311,18 @@ for material in os.listdir(f.main_dir):
         material_sweeps_dict[f'{material}'] = polymer_sweeps_dict
         material_data[f'{material}'] = polymer_data
 
+# save all the information to pkl file
+with open(f.main_dir + '/material_stats_dict_all.pkl', 'wb') as file:
+    pickle.dump(material_stats_dict, file)
+
+with open(f.main_dir + '/material_sweeps_dict_all.pkl', 'wb') as file:
+    pickle.dump(material_sweeps_dict, file)
+
+with open(f.main_dir + '/material_data_all.pkl', 'wb') as file:
+    pickle.dump(material_data, file)
+
+
+
 print('-' * 25)
 print("")
 print('-' * 25)
@@ -344,113 +334,22 @@ print("")
 print("Finished sample analysis below is information about the samples")
 print("")
 
-
-# needs too sort the data here, taking the data_dict and file_info_dict but full (see above) parsing through and
+# needs to sort the data here, taking the data_dict and file_info_dict but full (see above) parsing through and
 # material_sweeps_dict = Contains all the sweeps per device along with the classification
-# material_data = Contains all the data extracted from the sweep (voltage,current,abs_current etc....)
+# material_data = Contains all the data extracted from the sweep (Voltage ,current,abs_current etc....)
 
-# file_key = f'{material}_{polymer}_{sample_name}_{section_folder}_{device_folder}_{file_name}'
-#
-# for file_key,file_info in material_data.keys():
-#
-#
+# For sorting the graphs and copying the data
+if sort_graphs:
+    cg.data_copy(material_data)
+    #origin.plot_in_origin(device_data, device_path, 'transport')
 
-# if sort_graphs:
-#     cg.yes_no(file_data[f'{file_name}'], file_info_dict[file_key])
+
 
 ############################################################################
 # All sweeps analysed at this point stats are done below
 # A Breakpoint below does all the stats on the device
 # VERY CRUDE JUST PRINTS EVERYTHING DOS-NT SAVE ANYTHING YET
-
 ############################################################################
-
-# print(material_data['Stock']['PVA']['D20-Stock-Gold-PVA(2%)-Gold-s4']['G']['1'])
-
-
-# parses through the dictionary
-# def traverse_dict(dictionary):
-#     for filename, data in dictionary.items():
-#         if isinstance(data, dict):
-#             traverse_dict(data)
-#         else:
-#             print(filename, ":", data)
-#
-# traverse_dict(material_data)
-##############
-def data_sort(material_data):
-    """ function for sorting and moving the good files."""
-
-    def traverse_dict(dictionary):
-        all_data = []
-
-        def _traverse_dict(data, keys_parsed=None):
-            if keys_parsed is None:
-                keys_parsed = []
-
-            for filename, data in data.items():
-                keys_parsed.append(filename)
-                if isinstance(data, dict):
-                    _traverse_dict(data, keys_parsed)
-                else:
-                    all_data.append((filename, data, keys_parsed.copy()))
-                keys_parsed.pop()  # Remove the last key after processing
-
-        _traverse_dict(dictionary)
-        return all_data
-
-    def load_checked_files():
-        try:
-            with open('checked_files.pkl', 'rb') as f:
-
-                return pickle.load(f)
-        except FileNotFoundError:
-            return {}
-
-    def save_checked_files(checked_files):
-        with open('checked_files.pkl', 'wb') as f:
-            pickle.dump(checked_files, f)
-
-    data_transverse = traverse_dict(material_data)
-
-    # import-checked files here
-    checked_files = load_checked_files()
-
-    for filename, data, keys_parsed in data_transverse:
-        """ Here the data for each file is given as data 
-        data = pd dataframe """
-
-        # Pull info on the files from the database of information as follows:
-        material = keys_parsed[0]
-        polymer = keys_parsed[1]
-        sample_name = keys_parsed[2]
-        section = keys_parsed[3]
-        device = keys_parsed[4]
-        print(material, polymer, sample_name, section, device, filename)
-
-        key = f"{material} - {polymer} - {sample_name} - {section} - {device} - {filename}"
-
-        # filepath for the current file
-        filepath_file = os.path.join(f.main_dir, material, polymer, sample_name, section, device, filename)
-
-        # check if file has been checked already if no move on
-        if key in checked_files:
-            print(f"Graph {file_name} has already been checked and marked.")
-            print("")
-        else:
-            print("file not in checked_files")
-
-            # read in the checked_files here keeping it in memory adding too it below:
-
-            # call the class for sorting the files
-            cg.yes_no(filename, keys_parsed, data, filepath_file, checked_files)
-            # append the checked files array with the names and return saving the iterations
-    # save the checked files once finished
-    save_checked_files(checked_files)
-
-
-if sort_graphs:
-    data_sort(material_data)
 
 # Calculate yield for each sample
 yield_dict, yield_dict_sect = eq.calculate_yield(material_sweeps_dict)
