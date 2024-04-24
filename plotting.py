@@ -43,12 +43,15 @@ def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save,
 
         # using the functions main_plot the graphs
         plt.subplot(2, 2, 1)
+        plt.title('Iv_Graph')
         plot_iv(voltage, current)
 
         plt.subplot(2, 2, 2)
+        plt.title('Log_Iv')
         plot_logiv(voltage, abs_current)
 
         plt.subplot(2, 2, 3)
+        plt.title('Iv Avg showing direction')
         if loop:
             # This dosnt save correctly it shows the correct image, but dosnt save
             split_v_data, split_c_data = split_loops(voltage, current, num_sweeps)
@@ -59,7 +62,10 @@ def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save,
 
         # Create subplot for the final plot with two graphs
         plt.subplot(2, 2, 4)
-        # plt.show()
+        plt.title('Current vs Index')
+        plot_current_count(current)
+
+
         # plot_iv_subplots(voltage, current)
 
         # text = (crossing_points)
@@ -71,9 +77,9 @@ def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save,
         plt.ioff()
 
         file_path = os.path.join(save_loc, f"{short_filename}.png")
-
+        plt.tight_layout()
         plt.savefig(file_path, bbox_inches='tight', dpi=200)
-
+        plt.show()
         print(f"File saved successfully at {file_path}")
 
     if os.path.exists(file_path):
@@ -293,6 +299,25 @@ def plot_logiv(voltage, abs_current, fontsize=8):
     # plt.title('Voltage vs. abs_Current Graph')
     # plt.title('Voltage vs. abs_Current Graph' + \
     #           '\n' + f'{self.device_name}' + ' ' + f'{self.section_name}' + ' ' + f'{self.filename}')
+
+    # Show the main_plot
+    # plt.show()
+
+def plot_current_count(current,fontsize=8):
+    """
+        Plots voltage against abs current using Matplotlib.
+
+        Parameters:
+        - voltage_data (list): List of voltage data points.
+        - abs_current_data (list): List of current data points.
+        """
+    # Create a scatter main_plot of voltage against current
+    plt.plot(range(len(current)), current, 'r-',color='blue' )
+    #plt.plot(current, 'r.', color='blue')
+    # Add labels and a title
+    plt.ylabel('Index', fontsize=fontsize)
+    plt.xlabel('Current', fontsize=fontsize)
+
 
     # Show the main_plot
     # plt.show()

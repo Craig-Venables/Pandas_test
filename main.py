@@ -26,14 +26,14 @@ import copy_graph_class as cg
 # - reorganise the functions
 
 
-plot_graph = False
+plot_graph = True
 plot_gif = False
 sort_graphs = False
 # Plot all the data into origin?
 origin_graphs = False
 pull_fabrication_info_excell = False
 save_df = False
-re_save_graph = False
+re_save_graph = True
 re_analyse = False
 
 # Open a file for writing with utf-8 encoding
