@@ -26,9 +26,9 @@ import copy_graph_class as cg
 # - reorganise the functions
 
 
-plot_graph = True
-plot_gif = True
-sort_graphs = True
+plot_graph = False
+plot_gif = False
+sort_graphs = False
 # Plot all the data into origin?
 origin_graphs = False
 pull_fabrication_info_excell = False
@@ -43,7 +43,7 @@ output_file = open(f.main_dir + 'printlog.txt', 'w', encoding='utf-8')
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 
 # set Pandas display options to display all data in dataframe?
-# eq.set_pandas_display_options()
+eq.set_pandas_display_options()
 
 # Main for loop for parsing through folders
 
@@ -83,7 +83,7 @@ for material in os.listdir(f.main_dir):
                         Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7 """
 
                         # print("working on ", sample_name)
-                        # print("Path = ", sample_path)
+                        #print("Path = ", sample_path)
                         if pull_fabrication_info_excell:
                             # Pulls information on fabrication from excell file
                             fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name,
@@ -126,7 +126,7 @@ for material in os.listdir(f.main_dir):
                                     if os.path.isdir(device_path):
                                         # print(device_folder)
                                         """ Working on individual devices"""
-                                        # print("working in folder ", sample_name, section_folder, device_folder)
+                                        print("working in folder ", sample_name, section_folder, device_folder)
 
                                         # keeps a list of all files processed for each device
                                         list_of_measured_files = []
@@ -138,6 +138,11 @@ for material in os.listdir(f.main_dir):
                                         num_of_sweeps = 0
                                         file_data = {}
 
+                                        # determines the classification of a device from the excell sheet
+                                        classification = eq.device_clasification(sample_sweep_excell_dict,
+                                                                                 device_folder, section_folder,
+                                                                                 device_path)
+
                                         # add more here into how each array changes over each array
                                         # Process each file in the device_number folder
                                         # print(os.listdir(device_path))
@@ -145,7 +150,7 @@ for material in os.listdir(f.main_dir):
                                         for file_name in (os.listdir(device_path)):
                                             file_path = os.path.join(device_path, file_name)
                                             if file_name.endswith('.txt'):
-                                                # print(file_name)
+                                                print(file_name)
                                                 """Loops through each file in the folder and analyses them using the 
                                                 functions here"""
 
@@ -205,23 +210,26 @@ for material in os.listdir(f.main_dir):
                                         done on an individual device """
 
                                         save_name = "_Device" + f"{device_folder}" + ".gif"
+                                        save_name_slow = "_Device_slow" + f"{device_folder}" + ".gif"
                                         folder_path = device_path + '\\' + "python_images"
                                         output_gif_loc = os.path.join(folder_path, save_name)
+                                        output_gif_loc2 = os.path.join(folder_path, save_name_slow)
 
                                         if plot_gif:
                                             if eq.does_it_exist(output_gif_loc,re_save_graph):
                                                 # Creates Gifs of any sample with multiple sweeps
-                                                plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=0,
+                                                plotting.create_gif_from_folder(folder_path, output_gif_loc, 2,
                                                                                 restart_duration=10)
+                                            if eq.does_it_exist(output_gif_loc2, re_save_graph):
+                                                # create slower gifs
+                                                plotting.create_gif_from_folder(folder_path, output_gif_loc2, 1,
+                                                                                restart_duration=10)
+
 
                                         if len(list_of_file_stats) >= 2:
                                             device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats,
                                                                                               ignore_index=True)
 
-                                        # determines the classification of a device from the excell sheet
-                                        classification = eq.device_clasification(sample_sweep_excell_dict,
-                                                                                 device_folder, section_folder,
-                                                                                 device_path)
 
                                         device_data[f'{device_folder}'] = file_data
 
@@ -283,19 +291,23 @@ for material in os.listdir(f.main_dir):
 
                         # graphs = some_function_comparing_all_files
                         # pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{sample_name}.pdf",info_dict,sample_stats_dict)
+                        sample_stats_dict[f'{sample_name}'] = section_stats_dict
+                        sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
+                        sample_data[f'{sample_name}'] = section_data
 
                         # Saves information for later use
                         with open(sample_path + '/' + sample_name + '_Stats', 'wb') as file:
                             pickle.dump(sample_stats_dict, file)
 
-                        with open(sample_path + '/material_stats_dict.pkl', 'wb') as file:
-                            pickle.dump(sample_stats_dict, file)
+                        # with open(sample_path + '/material_stats_dict.pkl', 'wb') as file:
+                        #     pickle.dump(sample_stats_dict, file)
 
                         with open(sample_path + '/' + sample_name + '_data', 'wb') as file:
                             # all the data for the given sample
                             pickle.dump(sample_data, file)
 
                         # save the dataframe for stats within the sample folder in txt format
+                        # this saves all prior stats samples aswell due to the way its formated
                         eq.save_df_off_stats(sample_path, sample_stats_dict, sample_sweeps_dict)
 
                         # saves df in text format for each sample
@@ -336,7 +348,7 @@ print("")
 
 # needs to sort the data here, taking the data_dict and file_info_dict but full (see above) parsing through and
 # material_sweeps_dict = Contains all the sweeps per device along with the classification
-# material_data = Contains all the data extracted from the sweep (Voltage ,current,abs_current etc....)
+# material_data = Contains all the data extracted from the sweep (Voltage,current,abs_current etc....)
 
 # For sorting the graphs and copying the data
 if sort_graphs:
@@ -350,7 +362,9 @@ if sort_graphs:
 # A Breakpoint below does all the stats on the device
 # VERY CRUDE JUST PRINTS EVERYTHING DOS-NT SAVE ANYTHING YET
 ############################################################################
+####
 
+#####
 # Calculate yield for each sample
 yield_dict, yield_dict_sect = eq.calculate_yield(material_sweeps_dict)
 print("Yield for each sample, descending order")

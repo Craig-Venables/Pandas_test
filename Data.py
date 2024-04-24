@@ -67,6 +67,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
     df = df.dropna()
     #print(df['voltage'])
 
+    #split_data_in_sect(v_data, c_data_ng)
+
+
     # if there is more than one loop adds
     if num_sweeps > 1:
         loops=True
@@ -169,7 +172,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
             output_gif_loc = os.path.join(gif_save_loc, save_name_gif)
 
             if does_it_exist(output_gif_loc,re_save_graph):
-                plotting.create_gif_from_folder(folder_path, output_gif_loc, duration=5, restart_duration=10)
+                plotting.create_gif_from_folder(folder_path, output_gif_loc, 2, restart_duration=10)
+
 
             save_name_row = file_name + ".png"
             save_loc_images_in_folder = os.path.join(row_save,save_name_row)
@@ -512,22 +516,34 @@ def find_top_samples(material_stats_dict: dict, property_name: str = 'ON_OFF_Rat
                 for section_key, device_dict in section_dict.items():
                     for device_key, stats_df in device_dict.items():
                         # Check if 'file_name' and property_name exist in stats_df
-                        max_property_index = stats_df[property_name].idxmax()
-                        property_value = stats_df[property_name].iloc[max_property_index]
+                        if 'normalized_areas_avg' in stats_df.columns:
+                            property_name = 'normalized_areas_avg'
+                        elif 'normalised_area' in stats_df.columns:
+                            property_name = 'normalised_area'
+                        else:
+                            print("Neither 'normalized_areas_avg' nor 'normalised_area' found in stats_df columns.")
+                            continue
 
-                        file_name = stats_df['file_name'].iloc[max_property_index]
+                        #print(material_key,polymer_key,sample_key,section_key,"-----",device_key)
+                        #print(stats_df)
 
-                        # Extract the property values for the current device
-                        property_values = stats_df[property_name]
+                        if property_name in stats_df.columns:
+                            max_property_index = stats_df[property_name].idxmax()
+                            property_value = stats_df[property_name].iloc[max_property_index]
 
-                        # Append sample information to the list
-                        sample_info.append({
-                            'sample_key': sample_key,
-                            'section_key': section_key,
-                            'device_key': device_key,
-                            'file_name': file_name,
-                            'property_value': property_value
-                        })
+                            file_name = stats_df['file_name'].iloc[max_property_index]
+
+                            # Append sample information to the list
+                            sample_info.append({
+                                'sample_key': sample_key,
+                                'section_key': section_key,
+                                'device_key': device_key,
+                                'file_name': file_name,
+                                'property_value': property_value
+                            })
+                        else:
+                            print(f"Column '{property_name}' not found in stats_df.")
+                            continue
 
                 # Sort the devices based on the given property in descending order
                 sample_info.sort(key=lambda x: (
@@ -1245,6 +1261,37 @@ def save_df_off_stats(sample_path, final_stats_dict, final_sweeps_dict):
                     file.write(f"Number of sweeps: {sweeps_info}\n")
                     file.write(f"{info}\n")
                     file.write("------------------------\n")
+
+    # def save_df_off_stats(sample_path, final_stats_dict, final_sweeps_dict):
+    #     """
+    #
+    #     :param sample_path: full sample path
+    #     :return: n/a saves file stats_dict in the location sample path
+    #     """
+    #     # Open the file in write mode
+    #     with open(sample_path + '/stats_dict.txt', 'w', encoding='utf-8') as file:
+    #
+    #         file.write("###########################\n")
+    #         # Iterate through sample_stats_dict
+    #         for sample_name, section_info_stats in final_stats_dict.items():
+    #             file.write("------------------------\n")
+    #             file.write(f"Sample Name: {sample_name}\n")
+    #             file.write("------------------------\n")
+    #
+    #             # Iterate through section_info_stats
+    #             for section_name, devices in section_info_stats.items():
+    #                 file.write(f"Section Name: {section_name}\n")
+    #                 file.write("------------------------\n")
+    #
+    #                 # Access corresponding information from sample_sweeps_dict
+    #                 section_info_sweeps = final_sweeps_dict.get(sample_name, {}).get(section_name, {})
+    #
+    #                 file.write(f"Device Number: {section_name}\n")
+    #                 # Print corresponding info from sample_sweeps_dict if available
+    #                 sweeps_info = section_info_sweeps.get(section_name, "No sweeps info available")
+    #                 file.write(f"Number of sweeps: {sweeps_info}\n")
+    #                 file.write(f"{devices}\n")
+    #                 file.write("------------------------\n")
 
 
 def set_pandas_display_options() -> None:

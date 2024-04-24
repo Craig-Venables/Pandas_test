@@ -1,3 +1,44 @@
+# def test(voltage, current):
+#     def calculate_gradient(x, y):
+#         A = np.vstack([x, np.ones(len(x))]).T
+#         m, c = np.linalg.lstsq(A, y, rcond=None)[0]
+#
+#         # Calculate R-squared value
+#         # residuals = y - (m * x + c)
+#         # ss_res = np.sum(residuals ** 2)
+#         # ss_tot = np.sum((y - np.mean(y)) ** 2)
+#         # r_squared = 1 - (ss_res / ss_tot)
+#
+#         return m  # r_squared
+#
+#     # give just positive / negarive data
+#     arr = list(zip(voltage, current))
+#     # Separate positive and negative voltage/current pairs
+#     positive_data = [(v, c) for v, c in arr if v >= 0]
+#     negative_data = [(v, c) for v, c in arr if v < 0]
+#
+#     # Split positive data into halves
+#     positive_midpoint = len(positive_data) // 2
+#     positive_left_half = positive_data[:positive_midpoint]
+#     positive_right_half = positive_data[positive_midpoint:]
+#
+#     # Split negative data into halves
+#     negative_midpoint = len(negative_data) // 2
+#     negative_left_half = negative_data[:negative_midpoint]
+#     negative_right_half = negative_data[negative_midpoint:]
+#
+#     # Calculate gradients for each half
+#     positive_gradient_left = calculate_gradient(*zip(*positive_left_half))
+#     positive_gradient_right = calculate_gradient(*zip(*positive_right_half))
+#     negative_gradient_left = calculate_gradient(*zip(*negative_left_half))
+#     negative_gradient_right = calculate_gradient(*zip(*negative_right_half))
+#
+#     return (positive_gradient_left, positive_gradient_right), (negative_gradient_left, negative_gradient_right)
+#
+#
+# r = test(v_data, c_data)
+# print(r)
+
 # ##########################
 #
 # section = 'G'  # Replace with the desired section

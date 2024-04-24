@@ -40,10 +40,18 @@ def data_copy(material_data):
         with open('checked_files.pkl', 'wb') as f:
             pickle.dump(checked_files, f)
 
+    def count_y_for_sample_name(checked_files, sample_name):
+        count_y = 0
+        for key, value in checked_files.items():
+            if " - " + sample_name + " - " in key and value == "y":
+                count_y += 1
+        return count_y
+
     data_transverse = traverse_dict(material_data)
 
     # import-checked files here
     checked_files = load_checked_files()
+
 
     for filename, data, keys_parsed in data_transverse:
         """ Here the data for each file is given as data 
@@ -73,6 +81,8 @@ def data_copy(material_data):
 
             # call the class for sorting the files
             yes_no(filename, keys_parsed, data, filepath_file, checked_files)
+            number = count_y_for_sample_name(checked_files,keys_parsed[2])
+            print(keys_parsed[2], number)
             # append the checked files array with the names and return saving the iterations
     # save the checked files once finished
     save_checked_files(checked_files)
@@ -136,7 +146,7 @@ class yes_no():
         fig = plotting.graph_temp(self.voltage, self.current, self.abs_current, self.material, self.polymer,
                                   self.sample_name, self.section_folder, self.device_folder, self.filename)
 
-        print(self.dataframe)
+        #print(self.dataframe)
         print(os.path.join(self.output_folder, self.material, self.polymer, self.sample_name))
 
         print("Do you want to copy this file? (y/n): or exit (s) ")
@@ -179,7 +189,7 @@ class yes_no():
             #
             # with open(calculations_file_path,'w',encoding='utf-8') as file:
             #     file.write(self.data)
-
+            #self.save_checked_files(checked_files)
 
 
 
