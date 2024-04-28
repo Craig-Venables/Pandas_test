@@ -33,7 +33,7 @@ sort_graphs = False
 origin_graphs = False
 pull_fabrication_info_excell = False
 save_df = False
-re_save_graph = True
+re_save_graph = False
 re_analyse = False
 
 # Open a file for writing with utf-8 encoding
@@ -55,7 +55,11 @@ material_names_dict = {}
 file_info_dict = {}
 sample_name_arr = []
 
+
+
 print("Starting...")
+
+
 
 for material in os.listdir(f.main_dir):
     material_path = os.path.join(f.main_dir, material)
@@ -65,6 +69,11 @@ for material in os.listdir(f.main_dir):
         polymer_sweeps_dict = {}
         polymer_data = {}
         polymer_names_dict = {}
+
+        total_samples = sum(1 for _ in os.listdir(f.main_dir) if os.path.isdir(os.path.join(f.main_dir, _)))
+        total_files = sum(len(files) for _, _, files in os.walk(f.main_dir))
+        processed_samples = 0
+        processed_files = 0
 
         for polymer in os.listdir(material_path):
             polymer_path = os.path.join(material_path, polymer)
@@ -81,6 +90,9 @@ for material in os.listdir(f.main_dir):
                         """ working on a sample folders, here do anything for work on the device that dosnt 
                         involve analysis of data:
                         Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7 """
+                        processed_samples += 1
+                        percentage_completed = (processed_samples / total_samples) * 100
+
 
                         # print("working on ", sample_name)
                         #print("Path = ", sample_path)
@@ -153,6 +165,9 @@ for material in os.listdir(f.main_dir):
                                                 print(file_name)
                                                 """Loops through each file in the folder and analyses them using the 
                                                 functions here"""
+                                                # Percentage completed
+                                                processed_files += 1
+                                                percentage_completed_files = (processed_files / total_files) * 100
 
                                                 # Checks and returns the sweep type of the file also checks for nan
                                                 # values if nan values are present returns None
@@ -250,6 +265,9 @@ for material in os.listdir(f.main_dir):
                                 section_stats_dict[f'{section_folder}'] = device_stats_dict
                                 section_sweeps_dict[f'{section_folder}'] = device_sweeps_dict
                                 section_data[f'{section_folder}'] = device_data
+                                print("--------------------------------")
+                                print(f'Current percentage of files completed, {percentage_completed_files:.2f}% completed')
+                                print("--------------------------------")
 
                         ###############################################################################
                         """ For the Sample level only place in here any information that needs to be 
@@ -283,7 +301,8 @@ for material in os.listdir(f.main_dir):
 
                         print("")
                         print("################################")
-                        print("Sample finished processing - ", sample_name)
+                        print("Finished processing - ", sample_name)
+                        print(f'Total percentage of files completed, {percentage_completed:.2f}% completed')
                         print("################################")
 
                         # access the dataframe for specific bits
