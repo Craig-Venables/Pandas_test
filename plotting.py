@@ -79,7 +79,7 @@ def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save,
         file_path = os.path.join(save_loc, f"{short_filename}.png")
         plt.tight_layout()
         plt.savefig(file_path, bbox_inches='tight', dpi=200)
-        plt.show()
+        #plt.show()
         print(f"File saved successfully at {file_path}")
 
     if os.path.exists(file_path):
@@ -312,11 +312,11 @@ def plot_current_count(current,fontsize=8):
         - abs_current_data (list): List of current data points.
         """
     # Create a scatter main_plot of voltage against current
-    plt.plot(range(len(current)), current, 'r-',color='blue' )
+    plt.plot(range(len(current)), current, 'r-')
     #plt.plot(current, 'r.', color='blue')
     # Add labels and a title
-    plt.ylabel('Index', fontsize=fontsize)
-    plt.xlabel('Current', fontsize=fontsize)
+    plt.ylabel('Current', fontsize=fontsize)
+    plt.xlabel('Index', fontsize=fontsize)
 
 
     # Show the main_plot
