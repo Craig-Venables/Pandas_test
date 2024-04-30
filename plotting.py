@@ -315,8 +315,8 @@ def plot_current_count(current,fontsize=8):
     plt.plot(range(len(current)), current, 'r-')
     #plt.plot(current, 'r.', color='blue')
     # Add labels and a title
-    plt.ylabel('Index', fontsize=fontsize)
-    plt.xlabel('Current', fontsize=fontsize)
+    plt.ylabel('Current', fontsize=fontsize)
+    plt.xlabel('Index', fontsize=fontsize)
 
 
     # Show the main_plot
