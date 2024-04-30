@@ -33,7 +33,7 @@ sort_graphs = False
 origin_graphs = False
 pull_fabrication_info_excell = False
 save_df = False
-re_save_graph = True
+re_save_graph = False
 re_analyse = False
 
 # Open a file for writing with utf-8 encoding
