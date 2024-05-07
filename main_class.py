@@ -24,7 +24,8 @@ import os
 import pickle
 
 class DataProcessor:
-    def __init__(self, main_dir, excel_path):
+    def __init__(self, main_dir, excel_path, pull_fabrication_info_excell):
+        self.pull_fabrication_info_excell = pull_fabrication_info_excell
         self.main_dir = main_dir
         self.excel_path = excel_path
         self.total_samples = self._count_total_samples()
@@ -52,13 +53,20 @@ class DataProcessor:
                 for polymer in os.listdir(material_path):
                     polymer_path = os.path.join(material_path, polymer)
                     if os.path.isdir(polymer_path):
+                        sample_stats_dict = {}
+                        sample_sweeps_dict = {}
+                        sample_data = {}
+                        sample_names_dict = {}
                         for sample_name in os.listdir(polymer_path):
                             sample_path = os.path.join(polymer_path, sample_name)
                             if os.path.isdir(sample_path):
+                                """ working on a sample folders, here do anything for work on the device that dosnt 
+                                                        involve analysis of data:
+                                                        Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7 """
                                 self.processed_samples += 1
                                 percentage_completed_samples = (self.processed_samples / self.total_samples) * 100
 
-                                if pull_fabrication_info_excell:
+                                if self.pull_fabrication_info_excell:
                                     fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name,
                                                                                                        self.excel_path,
                                                                                                        sample_path)
