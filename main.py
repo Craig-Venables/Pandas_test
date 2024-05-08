@@ -163,55 +163,61 @@ for material in os.listdir(f.main_dir):
                                             file_path = os.path.join(device_path, file_name)
                                             if file_name.endswith('.txt'):
                                                 print(file_name)
-                                                """Loops through each file in the folder and analyses them using the 
-                                                functions here"""
-                                                # Percentage completed
-                                                processed_files += 1
-                                                percentage_completed_files = (processed_files / total_files) * 100
 
-                                                # Checks and returns the sweep type of the file also checks for nan
-                                                # values if nan values are present returns None
+                                                def txt_file(file_path,total_files,plot_graph,save_df,device_path,re_save_graph,processed_files,num_of_sweeps):
+                                                # began changing this into function not sure yet
+                                                    """Loops through each file in the folder and analyses them using the
+                                                    functions here"""
+                                                    # Percentage completed
+                                                    processed_files += 1
+                                                    percentage_completed_files = (processed_files / total_files) * 100
 
-                                                sweep_type = eq.check_sweep_type(file_path)
-                                                # print(sweep_type)
+                                                    # Checks and returns the sweep type of the file also checks for nan
+                                                    # values if nan values are present returns None
 
-                                                if sweep_type == 'Iv_sweep':
-                                                    """ for simple iv sweeps"""
+                                                    sweep_type = eq.check_sweep_type(file_path)
+                                                    # print(sweep_type)
 
-                                                    # Performs analysis on the file given returning the dataframe
-                                                    analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
-                                                                                       device_path, re_save_graph)
+                                                    if sweep_type == 'Iv_sweep':
+                                                        """ for simple iv sweeps"""
 
-                                                    if analysis_result is None:
-                                                        # if there is an error in reading the file it will just continue
-                                                        # skipping
-                                                        continue
+                                                        # Performs analysis on the file given returning the dataframe
+                                                        analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
+                                                                                           device_path, re_save_graph)
 
-                                                    num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
+                                                        if analysis_result is None:
+                                                            # if there is an error in reading the file it will just continue
+                                                            # skipping
+                                                            continue
+
+                                                        num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
 
 
 
-                                                    # keeps count of the number of sweeps by each device
-                                                    num_of_sweeps += num_sweeps
+                                                        # keeps count of the number of sweeps by each device
+                                                        num_of_sweeps += num_sweeps
 
-                                                    # storing information from analysis
-                                                    list_of_measured_files.append(long_name)
-                                                    list_of_graphs.append(graph)
-                                                    list_of_file_stats.append(file_stats)
-                                                    file_data[f'{file_name}'] = data
+                                                        # storing information from analysis
+                                                        list_of_measured_files.append(long_name)
+                                                        list_of_graphs.append(graph)
+                                                        list_of_file_stats.append(file_stats)
+                                                        file_data[f'{file_name}'] = data
 
-                                                    file_key = f'{material}_{polymer}_{sample_name}_{section_folder}_{device_folder}_{file_name}'
+                                                        file_key = f'{material}_{polymer}_{sample_name}_{section_folder}_{device_folder}_{file_name}'
 
-                                                    # Store the file information in the dictionary
-                                                    file_info_dict[file_key] = {
-                                                        'material': material,
-                                                        'polymer': polymer,
-                                                        'sample_name': sample_name,
-                                                        'section_folder': section_folder,
-                                                        'device_folder': device_folder,
-                                                        'file_name': file_name,
-                                                        'file_path': os.path.join(device_path, file_name)
-                                                    }
+                                                        # Store the file information in the dictionary
+                                                        file_info_dict[file_key] = {
+                                                            'material': material,
+                                                            'polymer': polymer,
+                                                            'sample_name': sample_name,
+                                                            'section_folder': section_folder,
+                                                            'device_folder': device_folder,
+                                                            'file_name': file_name,
+                                                            'file_path': os.path.join(device_path, file_name)
+                                                        }
+                                                    return  processed_files, num_of_sweeps,num_sweeps, short_name, long_name, data, file_stats, graph
+
+                                                    txt_file(file_path,total_files,plot_graph,save_df,device_path,re_save_graph)
                                                     # print(file_info_dict[f'{file_key}'])
                                                     # if sort_graphs:
                                                     #     cg.yes_no(file_data[f'{file_name}'], file_info_dict[file_key])
