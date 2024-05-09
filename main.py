@@ -86,7 +86,7 @@ for material in os.listdir(f.main_dir):
 
                 for sample_name in os.listdir(polymer_path):
                     sample_path = os.path.join(polymer_path, sample_name)
-                    if os.path.isdir(sample_path):
+                    if os.path.isdir(sample_path): # can remove
                         """ working on a sample folders, here do anything for work on the device that dosnt 
                         involve analysis of data:
                         Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7 """
