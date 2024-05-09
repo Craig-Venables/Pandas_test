@@ -185,10 +185,10 @@ for material in os.listdir(f.main_dir):
                                                         analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
                                                                                            device_path, re_save_graph)
 
-                                                        if analysis_result is None:
-                                                            # if there is an error in reading the file it will just continue
-                                                            # skipping
-                                                            continue
+                                                        # if analysis_result is None:
+                                                        #     # if there is an error in reading the file it will just continue
+                                                        #     # skipping
+                                                        #     continue
 
                                                         num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
 
@@ -215,9 +215,18 @@ for material in os.listdir(f.main_dir):
                                                             'file_name': file_name,
                                                             'file_path': os.path.join(device_path, file_name)
                                                         }
-                                                    return  processed_files, num_of_sweeps,num_sweeps, short_name, long_name, data, file_stats, graph
+                                                        return percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, data, file_stats
+                                                    # else:
+                                                    #     # if there is an error in reading the file it will just continue
+                                                    #     # skipping
+                                                    #     continue
+                                                    #
 
-                                                    txt_file(file_path,total_files,plot_graph,save_df,device_path,re_save_graph)
+
+
+
+                                                result = txt_file(file_path,total_files,plot_graph,save_df,device_path,re_save_graph,processed_files,num_of_sweeps)
+                                                percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, data, file_stats = result
                                                     # print(file_info_dict[f'{file_key}'])
                                                     # if sort_graphs:
                                                     #     cg.yes_no(file_data[f'{file_name}'], file_info_dict[file_key])
