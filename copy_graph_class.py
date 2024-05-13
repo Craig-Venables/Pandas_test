@@ -302,4 +302,3 @@ class yes_no():
     #
     #         print("")
     #     self.save_checked_files(checked_files)
-
