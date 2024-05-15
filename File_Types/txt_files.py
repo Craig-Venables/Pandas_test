@@ -44,6 +44,7 @@ def txt_file(file_name,file_path, total_files, plot_graph, save_df, device_path,
         # if there is an error in reading the file it will just continue
         # skipping
         print("Not iv sweep")
+
         # continue
 
 
