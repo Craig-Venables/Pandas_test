@@ -12,7 +12,7 @@ import re
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FuncFormatter
-import Data
+import memristors
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -153,24 +153,6 @@ def iv_and_log_iv_plot(voltage, current, abs_current, file_info, save_loc="", cr
         create_graph()
 
 
-def plot_iv_subplots(voltage, current):
-    '''
-        plots iv and log iv graphs as subplots and saves it
-    '''
-    # Generate some data
-    x = np.linspace(0, 10, 100)
-    y1 = np.sin(x)
-    y2 = np.cos(x)
-
-    # Create subplots
-    fig, axs = plt.subplots(2)  # 2 rows of subplots
-
-    # Plot data on the subplots
-    axs[0].plot(x, y1, color='blue')
-    axs[0].set_title('Sin(x)')
-    axs[1].plot(x, y2, color='red')
-    axs[1].set_title('Cos(x)')
-
 
 def main_plot_loop(voltage, current, abs_current, sweep_num, save_loc, crossing_points, re_save, file_info):
     '''
@@ -264,6 +246,24 @@ def plot_images_in_folder(folder_path, save_loc):
     plt.savefig(save_loc, dpi=200)
     print("file saved at ,", save_loc)
 
+def plot_iv_subplots(voltage, current):
+    '''
+        plots iv and log iv graphs as subplots and saves it
+    '''
+    # Generate some data
+    x = np.linspace(0, 10, 100)
+    y1 = np.sin(x)
+    y2 = np.cos(x)
+
+    # Create subplots
+    fig, axs = plt.subplots(2)  # 2 rows of subplots
+
+    # Plot data on the subplots
+    axs[0].plot(x, y1, color='blue')
+    axs[0].set_title('Sin(x)')
+    axs[1].plot(x, y2, color='red')
+    axs[1].set_title('Cos(x)')
+
 
 def plot_iv(voltage, current, fontsize=8):
     """
@@ -278,7 +278,7 @@ def plot_iv(voltage, current, fontsize=8):
     # Add labels and a title
     plt.ylabel('Current', fontsize=fontsize)
     plt.xlabel('Voltage', fontsize=fontsize)
-    # plt.title('Voltage vs. Current Graph')
+    # plt.title('Voltage vs. Current memristors')
 
 
 def plot_logiv(voltage, abs_current, fontsize=8):
@@ -296,8 +296,8 @@ def plot_logiv(voltage, abs_current, fontsize=8):
     plt.ylabel('abs Current', fontsize=fontsize)
     plt.yscale("log")
     plt.xlabel('Voltage', fontsize=fontsize)
-    # plt.title('Voltage vs. abs_Current Graph')
-    # plt.title('Voltage vs. abs_Current Graph' + \
+    # plt.title('Voltage vs. abs_Current memristors')
+    # plt.title('Voltage vs. abs_Current memristors' + \
     #           '\n' + f'{self.device_name}' + ' ' + f'{self.section_name}' + ' ' + f'{self.filename}')
 
     # Show the main_plot

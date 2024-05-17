@@ -253,7 +253,7 @@ class yes_no():
     #
     #     # is the filename already contained in the document checked files
     #     if name_in_checked_files in checked_files:
-    #         print(f"Graph {self.filename}  has already checked and marked ")
+    #         print(f"memristors {self.filename}  has already checked and marked ")
     #         print("")
     #     else:
     #         # if self.v_data == 1000:
