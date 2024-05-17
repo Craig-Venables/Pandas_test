@@ -79,6 +79,19 @@ def extract_folder_names(file_path, base_folder="Memristors", folder_structure=N
 
     return variable_names
 
+def create_params_dict(plot_graph, plot_gif, sort_graphs, origin_graphs,
+                       pull_fabrication_info_excell, save_df, re_save_graph, re_analyse):
+    return {
+        'plot_graph': plot_graph,
+        'plot_gif': plot_gif,
+        'sort_graphs': sort_graphs,
+        'origin_graphs': origin_graphs,
+        'pull_fabrication_info_excell': pull_fabrication_info_excell,
+        'save_df': save_df,
+        're_save_graph': re_save_graph,
+        're_analyse': re_analyse
+    }
+
 class Tee:
     def __init__(self, file, stdout):
         self.file = file

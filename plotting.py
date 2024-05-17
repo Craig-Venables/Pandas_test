@@ -12,7 +12,7 @@ import re
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FuncFormatter
-import Data
+import memristors
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -278,7 +278,7 @@ def plot_iv(voltage, current, fontsize=8):
     # Add labels and a title
     plt.ylabel('Current', fontsize=fontsize)
     plt.xlabel('Voltage', fontsize=fontsize)
-    # plt.title('Voltage vs. Current Graph')
+    # plt.title('Voltage vs. Current memristors')
 
 
 def plot_logiv(voltage, abs_current, fontsize=8):
@@ -296,8 +296,8 @@ def plot_logiv(voltage, abs_current, fontsize=8):
     plt.ylabel('abs Current', fontsize=fontsize)
     plt.yscale("log")
     plt.xlabel('Voltage', fontsize=fontsize)
-    # plt.title('Voltage vs. abs_Current Graph')
-    # plt.title('Voltage vs. abs_Current Graph' + \
+    # plt.title('Voltage vs. abs_Current memristors')
+    # plt.title('Voltage vs. abs_Current memristors' + \
     #           '\n' + f'{self.device_name}' + ' ' + f'{self.section_name}' + ' ' + f'{self.filename}')
 
     # Show the main_plot

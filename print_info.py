@@ -1,4 +1,4 @@
-
+import memristors as m
 ''' for printing all info '''
 def print_on_off_ratio_info(input):
     # Print the comprehensive information outside the function
@@ -27,3 +27,30 @@ def print_normalised_area_info(input):
         print(f"Median normalised_area: {sample_info['median_normalised_area']}")
         print(f"Mode normalised_area: {sample_info['mode_normalised_area']}")
         print("\n")
+
+def yield_calc(material_sweeps_dict):
+    yield_dict, yield_dict_sect = m.calculate_yield(material_sweeps_dict)
+    print("Yield for each sample, descending order")
+    print('-' * 25)
+    for key, value in yield_dict.items():
+        print(f'{key}: {value}')
+    print('-' * 25)
+    print('')
+
+def top_10_measured(sample_sweeps):
+    # Counter variable to keep track of the number of items printed
+    print("Top 10 measured samples = ")
+    print('-' * 50)
+    printed_count = 0
+    for file_key, file_info in sample_sweeps.items():
+        # Print only the top 10 items
+        if printed_count < 10:
+            print(f'File Key: {file_key}')
+            print(f'Sample Name: {file_info["sample_name"]}')
+            print(f'Total Sum: {file_info["total_sum"]}')
+            print('-' * 25)
+            print('')
+
+            # Increment the counter
+            printed_count += 1
+

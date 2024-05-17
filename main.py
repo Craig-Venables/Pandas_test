@@ -1,23 +1,22 @@
 import pandas as pd
 import os
-import Data as eq
-import excell as exc
+
 import file as f
 import pickle
 import sys
 import print_info as p
 from file import Tee
-import plotting
-import Origin as origin
-import re
-import File_Types.txt_files as tf
-import copy_graph_class as cg
+import data_sort as m
+import memristors.memristors as mem
+
 
 
 # to add
 # - histogram all the data
 # - reorganise the functions
+# - keeo track of which files have been measured and wonr remeaure them
 #
+memristors_data = True
 
 plot_graph = True
 plot_gif = False
@@ -29,287 +28,18 @@ save_df = False
 re_save_graph = False
 re_analyse = False
 
+params = f.create_params_dict(plot_graph, plot_gif, sort_graphs, origin_graphs,
+                              pull_fabrication_info_excell, save_df, re_save_graph, re_analyse)
 # Open a file for writing with utf-8 encoding
 output_file = open(f.main_dir + 'printlog.txt', 'w', encoding='utf-8')
-
 # Redirect print output to both the file and the console
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
-
 # set Pandas display options to display all data in dataframe?
-eq.set_pandas_display_options()
-
-# Main for loop for parsing through folders
-
-# empty dictionary's for later use
-material_stats_dict = {}
-material_sweeps_dict = {}
-material_data = {}
-material_names_dict = {}
-file_info_dict = {}
-sample_name_arr = []
-
-
-print("Starting...")
+mem.set_pandas_display_options()
 
 # This is for Memristors, create a new one for other device measurements
-def memristor_devices(path):
-    """ Takes the path sorts the data and returns file info
-
-    :param path: Path to the folder containing all the data
-    :returns:
-    Material_stats_dict = All the statistics for all devices
-    Material_sweeps_dict = Contains all the sweeps per device along with the classification
-    Material_data = Contains all the data extracted from the sweep (Voltage,current,abs_current etc....)
-
-    """
-
-    for material in os.listdir(path):
-        material_path = os.path.join(path, material)
-        if os.path.isdir(material_path):  # Check if material_path is a directory
-            # Navigate through sub-folders (e.g., polymer)
-            polymer_stats_dict = {}
-            polymer_sweeps_dict = {}
-            polymer_data = {}
-            polymer_names_dict = {}
-
-            total_samples = sum(1 for _ in os.listdir(path) if os.path.isdir(os.path.join(path, _)))
-            total_files = sum(len(files) for _, _, files in os.walk(path))
-            processed_samples = 0
-            processed_files = 0
-
-            for polymer in os.listdir(material_path):
-                polymer_path = os.path.join(material_path, polymer)
-                if os.path.isdir(polymer_path):  # Check if polymer_path is a directory
-                    # Navigate through sample_name folders
-                    sample_stats_dict = {}
-                    sample_sweeps_dict = {}
-                    sample_data = {}
-                    sample_names_dict = {}
-
-                    for sample_name in os.listdir(polymer_path):
-                        sample_path = os.path.join(polymer_path, sample_name)
-                        if os.path.isdir(sample_path):  # Check if path is a directory this is needed
-                            """ working on a sample folders, here do anything for work on the device that dosnt 
-                            involve analysis of data:
-                            Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7 """
-
-                            processed_samples += 1 # Add one to the number of samples measured
-                            percentage_completed = (processed_samples / total_samples) * 100
-
-                            if pull_fabrication_info_excell:
-                                # Pulls information on fabrication from excell file
-                                fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name,f.excel_path,sample_path)
-                            # Pulls information from the device sweep excell sheet
-                            sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
-
-                            # empty list for storing all measured devices
-                            list_of_measured_files_devices_sections = []
-                            section_stats_dict = {}
-                            section_sweeps_dict = {}
-                            section_data = {}
-
-                            # Navigate through section folders
-                            for section_folder in os.listdir(sample_path):
-                                # Anything to section that doesn't require information on individual sweeps
-                                section_path = os.path.join(sample_path, section_folder)
-                                if os.path.isdir(section_path):  # Check if path is a directory this is needed
-
-                                    """ working on section folder"""
-                                    print("working on ", sample_name, section_folder)
-
-                                    # More empty arrays for storing all measured devices
-                                    list_of_measured_files_devices = []
-                                    device_sweeps_dict = {}
-                                    device_stats_dict = {}
-                                    device_data = {}
-
-                                    def extract_numeric_part(filename):
-                                        match = re.search(r'\d+', filename)
-                                        return int(match.group()) if match else float('inf')
-
-                                    # Sort the list of filenames based on the numeric part
-                                    sorted_files = sorted(os.listdir(section_path), key=extract_numeric_part)
-
-                                    for device_folder in sorted_files:
-                                        device_path = os.path.join(section_path, device_folder)
-                                        if os.path.isdir(device_path):  # Check if path is a directory this is needed
-                                            # print(device_folder)
-                                            """ Working on individual devices"""
-                                            print("working in folder ", sample_name, section_folder, device_folder)
-
-                                            # keeps a list of all files processed for each device
-                                            list_of_measured_files = []
-                                            list_of_file_stats = []
-                                            list_of_areas_loops = []
-                                            list_of_looped_array_info = []
-                                            list_of_data_dfs = []
-                                            list_of_graphs = []
-                                            num_of_sweeps = 0
-                                            file_data = {}
-
-                                            # determines the classification of a device from the excell sheet
-                                            classification = eq.device_clasification(sample_sweep_excell_dict,
-                                                                                     device_folder, section_folder,
-                                                                                     device_path)
-
-                                            # add more here into how each array changes over each array
-                                            # Process each file in the device_number folder
-                                            # print(os.listdir(device_path))
-
-                                            for file_name in (os.listdir(device_path)):
-                                                file_path = os.path.join(device_path, file_name)
-                                                """ For each file """
-                                                # Set file key
-                                                file_key = f'{material}_{polymer}_{sample_name}_{section_folder}_{device_folder}_{file_name}'
-
-                                                # Store the file information in the dictionary
-                                                file_info_dict[file_key] = {
-                                                    'material': material,
-                                                    'polymer': polymer,
-                                                    'sample_name': sample_name,
-                                                    'section_folder': section_folder,
-                                                    'device_folder': device_folder,
-                                                    'file_name': file_name,
-                                                    'file_path': os.path.join(device_path, file_name)
-                                                }
-                                                if file_name.endswith('.txt'):
-                                                    # for all files that end in txt
-                                                    result = tf.txt_file(file_name,file_path, total_files, plot_graph, save_df, device_path, re_save_graph, processed_files, num_of_sweeps,file_data,list_of_file_stats,list_of_graphs,list_of_measured_files)
-
-                                                    if result is not None:
-                                                        percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, data, file_stats = result
-                                                    else:
-                                                        print(f'Warning: tf.txt_file returned None for file {file_name , file_path}')
-                                                        # Handle the None case appropriately, perhaps by setting default values
-                                                        percentage_completed_files = processed_files = num_of_sweeps = num_sweeps = 0
-                                                        short_name = long_name = data = file_stats = None
-
-
-
-                                            ###############################################################################
-                                            """ For the device level only place in here any information that needs to be 
-                                            done on an individual device """
-
-                                            save_name = "_Device" + f"{device_folder}" + ".gif"
-                                            save_name_slow = "_Device_slow" + f"{device_folder}" + ".gif"
-                                            folder_path = device_path + '\\' + "python_images"
-                                            output_gif_loc = os.path.join(folder_path, save_name)
-                                            output_gif_loc2 = os.path.join(folder_path, save_name_slow)
-
-                                            if plot_gif:
-                                                if eq.does_it_exist(output_gif_loc,re_save_graph):
-                                                    # Creates Gifs of any sample with multiple sweeps
-                                                    plotting.create_gif_from_folder(folder_path, output_gif_loc, 2,
-                                                                                    restart_duration=10)
-                                                if eq.does_it_exist(output_gif_loc2, re_save_graph):
-                                                    # create slower gifs
-                                                    plotting.create_gif_from_folder(folder_path, output_gif_loc2, 1,
-                                                                                    restart_duration=10)
-
-                                            if len(list_of_file_stats) >= 2:
-                                                device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats,
-                                                                                                  ignore_index=True)
-
-                                            device_data[f'{device_folder}'] = file_data
-
-                                            device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps': num_of_sweeps,
-                                                                                      'classification': classification}
-
-                                            if origin_graphs:
-                                                # plot the data in origin for use later
-                                                origin.plot_in_origin(device_data, device_path, 'transport')
-
-                                            # plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
-
-                                    ###############################################################################
-                                    """ For the Section level only place in here any information that needs to be 
-                                    done on an individual section """
-
-                                    # Creating Dictionary's for device stats as a section
-                                    section_stats_dict[f'{section_folder}'] = device_stats_dict
-                                    section_sweeps_dict[f'{section_folder}'] = device_sweeps_dict
-                                    section_data[f'{section_folder}'] = device_data
-                                    print("--------------------------------")
-                                    print(f'Current percentage of files completed, {percentage_completed_files:.2f}% completed')
-                                    print("--------------------------------")
-
-                            ###############################################################################
-                            """ For the Sample level only place in here any information that needs to be 
-                            done on an individual Sample level """
-
-                            # Names the final dictionary the sample name for storage later if necessary
-                            sample_stats_dict[f'{sample_name}'] = section_stats_dict
-                            sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
-                            sample_data[f'{sample_name}'] = section_data
-
-                            ######################################
-                            # this is for auto adding sweeps into the excell file pls keep
-                            # for section_name, section_data in sample_sweep_excell_dict.items():
-                            #     section_letter = section_name[0]  # Take the first letter of the section name
-                            #     print(section_letter)
-                            #     # Check if the section letter exists
-                            #     #print(section_letter)
-                            #     #print(section_data)
-                            #     # Find the first key containing the letter 'A'
-                            #     matching_key = next((key for key in sample_sweeps_dict if section_letter in key), None)
-                            #     print(matching_key , "matching key")
-                            #     if matching_key is not None:
-                            #         data_s = sample_sweeps_dict[matching_key]
-                            #         print(data_s)
-                            #         #not sure if this works but give it a try
-                            #         #exc.update_and_save_to_excel(sample_name, sample_path, matching_key, data_s)
-                            #     else:
-                            #         print("No key containing", section_letter , " found in sample_sweeps_dict.")
-                            ######################################
-
-
-                            print("")
-                            print("################################")
-                            print("Finished processing - ", sample_name)
-                            print(f'Total percentage of files completed, {percentage_completed:.2f}% completed')
-                            print("################################")
-
-                            # access the dataframe for specific bits
-                            # print(sample_stats_dict[f'{sample_name}']['G 200µm'])
-
-                            # graphs = some_function_comparing_all_files
-                            # pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{sample_name}.pdf",info_dict,sample_stats_dict)
-                            sample_stats_dict[f'{sample_name}'] = section_stats_dict
-                            sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
-                            sample_data[f'{sample_name}'] = section_data
-
-                            # Saves information for later use
-                            with open(sample_path + '/' + sample_name + '_Stats', 'wb') as file:
-                                pickle.dump(sample_stats_dict, file)
-
-                            # with open(sample_path + '/material_stats_dict.pkl', 'wb') as file:
-                            #     pickle.dump(sample_stats_dict, file)
-
-                            with open(sample_path + '/' + sample_name + '_data', 'wb') as file:
-                                # all the data for the given sample
-                                pickle.dump(sample_data, file)
-
-                            # save the dataframe for stats within the sample folder in txt format
-                            # this saves all prior stats samples aswell due to the way its formated
-                            eq.save_df_off_stats(sample_path, sample_stats_dict, sample_sweeps_dict)
-
-                            # saves df in text format for each sample
-                            # eq.save_df_off_data(sample_path, sample_data, sample_sweeps_dict)
-
-                    # More dictionary stuff
-                    polymer_stats_dict[f'{polymer}'] = sample_stats_dict
-                    polymer_sweeps_dict[f'{polymer}'] = sample_sweeps_dict
-                    polymer_data[f'{polymer}'] = sample_data
-
-            # More dictionary stuff
-            material_stats_dict[f'{material}'] = polymer_stats_dict
-            material_sweeps_dict[f'{material}'] = polymer_sweeps_dict
-            material_data[f'{material}'] = polymer_data
-
-    return material_stats_dict, material_sweeps_dict,material_data
-
-
-material_stats_dict, material_sweeps_dict,material_data = memristor_devices(f.main_dir)
+if memristors_data:
+    material_stats_dict, material_sweeps_dict, material_data, file_info_dict = mem.memristor_devices(f.main_dir, params)
 
 # save all the information to pkl file
 with open(f.main_dir + '/material_stats_dict_all.pkl', 'wb') as file:
@@ -320,8 +50,6 @@ with open(f.main_dir + '/material_sweeps_dict_all.pkl', 'wb') as file:
 
 with open(f.main_dir + '/material_data_all.pkl', 'wb') as file:
     pickle.dump(material_data, file)
-
-
 
 print('-' * 25)
 print("")
@@ -340,70 +68,37 @@ print("")
 
 # For sorting the graphs and copying the data
 if sort_graphs:
-    cg.data_copy(material_data)
-    #origin.plot_in_origin(device_data, device_path, 'transport')
-
-
+    m.data_copy(material_data)
+    # origin.plot_in_origin(device_data, device_path, 'transport')
 
 ############################################################################
 # All sweeps analysed at this point stats are done below
 # A Breakpoint below does all the stats on the device
 # VERY CRUDE JUST PRINTS EVERYTHING DOS-NT SAVE ANYTHING YET
 ############################################################################
-####
 
-#####
 # Calculate yield for each sample
-yield_dict, yield_dict_sect = eq.calculate_yield(material_sweeps_dict)
-print("Yield for each sample, descending order")
-print('-' * 25)
-for key, value in yield_dict.items():
-    print(f'{key}: {value}')
-print('-' * 25)
+p.yield_calc(material_sweeps_dict)  # prints yield on each sample
 
-#####################################
-print('')
-#####################################
-
-# Sample with the most sweeps, corresponding sample and its sweeps in high to low
-sample_sweeps = eq.get_num_sweeps_ordered(file_info_dict, material_sweeps_dict)
-
-# Counter variable to keep track of the number of items printed
-print("Top 10 measured samples = ")
-print('-' * 50)
-printed_count = 0
-for file_key, file_info in sample_sweeps.items():
-    # Print only the top 10 items
-    if printed_count < 10:
-        print(f'File Key: {file_key}')
-        print(f'Sample Name: {file_info["sample_name"]}')
-        print(f'Total Sum: {file_info["total_sum"]}')
-        print('-' * 25)
-
-        # Increment the counter
-        printed_count += 1
-
-#####################################
-print('')
-#####################################
-
+# Sample with the most sweeps, corresponding sample and its sweeps in high to low and prints
+sample_sweeps = mem.get_num_sweeps_ordered(file_info_dict, material_sweeps_dict)
+p.top_10_measured(sample_sweeps)  # prints top 10 measured samples
 
 # Call the function to process 'ON_OFF_Ratio'
-on_off_ratio_info = eq.process_property(material_stats_dict, 'ON_OFF_Ratio')
-
+on_off_ratio_info = mem.process_property(material_stats_dict, 'ON_OFF_Ratio')
 # Call the function to process 'normalised_area'
-normalised_area_info = eq.process_property(material_stats_dict, 'normalised_area')
+normalised_area_info = mem.process_property(material_stats_dict, 'normalised_area')
 
 # print the values from above
 p.print_on_off_ratio_info(on_off_ratio_info)
 p.print_normalised_area_info(normalised_area_info)
 
 # Call the function to find the top 10 samples based on ON-OFF ratio
-on_off_ratio_info, top_samples_with_repetition_on_off, top_samples_without_repetition_on_off = eq.find_top_samples(
+on_off_ratio_info, top_samples_with_repetition_on_off, top_samples_without_repetition_on_off = mem.find_top_samples(
     material_stats_dict, property_name='ON_OFF_Ratio')
 
 # Call the function to find the top 10 samples based on normalized area
-normalized_area_info, top_samples_with_repetition_normalized, top_samples_without_repetition_normalized = eq.find_top_samples(
+normalized_area_info, top_samples_with_repetition_normalized, top_samples_without_repetition_normalized = mem.find_top_samples(
     material_stats_dict, property_name='normalised_area')
 
 # Print the results for ON-OFF ratio
@@ -432,9 +127,6 @@ for idx, sample_key in enumerate(top_samples_without_repetition_normalized[:10],
     print(
         f"#{idx}: Sample: {sample_info['sample_key']}, Section: {sample_info['section_key']}, Device: {sample_info['device_key']}, File Name: {sample_info['file_name']}, Normalized Area: {sample_info['property_value']}")
 
-#####################################
-print('')
-#####################################
 
 """
 

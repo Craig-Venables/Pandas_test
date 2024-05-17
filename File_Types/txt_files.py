@@ -1,5 +1,5 @@
-import Data as eq
-import os
+from memristors import memristors as eq
+
 
 def txt_file(file_name,file_path, total_files, plot_graph, save_df, device_path, re_save_graph, processed_files, num_of_sweeps,file_data,list_of_file_stats,list_of_graphs,list_of_measured_files):
     # began changing this into function not sure yet
