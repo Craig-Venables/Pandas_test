@@ -1,15 +1,11 @@
-import pandas as pd
-import os
-
 import file as f
 import pickle
 import sys
-import print_info as p
+from memristors import mem_print_info as p
 from file import Tee
 import data_sort as m
 import memristors.memristors as mem
-
-
+import memristors.statistics_mem as stat_mem
 
 # to add
 # - histogram all the data
@@ -81,7 +77,7 @@ if sort_graphs:
 p.yield_calc(material_sweeps_dict)  # prints yield on each sample
 
 # Sample with the most sweeps, corresponding sample and its sweeps in high to low and prints
-sample_sweeps = mem.get_num_sweeps_ordered(file_info_dict, material_sweeps_dict)
+sample_sweeps = stat_mem.get_num_sweeps_ordered(file_info_dict, material_sweeps_dict)
 p.top_10_measured(sample_sweeps)  # prints top 10 measured samples
 
 # Call the function to process 'ON_OFF_Ratio'
@@ -94,11 +90,11 @@ p.print_on_off_ratio_info(on_off_ratio_info)
 p.print_normalised_area_info(normalised_area_info)
 
 # Call the function to find the top 10 samples based on ON-OFF ratio
-on_off_ratio_info, top_samples_with_repetition_on_off, top_samples_without_repetition_on_off = mem.find_top_samples(
+on_off_ratio_info, top_samples_with_repetition_on_off, top_samples_without_repetition_on_off = stat_mem.find_top_samples(
     material_stats_dict, property_name='ON_OFF_Ratio')
 
 # Call the function to find the top 10 samples based on normalized area
-normalized_area_info, top_samples_with_repetition_normalized, top_samples_without_repetition_normalized = mem.find_top_samples(
+normalized_area_info, top_samples_with_repetition_normalized, top_samples_without_repetition_normalized = stat_mem.find_top_samples(
     material_stats_dict, property_name='normalised_area')
 
 # Print the results for ON-OFF ratio

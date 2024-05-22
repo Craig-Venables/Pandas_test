@@ -17,7 +17,7 @@ import memristors
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-def main_plot(voltage, current, abs_current, save_loc, crossing_points, re_save, file_info, loop=False, num_sweeps=0):
+def main_plot(voltage, current, abs_current, save_loc, re_save, file_info, loop=False, num_sweeps=0):
     '''
         plots iv and log iv graphs as subplots and saves it
     '''
@@ -154,7 +154,7 @@ def iv_and_log_iv_plot(voltage, current, abs_current, file_info, save_loc="", cr
 
 
 
-def main_plot_loop(voltage, current, abs_current, sweep_num, save_loc, crossing_points, re_save, file_info):
+def main_plot_loop(voltage, current, abs_current, sweep_num, save_loc,re_save, file_info):
     '''
         plots iv and log iv graphs as subplots and saves it
     '''

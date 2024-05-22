@@ -1,4 +1,5 @@
-import memristors as m
+import memristors.statistics_mem as stat_mem
+
 ''' for printing all info '''
 def print_on_off_ratio_info(input):
     # Print the comprehensive information outside the function
@@ -29,7 +30,7 @@ def print_normalised_area_info(input):
         print("\n")
 
 def yield_calc(material_sweeps_dict):
-    yield_dict, yield_dict_sect = m.calculate_yield(material_sweeps_dict)
+    yield_dict, yield_dict_sect = stat_mem.calculate_yield(material_sweeps_dict)
     print("Yield for each sample, descending order")
     print('-' * 25)
     for key, value in yield_dict.items():

@@ -1,11 +1,7 @@
 import numpy as np
-import pandas as pd
 import file as f
-import os
 import math
 import statistics as stats_module
-import plotting as plotting
-import time
 import os
 import excell as exc
 import re
@@ -13,10 +9,7 @@ import Origin as origin
 import plotting
 import pandas as pd
 import pickle
-import File_Types.txt_files as tf
-
-import matplotlib.pyplot as plt
-from itertools import zip_longest
+import memristors.txt_files as mem_txt
 
 debugging = False
 
@@ -169,12 +162,12 @@ def memristor_devices(path,params):
                                                 }
                                                 if file_name.endswith('.txt'):
                                                     # for all files that end in txt
-                                                    result = tf.txt_file(file_name,file_path, total_files, plot_graph, save_df, device_path, re_save_graph, processed_files, num_of_sweeps,file_data,list_of_file_stats,list_of_graphs,list_of_measured_files)
+                                                    result = mem_txt.txt_file(file_name,file_path, total_files, plot_graph, save_df, device_path, re_save_graph, processed_files, num_of_sweeps,file_data,list_of_file_stats,list_of_graphs,list_of_measured_files)
 
                                                     if result is not None:
                                                         percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, data, file_stats = result
                                                     else:
-                                                        print(f'Warning: tf.txt_file returned None for file {file_name , file_path}')
+                                                        print(f'Warning: mem_txt.txt_file returned None for file {file_name , file_path}')
                                                         # Handle the None case appropriately, perhaps by setting default values
                                                         percentage_completed_files = processed_files = num_of_sweeps = num_sweeps = 0
                                                         short_name = long_name = data = file_stats = None
@@ -352,14 +345,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
 
     df = pd.DataFrame(data)
     df = df.dropna()
-    #print(df['voltage'])
-
-    #split_data_in_sect(v_data, c_data_ng)
-
-
     # if there is more than one loop adds
     if num_sweeps > 1:
-        loops=True
+        loops = True
         # Data processing for multiple sweeps
 
         # splits the loops depending on the number of sweeps
@@ -413,22 +401,13 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
                              'stf_relative_change': [std_relative_change]}
         looped_array_info = pd.DataFrame(looped_array_info, index=[0])
 
-        # print(f"Percentage change over the length: {percent_change:.5f}%")
-        # print(f"Average change over time: {avg_change:.2e}")
-        # print(f"Average relative change: {avg_relative_change:.5e}")
-        # print(f"Standard deviation of relative change: {std_relative_change:.5e}")
-
-        # # print variable names dd too dataframe
-        # for variable_name, folder_name in file_info.items():
-        #     df[variable_name] = folder_name
-
         f.check_if_folder_exists(device_path, "python_images")
 
         save_loc = device_path + '\\' + "python_images"
         save_loc_iv = device_path + '\\' + "Iv only"
         #save_loc_iv = device_path + '\\' + "Iv only"
 
-        cross_points = "crossing_coming soon"
+
 
         if plot_graph:
 
@@ -439,19 +418,15 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
             for arr_v, arr_c in zip(split_v_data, split_c_data):
                 count += 1
                 # Plots all the graphs individually
-
-                folder_path = plotting.main_plot_loop(arr_v, arr_c, absolute_val(arr_c),count ,save_loc,cross_points, re_save_graph, file_info)
-
+                folder_path = plotting.main_plot_loop(arr_v, arr_c, absolute_val(arr_c),count ,save_loc, re_save_graph, file_info)
                 #plotting.images_in_row(arr_v, arr_c, absolute_val(arr_c) ,file_info, row_save)
-
-
 
             # Plots all the loops on one graph outside of the loop
 
             f.check_if_folder_exists(save_loc, "GIFS",)
             gif_save_loc = os.path.join(save_loc,"GIFS")
-            graph = plotting.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc,
-                                       cross_points, re_save_graph, file_info,True,num_sweeps)
+            graph = plotting.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc, re_save_graph,
+                                       file_info,True,num_sweeps)
 
             # plots GIF of all graphs in looped data
             file_name = os.path.splitext(file_info.get('file_name'))[0]
@@ -461,27 +436,13 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
             if does_it_exist(output_gif_loc,re_save_graph):
                 plotting.create_gif_from_folder(folder_path, output_gif_loc, 2, restart_duration=10)
 
-
             save_name_row = file_name + ".png"
             save_loc_images_in_folder = os.path.join(row_save,save_name_row)
             if does_it_exist(save_loc_images_in_folder,re_save_graph):
                 plotting.plot_images_in_folder(folder_path,save_loc_images_in_folder)
 
-
-
-
         else:
             graph = None
-
-        # for loops save file within a folder then  the next bit acan access it and open it
-        if save_df:
-            # save the sada frame
-            print(long_name)
-            df.to_csv(long_name, index=False)
-
-        # plots the changes over time for each array and the loops.
-        # plot_array_changes(normalized_areas)
-        # info = None
 
     # # this is for later
     # if num_sweeps == 0.5:
@@ -490,15 +451,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
     else:
         loops = False
         # Data Processing for a single sweep
-        # if the xcell document states capacitive return
         ps_area, ng_area, area, normalized_area = area_under_curves(df['voltage'], df["current"])
-        # print("total info enclosed within the hysteresis normalised to voltage = ", normalized_area)
-        # this info will need passing back to another array for comparision across all devices in the section
-        # create dataframe for the device of all the data
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(df['voltage'], df["current"])
 
-        cross_points = categorize_device(df['voltage'], df["current"])
-        # print(cross_points)
 
         file_stats = {'file_name': [file_info.get('file_name')],
                       'ps_area': [ps_area],
@@ -520,11 +475,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
 
         #plotting.grid_spec(data)
 
-        graph_dict = {}
         if plot_graph:
             # this needs finishing
-            graph = plotting.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc,
-                                       cross_points, re_save_graph, file_info)
+            graph = plotting.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc, re_save_graph, file_info)
             #plotting.iv_and_log_iv_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc_iv,
 #                                       cross_points, re_save_graph, file_info)
 
@@ -580,52 +533,7 @@ def device_clasification(sample_sweep_excell_dict, device_folder, section_folder
         return None
 
 
-def categorize_device(voltage_data, current_data):
-    def find_crossings(voltage_data: np.ndarray, current_data: np.ndarray):
-        """
-        Find the points of intersection between a voltage and current trace.
-        Returns:
-            List[Tuple[float, float]]: A list of tuples containing the intersection points.
-        """
-        voltage_data = voltage_data.to_numpy()
-        current_data = current_data.to_numpy()
 
-        crossings = []
-        tolerance = 0.1
-
-        # Ensure both voltage and current data have the same length
-        if len(voltage_data) != len(current_data):
-            raise ValueError("Voltage and current data must have the same length.")
-
-        # Iterate through the data to find crossings
-        for i in range(1, len(voltage_data)):
-            if (
-                    (voltage_data[i - 1] < current_data[i - 1] and voltage_data[i] > current_data[i])
-                    or (voltage_data[i - 1] > current_data[i - 1] and voltage_data[i] < current_data[i])
-            ) and abs(voltage_data[i] - current_data[i]) <= tolerance:
-                crossing_point = (voltage_data[i], current_data[i])
-                crossings.append(crossing_point)
-
-        return crossings
-
-    crossings = find_crossings(voltage_data, current_data)
-
-    if not crossings:
-        return "Capacitive", False
-
-    # Check for one or two crossings for memristive behavior
-    if 1 <= len(crossings) <= 2:
-        # Check if the crossings are close to (0, 0)
-        for point in crossings:
-            if abs(point[0]) <= 0.1 and abs(point[1]) <= 0.1:
-                return "Memristive", True
-
-    # Check for more than 4 crossings for capacitive behavior
-    elif len(crossings) > 4:
-        return "Capacitive", True
-
-    # If there are crossings but none near (0, 0), it's likely ohmic
-    return "Ohmic", True
 
 
 def process_property(material_stats_dict: dict, property_name: str) -> dict:
@@ -729,204 +637,6 @@ def process_property(material_stats_dict: dict, property_name: str) -> dict:
 
     # Return the comprehensive information for all samples
     return comprehensive_sample_info
-
-
-def calculate_yield(material_sweeps_dict: dict) -> dict:
-    """
-    Calculate the yield for each sample name based on the number of measured devices and occurrences of "memristive".
-
-    Args:
-        material_sweeps_dict (dict): Dictionary containing material sweeps.
-
-    Returns:
-        dict: Dictionary with sample names as keys and corresponding yield values. In decending order
-    """
-    yield_dict = {}
-    yield_dict_sect = {}
-    for material, polymer_dict in material_sweeps_dict.items():
-        for polymer, sample_dict in polymer_dict.items():
-            for sample_name, section_dict in sample_dict.items():
-
-                measured = 0
-                memristive_device_count = 0
-                for section_name, device_dict in section_dict.items():
-                    num_measured_devices = len(device_dict)
-
-                    memristive_count = sum(
-                        1 for device_data in device_dict.values() if device_data.get('classification') == 'Memristive')
-
-                    # Update measured and memristive_device_count for each section
-                    measured += num_measured_devices
-                    memristive_device_count += memristive_count
-
-                    if num_measured_devices > 0:
-                        yield_value = memristive_count / num_measured_devices
-                        yield_dict_sect[f'{material}_{polymer}_{sample_name}_{section_name}'] = yield_value
-
-                if measured > 0:
-                    yield_value_sample = memristive_device_count / measured
-                    yield_dict[f'{material}_{polymer}_{sample_name}'] = yield_value_sample
-
-    sorted_yield_dict = dict(sorted(yield_dict.items(), key=lambda item: item[1], reverse=True))
-    sorted_yield_dict_sect = dict(sorted(yield_dict_sect.items(), key=lambda item: item[1], reverse=True))
-
-    return sorted_yield_dict, sorted_yield_dict_sect
-
-
-def find_top_samples(material_stats_dict: dict, property_name: str = 'ON_OFF_Ratio', top_n: int = 10) -> tuple:
-    """
-    This function finds the top samples based on a given property (ON-OFF ratio or normalized area) in a given material_stats_dict.
-
-    Args:
-        material_stats_dict (dict): A dictionary containing the material, polymer, and sample dictionaries.
-        property_name (str, optional): The name of the property to be used for sorting the samples. Defaults to 'ON_OFF_Ratio'.
-        top_n (int, optional): The number of samples to be returned. Defaults to 10.
-
-    Returns:
-        tuple: A tuple containing three lists: all_samples_info, samples_with_repetition, and samples_without_repetition.
-            all_samples_info (list): A list containing information for all samples, including sample_key, section_key, device_key, file_name, and property_value.
-            samples_with_repetition (list): A list containing the sample keys that appear multiple times in all_samples_info.
-            samples_without_repetition (list): A list containing the sample keys that appear only once in all_samples_info.
-
-    """
-    # List to store information for all samples
-    all_samples_info = []
-
-    # Iterate through the material, polymer, and sample dictionaries
-    for material_key, polymer_dict in material_stats_dict.items():
-        for polymer_key, sample_dict in polymer_dict.items():
-            for sample_key, section_dict in sample_dict.items():
-                # List to store information for each sample
-                sample_info = []
-
-                # Iterate through devices in the sample
-                for section_key, device_dict in section_dict.items():
-                    for device_key, stats_df in device_dict.items():
-                        # Check if 'file_name' and property_name exist in stats_df
-                        if 'normalized_areas_avg' in stats_df.columns:
-                            property_name = 'normalized_areas_avg'
-                        elif 'normalised_area' in stats_df.columns:
-                            property_name = 'normalised_area'
-                        else:
-                            print("Neither 'normalized_areas_avg' nor 'normalised_area' found in stats_df columns.")
-                            continue
-
-                        #print(material_key,polymer_key,sample_key,section_key,"-----",device_key)
-                        #print(stats_df)
-
-                        if property_name in stats_df.columns:
-                            max_property_index = stats_df[property_name].idxmax()
-                            property_value = stats_df[property_name].iloc[max_property_index]
-
-                            file_name = stats_df['file_name'].iloc[max_property_index]
-
-                            # Append sample information to the list
-                            sample_info.append({
-                                'sample_key': sample_key,
-                                'section_key': section_key,
-                                'device_key': device_key,
-                                'file_name': file_name,
-                                'property_value': property_value
-                            })
-                        else:
-                            print(f"Column '{property_name}' not found in stats_df.")
-                            continue
-
-                # Sort the devices based on the given property in descending order
-                sample_info.sort(key=lambda x: (
-                    float('-inf') if x['property_value'] is None or math.isnan(x['property_value']) else x[
-                        'property_value']), reverse=True)
-                top_samples_individual = sample_info[:top_n]
-
-                # Store the top samples based on the given property
-                top_samples_individual = sample_info[:top_n]
-
-                # Store the information for all samples
-                all_samples_info.extend(top_samples_individual)
-
-    # Separate lists for samples with and without repetition
-    samples_with_repetition = [info['sample_key'] for info in all_samples_info]
-    samples_without_repetition = list(set(samples_with_repetition))
-
-    return all_samples_info, samples_with_repetition, samples_without_repetition
-
-
-def find_sample_number_sweeps(material_sweeps_dict: dict, material: str, polymer: str, sample_name: str) -> tuple:
-    """
-        Find the sample name and total sum of a given material, polymer, and sample name in a material sweeps dictionary.
-
-        Args:
-            material_sweeps_dict (dict): Dictionary containing material sweeps.
-            material (str): Material name.
-            polymer (str): Polymer name.
-            sample_name (str): Sample name.
-
-        Returns:
-            tuple: Tuple containing the sample name and total sum.
-        """
-    data = material_sweeps_dict[f'{material}'][f'{polymer}'][f'{sample_name}']
-
-    def recursive_sum(value):
-        if isinstance(value, (int, float)):
-            return value
-        elif isinstance(value, dict):
-            return sum(recursive_sum(v) for v in value.values())
-        else:
-            return 0
-
-    total_sum = sum(
-        recursive_sum(value.get('num_of_sweeps', 0)) for inner_dict in data.values() for value in inner_dict.values() if
-        isinstance(value, dict))
-    # print(total_sum)
-    return sample_name, total_sum
-
-
-def get_num_sweeps_ordered(file_info_dict: dict, material_sweeps_dict: dict) -> dict:
-    """
-    Get the number of sweeps in the data in an ordered dictionary.
-
-    Parameters:
-        file_info_dict (dict): Dictionary containing file information.
-        material_sweeps_dict (dict): Dictionary containing material sweeps.
-
-    Returns:
-        dict: Ordered dictionary containing file information and total sum.
-    """
-    result_dict = {}
-
-    def order_dict_by_total_sum(input_dict: dict) -> dict:
-        """
-        Order a dictionary by the total sum.
-
-        Parameters:
-            input_dict (dict): Dictionary to be ordered.
-
-        Returns:
-            dict: Ordered dictionary.
-        """
-        # Sort the dictionary by 'total_sum' in descending order
-        sorted_dict = dict(sorted(input_dict.items(), key=lambda item: item[1]['total_sum'], reverse=True))
-
-        return sorted_dict
-
-    for file_key, file_info in file_info_dict.items():
-        material = file_info['material']
-        polymer = file_info['polymer']
-        sample_name = file_info['sample_name']
-
-        # Assuming find_sample_number_sweeps returns 'sample_name' and 'total_sum'
-        sample_name, total_sum = find_sample_number_sweeps(material_sweeps_dict, material, polymer, sample_name)
-
-        file_key2 = f'{material}_{polymer}_{sample_name}'
-
-        result_dict[file_key2] = {
-            'sample_name': sample_name,
-            'total_sum': total_sum
-            # 'classification': classification
-        }
-
-    ordered_dict = order_dict_by_total_sum(result_dict)
-    return ordered_dict
 
 
 def split_loops(v_data, c_data, num_loops):
