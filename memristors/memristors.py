@@ -62,6 +62,7 @@ def memristor_devices(path,params):
 
             total_samples = sum(1 for _ in os.listdir(path) if os.path.isdir(os.path.join(path, _)))
             total_files = sum(len(files) for _, _, files in os.walk(path))
+            # this passes through and goes above 100% due to
             processed_samples = 0
             processed_files = 0
 
@@ -162,15 +163,18 @@ def memristor_devices(path,params):
                                                 }
                                                 if file_name.endswith('.txt'):
                                                     # for all files that end in txt
-                                                    result = mem_txt.txt_file(file_name,file_path, total_files, plot_graph, save_df, device_path, re_save_graph, processed_files, num_of_sweeps,file_data,list_of_file_stats,list_of_graphs,list_of_measured_files)
+
+                                                    # sort names here , long name short name etc and pass thorugh too mem_txt
+                                                    short_name = f.short_name(file_path)
+                                                    long_name = f.long_name(file_path)
+
+                                                    result = mem_txt.txt_file(file_name,file_path,device_path, total_files, processed_files,short_name,long_name, num_of_sweeps,plot_graph, save_df,re_save_graph)
 
                                                     if result is not None:
                                                         percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, data, file_stats = result
                                                     else:
                                                         print(f'Warning: mem_txt.txt_file returned None for file {file_name , file_path}')
                                                         # Handle the None case appropriately, perhaps by setting default values
-                                                        percentage_completed_files = processed_files = num_of_sweeps = num_sweeps = 0
-                                                        short_name = long_name = data = file_stats = None
 
 
 
@@ -296,13 +300,15 @@ def memristor_devices(path,params):
     return material_stats_dict, material_sweeps_dict,material_data,file_info_dict
 
 
-def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph):
+def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,short_name,long_name):
     """ For all info from a single file this determines if a file is a single sweep or multiple sweep and does
      the appropriate action  """
 
+    # to do make this work across all should be done seperatley to here
+
     file_info = f.extract_folder_names(filepath)
-    short_name = f.short_name(filepath)
-    long_name = f.long_name(filepath)
+    # short_name = f.short_name(filepath)
+    # long_name = f.long_name(filepath)
 
     # Read the information from the file
     try:

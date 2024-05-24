@@ -1,7 +1,7 @@
 from memristors import memristors as eq
 
 
-def txt_file(file_name,file_path, total_files, plot_graph, save_df, device_path, re_save_graph, processed_files, num_of_sweeps,file_data,list_of_file_stats,list_of_graphs,list_of_measured_files):
+def txt_file(file_name,file_path,device_path,total_files, processed_files, short_name,long_name,num_of_sweeps=0,plot_graph=False, save_df=False,re_save_graph=False):
     # began changing this into function not sure yet
     """Loops through each file in the folder and analyses them using the
     functions here"""
@@ -21,7 +21,7 @@ def txt_file(file_name,file_path, total_files, plot_graph, save_df, device_path,
 
         # Performs analysis on the file given returning the dataframe
         analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
-                                           device_path, re_save_graph)
+                                           device_path, re_save_graph,short_name,long_name)
 
         # if analysis_result is None:
         #     # if there is an error in reading the file it will just continue
@@ -34,10 +34,9 @@ def txt_file(file_name,file_path, total_files, plot_graph, save_df, device_path,
         num_of_sweeps += num_sweeps
 
         # storing information from analysis
-        list_of_measured_files.append(long_name)
-        list_of_graphs.append(graph)
-        list_of_file_stats.append(file_stats)
-        file_data[f'{file_name}'] = data
+        # list_of_measured_files.append(long_name)
+        # list_of_file_stats.append(file_stats)
+        # file_data[f'{file_name}'] = data
 
         return percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, data, file_stats
     else:

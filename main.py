@@ -6,6 +6,7 @@ from file import Tee
 import data_sort as m
 import memristors.memristors as mem
 import memristors.statistics_mem as stat_mem
+import memristors.curated_mem as curr
 
 # to add
 # - histogram all the data
@@ -66,6 +67,9 @@ print("")
 if sort_graphs:
     m.data_copy(material_data)
     # origin.plot_in_origin(device_data, device_path, 'transport')
+
+curr_data_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
+curr.currated_data(curr_data_path)
 
 ############################################################################
 # All sweeps analysed at this point stats are done below

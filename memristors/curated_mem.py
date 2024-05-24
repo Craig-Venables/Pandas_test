@@ -1,3 +1,5 @@
+import os
+import memristors.txt_files as mem_txt
 """ for woking on the currated data"""
 
 # mike_smith
@@ -5,3 +7,61 @@
 # using glob
 
 #if */*/file*.png
+def currated_data(path):
+    print("working on currated data")
+    for type in os.listdir(path):
+        type_path = os.path.join(path, type)
+        if os.path.isdir(type_path):  # Check if material_path is a directory
+            # Navigate through sub-folders (e.g., polymer)
+            polymer_stats_dict = {}
+            polymer_sweeps_dict = {}
+            polymer_data = {}
+            polymer_names_dict = {}
+
+            total_samples = sum(1 for _ in os.listdir(path) if os.path.isdir(os.path.join(path, _)))
+            total_files = sum(len(files) for _, _, files in os.walk(path))
+            processed_samples = 0
+            processed_files = 0
+
+            print("type - ",type)
+
+            for material in os.listdir(type_path):
+                material_path = os.path.join(type_path, material)
+                if os.path.isdir(material_path):  # Check if polymer_path is a directory
+                # ie ws2, zn-ci-in-s , polymer
+                    print("material - ",material)
+
+                    for sample in os.listdir(material_path):
+                        sample_path = os.path.join(material_path, sample)
+                        if os.path.isdir(sample_path):  # Check if polymer_path is a directory
+                        # ie D-23
+                            processed_samples += 1  # Add one to the number of samples measured
+                            percentage_completed = (processed_samples / total_samples) * 100
+                            print("sample - ",sample)
+
+                            for file_name in (os.listdir(sample_path)):
+                                file_path = os.path.join(sample_path, file_name)
+                                """ For each file """
+                                print(file_name)
+                                if file_name.endswith('.txt'):
+                                    # for all files that end in txt
+
+                                    short_name = sample + " - " + file_name
+                                    long_name = type + " - " + material + " - " + sample + " - " + file_name
+
+                                    result = mem_txt.txt_file(file_name,file_path,sample_path,total_files, processed_files,short_name,long_name)
+
+                                    if result is not None:
+                                        percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, data, file_stats = result
+                                    else:
+                                        print(
+                                            f'Warning: mem_txt.txt_file returned None for file {file_name, file_path}')
+                                        # Handle the None case appropriately, perhaps by setting default values
+
+
+    #         # More dictionary stuff
+    #         material_stats_dict[f'{material}'] = polymer_stats_dict
+    #         material_sweeps_dict[f'{material}'] = polymer_sweeps_dict
+    #         material_data[f'{material}'] = polymer_data
+    #
+    # return material_stats_dict, material_sweeps_dict, material_data, file_info_dict
