@@ -459,6 +459,69 @@ def graph_temp(voltage, current, abs_current, type, polymer, sample_name, sectio
     fig = create_graph()
     return fig
 
+def plot_histograms(on_values, off_values):
+    """Plot histograms for on_values and off_values."""
+    plt.figure(figsize=(14, 6))
+
+    # Histogram for on_values
+    plt.subplot(1, 2, 1)
+    plt.hist(on_values, bins=20, color='blue', alpha=0.7, label='On Values')
+    plt.xlabel('Resistance On Value')
+    plt.ylabel('Frequency')
+    plt.title('Histogram of On Values')
+    plt.legend()
+
+    # Histogram for off_values
+    plt.subplot(1, 2, 2)
+    plt.hist(off_values, bins=20, color='red', alpha=0.7, label='Off Values')
+    plt.xlabel('Resistance Off Value')
+    plt.ylabel('Frequency')
+    plt.title('Histogram of Off Values')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_index_vs_values(on_values, off_values):
+    """Plot index (x) vs on_values and off_values (y) on the same graph."""
+    plt.figure(figsize=(10, 6))
+
+    indices = list(range(len(on_values)))
+
+    plt.plot(indices, on_values, 'bo-', label='On Values')
+    plt.plot(indices, off_values, 'ro-', label='Off Values')
+
+    plt.xlabel('Index')
+    plt.ylabel('Resistance Value')
+    plt.yscale("log")
+    plt.title('Index vs Resistance Values')
+    plt.legend()
+    plt.grid(True)
+
+    plt.show()
+
+
+def plot_filenames_vs_values(filenames, on_values, off_values):
+    """Plot filenames (x) vs on_values and off_values (y) on the same graph."""
+    plt.figure(figsize=(14, 6))
+
+    x = range(len(filenames))
+
+    plt.plot(x, on_values, 'bo-', label='On Values')
+    plt.plot(x, off_values, 'ro-', label='Off Values')
+
+    plt.xticks(x, filenames, rotation=90)
+    plt.xlabel('Filename')
+    plt.ylabel('Resistance Value')
+    plt.yscale("log")
+    plt.title('Filename vs Resistance Values')
+    plt.legend()
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
+
 
 def sclc_ps(voltage, current_density, fontsize=8):
     # create scatter
