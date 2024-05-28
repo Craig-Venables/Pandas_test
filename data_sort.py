@@ -66,6 +66,9 @@ def data_copy(material_data):
         print(material, polymer, sample_name, section, device, filename)
 
         key = f"{material} - {polymer} - {sample_name} - {section} - {device} - {filename}"
+        #print(filename)
+        #print(key)
+        #print(checked_files)
 
         # filepath for the current file
         filepath_file = os.path.join(f.main_dir, material, polymer, sample_name, section, device, filename)

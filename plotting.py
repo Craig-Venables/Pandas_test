@@ -12,7 +12,7 @@ import re
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FuncFormatter
-import memristors
+import memristors.memristors as mem
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
@@ -421,7 +421,7 @@ def graph_temp(voltage, current, abs_current, type, polymer, sample_name, sectio
         plot_logiv(voltage, abs_current)
 
         plt.subplot(2, 2, 3)
-        num_sweeps = Data.check_for_loops(voltage)
+        num_sweeps = mem.check_for_loops(voltage)
         # if loop:
         #     # This dosnt save correctly it shows the correct image, but dosnt save
         #     split_v_data, split_c_data = split_loops(voltage, current, num_sweeps)

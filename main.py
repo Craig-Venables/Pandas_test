@@ -15,9 +15,9 @@ import memristors.curated_mem as curr
 #
 memristors_data = True
 
-plot_graph = True
+plot_graph = False
 plot_gif = False
-sort_graphs = False
+sort_graphs = True
 # Plot all the data into origin?
 origin_graphs = False
 pull_fabrication_info_excell = False
@@ -38,15 +38,30 @@ mem.set_pandas_display_options()
 if memristors_data:
     material_stats_dict, material_sweeps_dict, material_data, file_info_dict = mem.memristor_devices(f.main_dir, params)
 
-# save all the information to pkl file
-with open(f.main_dir + '/material_stats_dict_all.pkl', 'wb') as file:
-    pickle.dump(material_stats_dict, file)
+# # save all the information to pkl file
+# with open(f.main_dir + '/material_stats_dict_all.pkl', 'wb') as file:
+#     pickle.dump(material_stats_dict, file)
+#
+# with open(f.main_dir + '/material_sweeps_dict_all.pkl', 'wb') as file:
+#     pickle.dump(material_sweeps_dict, file)
+#
+# with open(f.main_dir + '/material_data_all.pkl', 'wb') as file:
+#     pickle.dump(material_data, file)
 
-with open(f.main_dir + '/material_sweeps_dict_all.pkl', 'wb') as file:
-    pickle.dump(material_sweeps_dict, file)
+# Load material_stats_dict
+with open(f.main_dir + '/material_stats_dict_all.pkl', 'rb') as file:
+    material_stats_dict = pickle.load(file)
 
-with open(f.main_dir + '/material_data_all.pkl', 'wb') as file:
-    pickle.dump(material_data, file)
+# Load material_sweeps_dict
+with open(f.main_dir + '/material_sweeps_dict_all.pkl', 'rb') as file:
+    material_sweeps_dict = pickle.load(file)
+
+# Load material_data
+with open(f.main_dir + '/material_data_all.pkl', 'rb') as file:
+    material_data = pickle.load(file)
+
+with open(f.main_dir + '/file_info_dict.pkl', 'rb') as file:
+    file_info_dict = pickle.load(file)
 
 print('-' * 25)
 print("")
@@ -63,13 +78,18 @@ print("")
 # material_sweeps_dict = Contains all the sweeps per device along with the classification
 # material_data = Contains all the data extracted from the sweep (Voltage,current,abs_current etc....)
 
+print(material_stats_dict)
+#print(material_data['Stock']['PVA'])
+
 # For sorting the graphs and copying the data
 if sort_graphs:
+    print("Sorting graphs")
     m.data_copy(material_data)
+
     # origin.plot_in_origin(device_data, device_path, 'transport')
 
-curr_data_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
-curr.currated_data(curr_data_path)
+# curr_data_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
+# curr.currated_data(curr_data_path)
 
 ############################################################################
 # All sweeps analysed at this point stats are done below
