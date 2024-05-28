@@ -1,6 +1,7 @@
 import os
 import memristors.txt_files as mem_txt
 import plotting as plotting
+import Origin as origin
 """ for woking on the currated data"""
 
 # mike_smith
@@ -33,31 +34,35 @@ def currated_data(path):
                 # ie ws2, zn-ci-in-s , polymer
                     print("material - ",material)
 
+
                     for sample in os.listdir(material_path):
                         sample_path = os.path.join(material_path, sample)
                         if os.path.isdir(sample_path):  # Check if polymer_path is a directory
                         # ie D-23
                             processed_samples += 1  # Add one to the number of samples measured
                             percentage_completed = (processed_samples / total_samples) * 100
-                            print("sample - ",sample)
+                            #print("sample - ",sample)
                             on_values = []
                             off_values = []
                             file_names = []
+                            file_data = {}
+                            list_of_file_stats = []
+                            sample_data = {}
 
                             for file_name in (os.listdir(sample_path)):
                                 file_path = os.path.join(sample_path, file_name)
                                 """ For each file """
-                                print(file_name)
+                                #print(file_name)
                                 if file_name.endswith('.txt'):
                                     # for all files that end in txt
 
                                     short_name = sample + " - " + file_name
                                     long_name = type + " - " + material + " - " + sample + " - " + file_name
 
-                                    result = mem_txt.txt_file(file_name,file_path,sample_path,total_files, processed_files,short_name,long_name)
+                                    result = mem_txt.txt_file(file_name,file_path,sample_path,total_files, list_of_file_stats, file_data,processed_files,short_name,long_name)
 
                                     if result is not None:
-                                        percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, data, file_stats = result
+                                        percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, file_data, file_stats = result
                                     else:
                                         print(
                                             f'Warning: mem_txt.txt_file returned None for file {file_name, file_path}')
@@ -66,7 +71,7 @@ def currated_data(path):
                                     resistance_on_value = file_stats.get('resistance_on_value')
                                     resistance_off_value = file_stats.get('resistance_off_value')
 
-                                    print(resistance_on_value[0],resistance_off_value[0])
+                                    #print(resistance_on_value[0],resistance_off_value[0])
                                     file_names.append(file_name)
 
                                     # resistance on/off values
@@ -81,12 +86,17 @@ def currated_data(path):
                                         #print("off value", resistance_off_value.iloc[0])
                                     else:
                                         print("off value not found")
+
+                                    sample_data[f'{sample}'] = file_data
                             #print(on_values)
                             # plot
-                            plotting.plot_histograms(on_values,off_values)
-                            plotting.plot_index_vs_values(on_values,off_values)
-                            plotting.plot_filenames_vs_values(file_names, on_values, off_values)
-
+                            # plotting.plot_histograms(on_values,off_values)
+                            # plotting.plot_index_vs_values(on_values,off_values)
+                            # plotting.plot_filenames_vs_values(file_names, on_values, off_values)
+                            #
+                            # plot in origin here
+                            origin.plot_in_origin(sample_data, sample_path, 'transport')
+                            origin.plot_in_origin(sample_data, sample_path, 'iv_log')
 
                                     # calculate the stuff for the whole device
                                     # histogram the resistance Von and Voff and graph

@@ -168,10 +168,11 @@ def memristor_devices(path,params):
                                                     short_name = f.short_name(file_path)
                                                     long_name = f.long_name(file_path)
 
-                                                    result = mem_txt.txt_file(file_name,file_path,device_path, total_files, processed_files,short_name,long_name, num_of_sweeps,plot_graph, save_df,re_save_graph)
+                                                    result = mem_txt.txt_file(file_name,file_path,device_path, total_files,list_of_file_stats, file_data,  processed_files,short_name,long_name, num_of_sweeps,plot_graph, save_df,re_save_graph)
 
                                                     if result is not None:
-                                                        percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, data, file_stats = result
+                                                        percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, file_data, file_stats = result
+
                                                     else:
                                                         print(f'Warning: mem_txt.txt_file returned None for file {file_name , file_path}')
                                                         # Handle the None case appropriately, perhaps by setting default values
@@ -296,6 +297,22 @@ def memristor_devices(path,params):
             material_stats_dict[f'{material}'] = polymer_stats_dict
             material_sweeps_dict[f'{material}'] = polymer_sweeps_dict
             material_data[f'{material}'] = polymer_data
+
+    # save all the information to pkl file
+    with open(f.main_dir + '/material_stats_dict_all.pkl', 'wb') as file:
+        pickle.dump(material_stats_dict, file)
+
+    with open(f.main_dir + '/material_sweeps_dict_all.pkl', 'wb') as file:
+        pickle.dump(material_sweeps_dict, file)
+
+    with open(f.main_dir + '/material_data_all.pkl', 'wb') as file:
+        pickle.dump(material_data, file)
+
+    with open(f.main_dir + '/file_info_dict.pkl', 'wb') as file:
+        pickle.dump(file_info_dict, file)
+
+
+
 
     return material_stats_dict, material_sweeps_dict,material_data,file_info_dict
 

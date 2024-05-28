@@ -3,6 +3,77 @@ import os
 
 """ For plotting the data into origin """
 
+# def data_copy_origin(material_data):
+#     """ function for sorting and moving the good files."""
+#
+#     def traverse_dict(dictionary):
+#         all_data = []
+#
+#         def _traverse_dict(data, keys_parsed=None):
+#             if keys_parsed is None:
+#                 keys_parsed = []
+#
+#             for filename, data in data.items():
+#                 keys_parsed.append(filename)
+#                 if isinstance(data, dict):
+#                     _traverse_dict(data, keys_parsed)
+#                 else:
+#                     all_data.append((filename, data, keys_parsed.copy()))
+#                 keys_parsed.pop()  # Remove the last key after processing
+#
+#         _traverse_dict(dictionary)
+#         return all_data
+#
+#
+#
+#     def count_y_for_sample_name(checked_files, sample_name):
+#         count_y = 0
+#         for key, value in checked_files.items():
+#             if " - " + sample_name + " - " in key and value == "y":
+#                 count_y += 1
+#         return count_y
+#
+#     data_transverse = traverse_dict(material_data)
+#
+#
+#     for filename, data, keys_parsed in data_transverse:
+#         """ Here the data for each file is given as data
+#         data = pd dataframe """
+#
+#         # Pull info on the files from the database of information as follows:
+#         material = keys_parsed[0]
+#         polymer = keys_parsed[1]
+#         sample_name = keys_parsed[2]
+#         section = keys_parsed[3]
+#         device = keys_parsed[4]
+#         print(material, polymer, sample_name, section, device, filename)
+#
+#         key = f"{material} - {polymer} - {sample_name} - {section} - {device} - {filename}"
+#         #print(filename)
+#         #print(key)
+#         #print(checked_files)
+#
+#         # filepath for the current file
+#         filepath_file = os.path.join(f.main_dir, material, polymer, sample_name, section, device, filename)
+#
+#         # check if file has been checked already if no move on
+#         if key in checked_files:
+#             print(f"Graph {filename} has already been checked and marked.")
+#             print("")
+#         else:
+#             print("file not in checked_files")
+#
+#             # read in the checked_files here keeping it in memory adding too it below:
+#
+#             # call the class for sorting the files
+#             yes_no(filename, keys_parsed, data, filepath_file, checked_files)
+#             number = count_y_for_sample_name(checked_files,keys_parsed[2])
+#             print(keys_parsed[2], number)
+#             # append the checked files array with the names and return saving the iterations
+#     # save the checked files once finished
+#     save_checked_files(checked_files)
+
+
 def plot_in_origin(device_data,device_path,plot_type,save_file = True):
     """ This opens an instance of origin for a given folder, takes all the data from a file
     and plots it, this does this for all the data files within the folder. It also saves the data as pictures. """
@@ -11,10 +82,11 @@ def plot_in_origin(device_data,device_path,plot_type,save_file = True):
     if save_file and os.path.exists(save_file):
         print(f"Skipping origin file, already exists.")
         return
-    print("inside function")
+    #print("inside function")
     # Unpack 'device_data' on the other side within a loop
     for device_folder, device_data_dict in device_data.items():
         print(device_folder)
+        print("please wait working in origin ...")
         # Access 'data' within 'device_data_dict'
         for file_name, data_dict in device_data_dict.items():
 
