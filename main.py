@@ -14,11 +14,12 @@ import Origin as origin
 # - reorganise the functions
 # - keeo track of which files have been measured and wonr remeaure them
 #
-memristors_data = False
+memristors_data = True  # analysis all raw data
+currated = False   # analyses curated data
 
 plot_graph = False
 plot_gif = False
-sort_graphs = True
+sort_graphs = False
 # Plot all the data into origin?
 origin_graphs = False
 pull_fabrication_info_excell = False
@@ -88,8 +89,9 @@ if sort_graphs:
     m.data_copy(material_data)
     #origin.plot_in_origin(device_data, device_path, 'transport')
 
-curr_data_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
-curr.currated_data(curr_data_path)
+if currated:
+    curr_data_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
+    curr.currated_data(curr_data_path)
 
 ############################################################################
 # All sweeps analysed at this point stats are done below
