@@ -2,7 +2,8 @@ import os
 import memristors.txt_files as mem_txt
 import plotting as plotting
 import Origin as origin
-""" for woking on the currated data"""
+""" for working on the currated data"""
+""" Curated data Analysis"""
 
 # mike_smith
 # https://github.com/MikeSmithLabTeam/filehandling/tree/master?tab=readme-ov-file

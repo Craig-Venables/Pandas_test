@@ -13,6 +13,9 @@ import Origin as origin
 # - histogram all the data
 # - reorganise the functions
 # - keeo track of which files have been measured and wonr remeaure them
+# set mem_print to just print instead of specifying for memristors
+
+
 #
 memristors_data = True  # analysis all raw data
 currated = False   # analyses curated data
@@ -39,16 +42,9 @@ mem.set_pandas_display_options()
 # This is for Memristors, create a new one for other device measurements
 if memristors_data:
     material_stats_dict, material_sweeps_dict, material_data, file_info_dict = mem.memristor_devices(f.main_dir, params)
+else:
+    print("not analysing")
 
-# # save all the information to pkl file
-# with open(f.main_dir + '/material_stats_dict_all.pkl', 'wb') as file:
-#     pickle.dump(material_stats_dict, file)
-#
-# with open(f.main_dir + '/material_sweeps_dict_all.pkl', 'wb') as file:
-#     pickle.dump(material_sweeps_dict, file)
-#
-# with open(f.main_dir + '/material_data_all.pkl', 'wb') as file:
-#     pickle.dump(material_data, file)
 
 # Load material_stats_dict
 with open(f.main_dir + '/material_stats_dict_all.pkl', 'rb') as file:
