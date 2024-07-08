@@ -1,13 +1,11 @@
 import file as f
 import pickle
 import sys
-from memristors import mem_print_info as p
+from memristors import print_mem as p, analysis_sort as m
 from file import Tee
-import data_sort as m
-import memristors.memristors as mem
+import memristors.analysis as mem
 import memristors.statistics_mem as stat_mem
-import memristors.curated_mem as curr
-import Origin as origin
+import memristors.analysis_curated as curr
 
 # to add
 # - histogram all the data
@@ -16,7 +14,7 @@ import Origin as origin
 # set mem_print to just print instead of specifying for memristors
 
 
-#
+# Initial Params
 memristors_data = True  # analysis all raw data
 currated = False   # analyses curated data
 
@@ -30,8 +28,10 @@ save_df = False
 re_save_graph = False
 re_analyse = False
 
+# Params Dictionary
 params = f.create_params_dict(plot_graph, plot_gif, sort_graphs, origin_graphs,
                               pull_fabrication_info_excell, save_df, re_save_graph, re_analyse)
+
 # Open a file for writing with utf-8 encoding
 output_file = open(f.main_dir + 'printlog.txt', 'w', encoding='utf-8')
 # Redirect print output to both the file and the console
@@ -46,7 +46,7 @@ else:
     print("not analysing")
 
 
-# Load material_stats_dict
+# Load in the material_stats_dict data
 with open(f.main_dir + '/material_stats_dict_all.pkl', 'rb') as file:
     material_stats_dict = pickle.load(file)
 
@@ -76,8 +76,6 @@ print("")
 # material_sweeps_dict = Contains all the sweeps per device along with the classification
 # material_data = Contains all the data extracted from the sweep (Voltage,current,abs_current etc....)
 
-print(material_stats_dict)
-#print(material_data['Stock']['PVA'])
 
 # For sorting the graphs and copying the data
 if sort_graphs:

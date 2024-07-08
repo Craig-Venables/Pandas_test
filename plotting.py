@@ -12,7 +12,7 @@ import re
 import matplotlib.gridspec as gridspec
 from matplotlib.ticker import ScalarFormatter
 from matplotlib.ticker import FuncFormatter
-import memristors.memristors as mem
+import memristors.analysis as mem
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

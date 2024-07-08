@@ -1,7 +1,8 @@
 import os
-import memristors.txt_files as mem_txt
+import memristors.Files_ as Files_
 import plotting as plotting
 import Origin as origin
+
 """ for working on the currated data"""
 """ Curated data Analysis"""
 
@@ -60,7 +61,7 @@ def currated_data(path):
                                     short_name = sample + " - " + file_name
                                     long_name = type + " - " + material + " - " + sample + " - " + file_name
 
-                                    result = mem_txt.txt_file(file_name,file_path,sample_path,total_files, list_of_file_stats, file_data,processed_files,short_name,long_name)
+                                    result = Files_.txt_file(file_name, file_path, sample_path, total_files, list_of_file_stats, file_data, processed_files, short_name, long_name)
 
                                     if result is not None:
                                         percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, file_data, file_stats = result

@@ -28,11 +28,11 @@ This code is a script that was created to assist in analyzing the data collected
 
 5. Process data for each file: The code processes data for each file in a device folder, including calculating capacitance and other properties, and saving the results in a DataFrame.
 
-6. Calculate statistics for each device and section: The code calculates statistics for each device and section, including the mean and median ON-OFF ratio and the maximum capacitance.
+6. Calculate on_off_values for each device and section: The code calculates on_off_values for each device and section, including the mean and median ON-OFF ratio and the maximum capacitance.
 
 7. Create PDFs with graphs and data: The code creates PDFs with graphs and data for each sample, including the graphs and data for each device and section.
 
-8. Save data for later use: The code saves data for later use, including the data for each sample, the statistics for each device and section, and the PDFs with graphs and data.
+8. Save data for later use: The code saves data for later use, including the data for each sample, the on_off_values for each device and section, and the PDFs with graphs and data.
 
 # How to Use the Code
 The code is designed to be easy to use and modify. To use the code, you can simply run the main function in the script and follow the prompts. The code is designed to be modular, so you can easily modify or expand the code as needed.

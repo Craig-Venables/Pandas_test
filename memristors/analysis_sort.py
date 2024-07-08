@@ -30,14 +30,14 @@ def data_copy(material_data):
 
     def load_checked_files():
         try:
-            with open('checked_files.pkl', 'rb') as f:
+            with open('../checked_files.pkl', 'rb') as f:
 
                 return pickle.load(f)
         except FileNotFoundError:
             return {}
 
     def save_checked_files(checked_files):
-        with open('checked_files.pkl', 'wb') as f:
+        with open('../checked_files.pkl', 'wb') as f:
             pickle.dump(checked_files, f)
 
     def count_y_for_sample_name(checked_files, sample_name):
@@ -211,13 +211,13 @@ class yes_no():
 
     def load_checked_files(self):
         try:
-            with open('checked_files.pkl', 'rb') as f:
+            with open('../checked_files.pkl', 'rb') as f:
                 return pickle.load(f)
         except FileNotFoundError:
             return {}
 
     def save_checked_files(self, checked_files):
-        with open('checked_files.pkl', 'wb') as f:
+        with open('../checked_files.pkl', 'wb') as f:
             pickle.dump(checked_files, f)
 
     def modify_filename(self, original_filename):

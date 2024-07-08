@@ -1,7 +1,6 @@
 import numpy as np
 import file as f
 import math
-import statistics as stats_module
 import os
 import excell as exc
 import re
@@ -9,7 +8,9 @@ import Origin as origin
 import plotting
 import pandas as pd
 import pickle
-import memristors.txt_files as mem_txt
+import memristors.Files_ as Files_
+import memristors.equations as eq
+
 
 debugging = False
 
@@ -137,7 +138,7 @@ def memristor_devices(path,params):
                                             file_data = {}
 
                                             # determines the classification of a device from the excell sheet
-                                            classification = device_clasification(sample_sweep_excell_dict,
+                                            classification = Files_.device_clasification(sample_sweep_excell_dict,
                                                                                      device_folder, section_folder,
                                                                                      device_path)
 
@@ -164,11 +165,11 @@ def memristor_devices(path,params):
                                                 if file_name.endswith('.txt'):
                                                     # for all files that end in txt
 
-                                                    # sort names here , long name short name etc and pass thorugh too mem_txt
+                                                    # sort names here , long name short name etc and pass thorugh too Files_
                                                     short_name = f.short_name(file_path)
                                                     long_name = f.long_name(file_path)
 
-                                                    result = mem_txt.txt_file(file_name,file_path,device_path, total_files,list_of_file_stats, file_data,  processed_files,short_name,long_name, num_of_sweeps,plot_graph, save_df,re_save_graph)
+                                                    result = Files_.txt_file(file_name, file_path, device_path, total_files, list_of_file_stats, file_data, processed_files, short_name, long_name, num_of_sweeps, plot_graph, save_df, re_save_graph)
 
                                                     if result is not None:
                                                         percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, file_data, file_stats = result
@@ -336,8 +337,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         print("probably due too the file not being what it expects please check")
 
     # get positive and negative values of voltage and current data for equations later
-    v_data_ps, c_data_ps = filter_positive_values(v_data, c_data)
-    v_data_ng, c_data_ng = filter_negative_values(v_data, c_data)
+    v_data_ps, c_data_ps = eq.filter_positive_values(v_data, c_data)
+    v_data_ng, c_data_ng = eq.filter_negative_values(v_data, c_data)
     # checks for looped data and calculates the number of loops
     num_sweeps = check_for_loops(v_data)
 
@@ -346,25 +347,26 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
     # create a dataframe for the device of all the data
     data = {'voltage': v_data,
             'current': c_data,
-            'abs_current': absolute_val(c_data),
-            'resistance': resistance(v_data, c_data),
+            'abs_current': eq.absolute_val(c_data),
+            'resistance': eq.resistance(v_data, c_data),
             'voltage_ps': v_data_ps,
             'current_ps': c_data_ps,
             'voltage_ng': v_data_ng,
             'current_ng': c_data_ng,
-            'log_Resistance': log_value(resistance(v_data, c_data)),
-            'abs_Current_ps': absolute_val(c_data_ps),
-            'abs_Current_ng': absolute_val(c_data_ng),
-            'current_Density_ps': absolute_val(current_density_eq(v_data_ps, c_data_ps)),
-            'current_Density_ng': absolute_val(current_density_eq(v_data_ng, c_data_ng)),
-            'electric_field_ps': electric_field_eq(v_data_ps),
-            'electric_field_ng': absolute_val(electric_field_eq(v_data_ng)),
-            'inverse_resistance_ps': inverse_resistance_eq(v_data_ps, c_data_ps),
-            'inverse_resistance_ng': absolute_val(inverse_resistance_eq(v_data_ng, c_data_ng)),
-            'sqrt_Voltage_ps': sqrt_array(v_data_ps),
-            'sqrt_Voltage_ng': absolute_val(sqrt_array(v_data_ng)),
+            'log_Resistance': eq.log_value(eq.resistance(v_data, c_data)),
+            'abs_Current_ps': eq.absolute_val(c_data_ps),
+            'abs_Current_ng': eq.absolute_val(c_data_ng),
+            'current_Density_ps': eq.absolute_val(eq.current_density_eq(v_data_ps, c_data_ps)),
+            'current_Density_ng': eq.absolute_val(eq.current_density_eq(v_data_ng, c_data_ng)),
+            'electric_field_ps': eq.electric_field_eq(v_data_ps),
+            'electric_field_ng': eq.absolute_val(eq.electric_field_eq(v_data_ng)),
+            'inverse_resistance_ps': eq.inverse_resistance_eq(v_data_ps, c_data_ps),
+            'inverse_resistance_ng': eq.absolute_val(eq.inverse_resistance_eq(v_data_ng, c_data_ng)),
+            'sqrt_Voltage_ps': eq.sqrt_array(v_data_ps),
+            'sqrt_Voltage_ng': eq.absolute_val(eq.sqrt_array(v_data_ng)),
 
             }
+
 
     df = pd.DataFrame(data)
     df = df.dropna()
@@ -406,7 +408,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             'normalized_areas_avg': [normalized_areas_avg],
             'resistance_on_value': [ron_avg],
             'resistance_off_value': [roff_avg],
-            'ON_OFF_Ratio': [zero_devision_check(ron_avg, roff_avg)],
+            'ON_OFF_Ratio': [eq.zero_devision_check(ron_avg, roff_avg)],
             'voltage_on_value': [von_avg],
             'voltage_off_value': [voff_avg],
         }
@@ -415,6 +417,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         df_file_stats = pd.DataFrame(file_stats, index=[0])
 
         # Analyze the array changes
+        # calculate the changes between each of the areas
         percent_change, avg_change, avg_relative_change, std_relative_change = analyze_array_changes(normalized_areas)
 
         # create dataframe for device of all the data
@@ -441,7 +444,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             for arr_v, arr_c in zip(split_v_data, split_c_data):
                 count += 1
                 # Plots all the graphs individually
-                folder_path = plotting.main_plot_loop(arr_v, arr_c, absolute_val(arr_c),count ,save_loc, re_save_graph, file_info)
+                folder_path = plotting.main_plot_loop(arr_v, arr_c, eq.absolute_val(arr_c),count ,save_loc, re_save_graph, file_info)
                 #plotting.images_in_row(arr_v, arr_c, absolute_val(arr_c) ,file_info, row_save)
 
             # Plots all the loops on one graph outside of the loop
@@ -475,7 +478,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         loops = False
         # Data Processing for a single sweep
         ps_area, ng_area, area, normalized_area = area_under_curves(df['voltage'], df["current"])
-        resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = statistics(df['voltage'], df["current"])
+        resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = on_off_values(df['voltage'], df["current"])
 
 
         file_stats = {'file_name': [file_info.get('file_name')],
@@ -485,7 +488,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
                       'normalised_area': [normalized_area],
                       'resistance_on_value': [resistance_on_value],
                       'resistance_off_value': [resistance_off_value],
-                      'ON_OFF_Ratio': [zero_devision_check(resistance_on_value, resistance_off_value)],
+                      'ON_OFF_Ratio': [eq.zero_devision_check(resistance_on_value, resistance_off_value)],
                       'voltage_on_value': [voltage_on_value],
                       'voltage_off_value': [voltage_off_value],
                       # 'crossing_points': [find_crossings(v_data, c_data)],
@@ -530,136 +533,6 @@ def does_it_exist(filepath, re_save):
     else:
         # File doesn't exist
         return True
-
-def device_clasification(sample_sweep_excell_dict, device_folder, section_folder,path):
-    """ extracts the classification from the device_number excel sheet for the device level """
-    try:
-        section_folder = section_folder[0].upper()
-        # Take only the first letter from the section_folder
-        # Take only the first two digits from the device_folder
-        device_folder = device_folder[:2]
-
-        # print(device_folder)
-        #print(sample_sweep_excell_dict[section_folder])
-        df = sample_sweep_excell_dict[section_folder]
-        # Convert device_folder to the same type as in the DataFrame (assuming it's numeric)
-        device_folder = int(device_folder)
-        # Find the row where the "Device #" matches the specified device_folder
-        result_row = df[df["Device #"] == device_folder]
-        # Extract the classification value
-        classification = result_row["Classification"].values[
-            0] if not result_row.empty else None
-        # print(classification)
-        return (classification)
-    except:
-        print("please add xls too ", path)
-        return None
-
-
-
-
-
-def process_property(material_stats_dict: dict, property_name: str) -> dict:
-    """
-    This function processes the property of a material(ie, on off ratio).
-
-    Args:
-        material_stats_dict (dict): A dictionary containing the material, polymer, and sample dictionaries.
-        property_name (str): The name of the property to be processed.
-
-    Returns:
-        dict: A dictionary containing the comprehensive information for each unique sample.
-    """
-    # Dictionary to store comprehensive information for each unique sample
-    comprehensive_sample_info = {}
-
-    # Iterate through the material, polymer, and sample dictionaries
-    for material_key, polymer_dict in material_stats_dict.items():
-
-        for polymer_key, sample_dict in polymer_dict.items():
-            for sample_key, section_dict in sample_dict.items():
-                # print(sample_key)
-                # Skip if the sample has already been processed
-                if sample_key in comprehensive_sample_info:
-                    continue
-
-                # List to store information for all devices in the sample
-                all_devices_info = []
-
-                # Iterate through devices in the sample
-                for section_key, device_dict in section_dict.items():
-                    # print(section_key)
-                    for device_key, stats_df in device_dict.items():
-                        # print(device_key)
-                        # print(stats_df['file_name'].isnull(),'\n', stats_df[property_name])
-                        # print(row_index)
-                        # device_key, stats_df = dict_items
-                        # Check if 'file_name' and property_name exist in stats_df
-                        if 'file_name' in stats_df.columns and property_name in stats_df.columns:
-                            '''
-                            Largest on off ratio algorithm:
-                            1)Find a pandas method to find numerical row index of the largest on/off ratio for the current stats dict.
-                            1.5) if there is no method, use a for loop which compares the last on/off ratio with the current one (in this loop),
-                                 and store the whichever is larger and it's index in a variable defined outside of the loop
-                            2)Use that row index to extract the file name for the current device with .iloc
-                            '''
-                            # print(property_name)
-                            # print(stats_df[property_name])
-                            max_property_index = stats_df[property_name].index.get_loc(stats_df[property_name].idxmax())
-                            property_value = stats_df[property_name].iloc[max_property_index]
-
-                            file_name = stats_df['file_name'].iloc[max_property_index]
-
-                            # Extract the property values for the current device
-                            property_values = stats_df[property_name]
-
-                            # Append device information to the list
-                            all_devices_info.append({
-                                'device_key': device_key,
-                                f'{property_name}s': property_values.tolist(),
-                                'file_name': file_name,
-                                property_name: property_value
-                            })
-
-                # Check for NaN values in property_values_all
-                if any(math.isnan(value) for device_info in all_devices_info for value in
-                       device_info[f'{property_name}s']):
-                    print(f"NaN values detected in {property_name}s_all for {material_key}_{polymer_key}_{sample_key}.")
-
-                # Check if property_values_all is empty
-                if not all_devices_info:
-                    print(f"{property_name}s_all is an empty list for {material_key}_{polymer_key}_{sample_key}.")
-                    continue
-
-                # Calculate and store statistical measures
-                property_values_all = [value for device_info in all_devices_info for value in
-                                       device_info[f'{property_name}s']]
-                mean_value = stats_module.mean(property_values_all)
-                median_value = stats_module.median(property_values_all)
-                mode_value = stats_module.mode(property_values_all)
-
-                # Sort the devices based on mean property_value in descending order
-                all_devices_info.sort(key=lambda x: stats_module.mean(x[f'{property_name}s']), reverse=True)
-
-                # # Print the sorted list of devices
-                # print(f"Sorted list of devices for {material_key}_{polymer_key}_{sample_key}:")
-                # for device_info in all_devices_info:
-                #     print(device_info)
-
-                # Store the top 3 devices based on individual property_values
-                top3_devices_individual = all_devices_info[:3]
-
-                # Store the comprehensive information for the unique sample name
-                comprehensive_sample_info[sample_key] = {
-                    'best_device': all_devices_info[0],
-                    'top3_devices': top3_devices_individual,
-                    f'mean_{property_name}': mean_value,
-                    f'median_{property_name}': median_value,
-                    f'mode_{property_name}': mode_value
-                }
-
-    # Return the comprehensive information for all samples
-    return comprehensive_sample_info
 
 
 def split_loops(v_data, c_data, num_loops):
@@ -741,7 +614,7 @@ def calculate_metrics_for_loops(split_v_data, split_c_data):
         areas.append(area)
         normalized_areas.append(norm_area)
 
-        r_on, r_off, v_on, v_off = statistics(sub_v_array, sub_c_array)
+        r_on, r_off, v_on, v_off = on_off_values(sub_v_array, sub_c_array)
 
         ron.append(r_on)
         roff.append(r_off)
@@ -1006,129 +879,9 @@ def check_sweep_type(filepath):
 
 ## ------------------------------------------------------------------------------------##
 
-# Equations for manipulating data
-def absolute_val(col):
-    '''Returns the absolute value of inputted value'''
-    return [abs(x) for x in col]
 
 
-def filter_positive_values(v_data, c_data):
-    ''' Takes the data given too it within the class (current and voltage arrays)
-    and returns only the positive values in place of zeros if they are negative '''
-    result_voltage_ps = []
-    result_current_ps = []
-
-    for v, c in zip(v_data, c_data):
-        if v >= 0:
-            result_voltage_ps.append(v)
-            result_current_ps.append(c)
-        else:
-            result_voltage_ps.append(0)
-            result_current_ps.append(0)
-
-    return result_voltage_ps, result_current_ps
-
-
-def filter_negative_values(v_data, c_data):
-    ''' Takes the data given too it within the class (current and voltage arrays)
-    and returns only the negative values in place of zeros if they are positive
-    takes arrays '''
-    result_voltage_ng = []
-    result_current_ng = []
-    for v, c in zip(v_data, c_data):
-        if v <= 0:
-            result_voltage_ng.append(v)
-            result_current_ng.append(c)
-        else:
-            result_voltage_ng.append(0)
-            result_current_ng.append(0)
-
-    return absolute_val(result_voltage_ng), absolute_val(result_current_ng)
-
-
-def zero_devision_check(x, y):
-    try:
-        return x / y
-    except ZeroDivisionError:
-        return 0
-
-
-# equations for all data within this class
-
-def resistance(v_data, c_data):
-    ''' takes voltage data and current data arrays returns resistance array'''
-    resistance = []
-    for i in range(len(v_data)):
-        resistance.append(zero_devision_check(v_data[i], c_data[i]))
-    return resistance
-
-
-def log_value(array):
-    """
-    Takes an array and returns an array of the logged values.
-    If a value is zero, the function returns zero instead of taking the natural logarithm.
-    """
-    log_value = []
-    for i in range(len(array)):
-        if array[i] != 0:
-            result = np.log(abs(array[i]))
-            log_value.append(result)
-        else:
-            result = 0  # or any other suitable value
-            log_value.append(result)
-    return log_value
-
-
-def current_density_eq(v_data, c_data, distance=100E-9, area=100E-6):
-    ''' Returns current density array using the current and voltage data arrays'''
-    current_density = []
-    for voltage, current in zip(v_data, c_data):
-        if voltage == 0 or current == 0:
-            current_density.append(0)
-            # for checking for divide by zero error
-            continue
-        new_num = (distance / ((voltage / current) * area ** 2)) * (voltage / distance)
-        current_density.append(new_num)
-    return current_density
-
-
-def electric_field_eq(v_data, distance=100E-9):
-    """Returns electric field array data given the voltage array"""
-    electric_field = []
-    for voltage in v_data:
-        if voltage == 0:
-            electric_field.append(0)
-            continue
-        new_num = voltage / distance
-        electric_field.append(new_num)
-    return electric_field
-
-
-def inverse_resistance_eq(v_data, c_data):
-    '''Take the array of voltage and current and Divides current and voltage together'''
-    # v_data & c_data cant be refered to as self as this needs
-    # positive or negative values only
-    inverse_resistance = []
-    for voltage, current in zip(v_data, c_data):
-        if voltage == 0 or current == 0:
-            inverse_resistance.append(0)
-            # for checking for divide by zero error
-            continue
-        new_num = current / voltage
-        inverse_resistance.append(new_num)
-    return inverse_resistance
-
-
-def sqrt_array(value_array):
-    """sqr roots the Value given"""
-    sqrt_array = []
-    for voltage in value_array:
-        new_num = voltage ** 1 / 2
-        sqrt_array.append(new_num)
-    return sqrt_array
-
-
-def statistics(voltage_data, current_data):
+def on_off_values(voltage_data, current_data):
     """
     Calculates r on off and v on off values for an individual device
     """
