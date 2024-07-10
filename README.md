@@ -2,6 +2,10 @@ pip install reportlab matplotlib
 pip install imageio
 Read me provided by tabine 
 
+to add 
+
+gives you gui too choose which graphs too add ontop of one another for comparison
+
 ### Important
 
 Make sure that all files are text files you can easily do this using power rename and
