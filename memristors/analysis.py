@@ -4,12 +4,12 @@ import math
 import os
 import excell as exc
 import re
-import Origin as origin
 import plotting
 import pandas as pd
 import pickle
 import memristors.Files_ as Files_
 import memristors.equations as eq
+import Graph.Origin.Origin as Origin
 
 
 debugging = False
@@ -211,7 +211,7 @@ def memristor_devices(path,params):
 
                                             if origin_graphs:
                                                 # plot the data in origin for use later
-                                                origin.plot_in_origin(device_data, device_path, 'transport')
+                                                Origin.plot_in_origin(device_data, device_path, 'transport')
 
                                             # plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
 

@@ -1,7 +1,6 @@
 import os
 import memristors.Files_ as Files_
-import plotting as plotting
-import Origin as origin
+import Graph.Origin.Origin as Origin
 
 """ for working on the currated data"""
 """ Curated data Analysis"""
@@ -97,8 +96,8 @@ def currated_data(path):
                             # plotting.plot_filenames_vs_values(file_names, on_values, off_values)
                             #
                             # plot in origin here
-                            origin.plot_in_origin(sample_data, sample_path, 'transport')
-                            origin.plot_in_origin(sample_data, sample_path, 'iv_log')
+                            Origin.plot_in_origin(sample_data, sample_path, 'transport')
+                            Origin.plot_in_origin(sample_data, sample_path, 'iv_log')
 
                                     # calculate the stuff for the whole device
                                     # histogram the resistance Von and Voff and graph

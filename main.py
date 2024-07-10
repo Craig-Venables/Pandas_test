@@ -18,8 +18,8 @@ import memristors.analysis_curated as curr
 memristors_data = True  # analysis all raw data
 currated = False   # analyses curated data
 
-plot_graph = False
-plot_gif = False
+plot_graph = True
+plot_gif = True
 sort_graphs = False
 # Plot all the data into origin?
 origin_graphs = False
