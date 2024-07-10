@@ -2,33 +2,6 @@ import os
 ''' This file contains everything to do with files, this includes the file location as a variable, this is so it can be imported in all files n'''
 #other file too test
 
-
-# notts computers
-
-#excel_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
-#main_dir = r'C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors'
-#main_dir = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
-# Template_for_device_xls_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
-
-# home pc
-
-excel_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
-#main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
-#main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
-main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\1) Memristors"
-# Template_for_device_xls_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
-curr_data_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
-
-# Laptop
-
-#excel_path = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
-#main_dir = r"C:\Users\craig\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
-#main_dir = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
-#main_dir = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\1) Memristors"
-# Template_for_device_xls_path = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
-#curr_data_path = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
-
-# files to ignore when looking through directory add as appropriate
 ignore_files = ('.xlsx',  '.gif', '.bmp', '.tiff', '.ico', '.odt', '.ods', '.odp', '.txt', '.rtf', '.csv', '.json',\
     '.xml', '.yaml', '.html', '.css', '.js', '.php', '.sql', '.log', '.bak', '.tar', '.gz', '.zip', '.7z', '.rar', \
     '.tgz', '.java', '.class', '.jar', '.bat', '.sh', '.ps1', '.cmd', '.dll', '.lib', '.obj', '.pdb', '.exe', '.iso',\
@@ -123,3 +96,29 @@ class Tee:
         if not self.closed:
             self.file.close()
             self.closed = True
+
+
+# # notts computers
+#
+# #excel_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
+# #main_dir = r'C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors'
+# #main_dir = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
+# # Template_for_device_xls_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
+#
+# # home pc
+#
+# excel_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
+# #main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
+# #main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
+# main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\1) Memristors"
+# # Template_for_device_xls_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
+# curr_data_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
+#
+# # Laptop
+#
+# #excel_path = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
+# #main_dir = r"C:\Users\craig\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
+# #main_dir = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
+# #main_dir = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\1) Memristors"
+# # Template_for_device_xls_path = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
+# #curr_data_path = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"

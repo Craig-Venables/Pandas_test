@@ -6,6 +6,7 @@ from file import Tee
 import memristors.analysis as mem
 import memristors.statistics_mem as stat_mem
 import memristors.analysis_curated as curr
+import configparser
 
 # to add
 # - histogram all the data
@@ -13,6 +14,30 @@ import memristors.analysis_curated as curr
 # - keeo track of which files have been measured and wonr remeaure them
 # set mem_print to just print instead of specifying for memristors
 
+
+# Load the configuration file
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+# Set the environment (HOME_PC or LAPTOP)
+environment = 'HOME_PC'  # Change to 'LAPTOP' or 'NOTTS_PC' as needed
+
+# Get the paths from the config file
+excel_path = config[environment]['excel_path']
+main_dir = config[environment]['main_dir']
+curr_data_path = config[environment]['curr_data_path']
+template_for_device_xls_path = config[environment]['template_for_device_xls_path']
+
+# Get the ignore files list and convert it to a tuple
+ignore_files_str = config['IGNORE_FILES']['files']
+ignore_files = tuple(ignore_files_str.split(', '))
+
+
+# Print paths to verify (optional)
+print(f"Excel Path: {excel_path}")
+print(f"Main Directory: {main_dir}")
+print(f"Current Data Path: {curr_data_path}")
+print(f"Template for Device XLS Path: {template_for_device_xls_path}")
 
 # Initial Params
 memristors_data = True  # analysis all raw data
@@ -33,7 +58,7 @@ params = f.create_params_dict(plot_graph, plot_gif, sort_graphs, origin_graphs,
                               pull_fabrication_info_excell, save_df, re_save_graph, re_analyse)
 
 # Open a file for writing with utf-8 encoding
-output_file = open(f.main_dir + 'printlog.txt', 'w', encoding='utf-8')
+output_file = open(main_dir + 'printlog.txt', 'w', encoding='utf-8')
 # Redirect print output to both the file and the console
 sys.stdout = Tee(file=output_file, stdout=sys.stdout)
 # set Pandas display options to display all data in dataframe?
@@ -41,24 +66,24 @@ mem.set_pandas_display_options()
 
 # This is for Memristors, create a new one for other device measurements
 if memristors_data:
-    material_stats_dict, material_sweeps_dict, material_data, file_info_dict = mem.memristor_devices(f.main_dir, params)
+    material_stats_dict, material_sweeps_dict, material_data, file_info_dict = mem.memristor_devices(main_dir, params)
 else:
     print("not analysing")
 
 
 # Load in the material_stats_dict data
-with open(f.main_dir + '/material_stats_dict_all.pkl', 'rb') as file:
+with open(main_dir + '/material_stats_dict_all.pkl', 'rb') as file:
     material_stats_dict = pickle.load(file)
 
 # Load material_sweeps_dict
-with open(f.main_dir + '/material_sweeps_dict_all.pkl', 'rb') as file:
+with open(main_dir + '/material_sweeps_dict_all.pkl', 'rb') as file:
     material_sweeps_dict = pickle.load(file)
 
 # Load material_data
-with open(f.main_dir + '/material_data_all.pkl', 'rb') as file:
+with open(main_dir + '/material_data_all.pkl', 'rb') as file:
     material_data = pickle.load(file)
 
-with open(f.main_dir + '/file_info_dict.pkl', 'rb') as file:
+with open(main_dir + '/file_info_dict.pkl', 'rb') as file:
     file_info_dict = pickle.load(file)
 
 print('-' * 25)
@@ -84,7 +109,7 @@ if sort_graphs:
     #origin.plot_in_origin(device_data, device_path, 'transport')
 
 if currated:
-    curr_data_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
+    #curr_data_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
     curr.currated_data(curr_data_path)
 
 ############################################################################
