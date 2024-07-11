@@ -1,7 +1,7 @@
 import file as f
 import pickle
 import sys
-from memristors import print_mem as p, analysis_sort as m
+from memristors import print_mem as p, currat_data as m
 from file import Tee
 import memristors.analysis as mem
 import memristors.statistics_mem as stat_mem

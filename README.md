@@ -2,10 +2,21 @@ pip install reportlab matplotlib
 pip install imageio
 Read me provided by tabine 
 
-to add 
+# Todo
 
-gives you gui too choose which graphs too add ontop of one another for comparison
-
+- add neils resistance calc of -0.1v-0.1v 
+- Graphs 
+    - add graphs of everything sclc,etc... add this too the folder, include relative change etc...
+    - add grahs to show the change in on off ratio for each device (this can be done in the currated data section)
+    - give the resistance values on the graphs, include iv and log iv with others around them with information
+    - MAKE THE GRAPHS in the analysis (if plot graphs) be one function that changes for # sweeps to prevent doub ling of the code 
+    - fix the plotting graph py file to make more sense
+    - GRIDSPEC!!
+    - 
+- fix on off ratio calculator and areas 
+- It handels all the informatin slightly wrong in the main loop ie shows all devices ecept for one, check this.
+- gives you gui too choose which graphs too add ontop of one another for comparison
+---
 ### Important
 
 Make sure that all files are text files you can easily do this using power rename and

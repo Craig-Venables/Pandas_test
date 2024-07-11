@@ -38,9 +38,7 @@ def memristor_devices(path,params):
     material_stats_dict = {}
     material_sweeps_dict = {}
     material_data = {}
-    material_names_dict = {}
     file_info_dict = {}
-    sample_name_arr = []
 
     plot_graph = params['plot_graph']
     plot_gif = params['plot_gif']
@@ -59,7 +57,7 @@ def memristor_devices(path,params):
             polymer_stats_dict = {}
             polymer_sweeps_dict = {}
             polymer_data = {}
-            polymer_names_dict = {}
+
 
             total_samples = sum(1 for _ in os.listdir(path) if os.path.isdir(os.path.join(path, _)))
             total_files = sum(len(files) for _, _, files in os.walk(path))
@@ -74,7 +72,7 @@ def memristor_devices(path,params):
                     sample_stats_dict = {}
                     sample_sweeps_dict = {}
                     sample_data = {}
-                    sample_names_dict = {}
+
 
                     for sample_name in os.listdir(polymer_path):
                         sample_path = os.path.join(polymer_path, sample_name)
@@ -108,7 +106,6 @@ def memristor_devices(path,params):
                                     #print("working on ", sample_name, section_folder)
 
                                     # More empty arrays for storing all measured devices
-                                    list_of_measured_files_devices = []
                                     device_sweeps_dict = {}
                                     device_stats_dict = {}
                                     device_data = {}
@@ -178,8 +175,6 @@ def memristor_devices(path,params):
                                                         print(f'Warning: mem_txt.txt_file returned None for file {file_name , file_path}')
                                                         # Handle the None case appropriately, perhaps by setting default values
 
-
-
                                             ###############################################################################
                                             """ For the device level only place in here any information that needs to be 
                                             done on an individual device """
@@ -199,13 +194,11 @@ def memristor_devices(path,params):
                                                     # create slower gifs
                                                     plotting.create_gif_from_folder(folder_path, output_gif_loc2, 1,
                                                                                     restart_duration=10)
-
                                             if len(list_of_file_stats) >= 2:
                                                 device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats,
                                                                                                   ignore_index=True)
 
                                             device_data[f'{device_folder}'] = file_data
-
                                             device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps': num_of_sweeps,
                                                                                       'classification': classification}
 
@@ -322,11 +315,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
     """ For all info from a single file this determines if a file is a single sweep or multiple sweep and does
      the appropriate action  """
 
-    # to do make this work across all should be done seperatley to here
-
     file_info = f.extract_folder_names(filepath)
-    # short_name = f.short_name(filepath)
-    # long_name = f.long_name(filepath)
 
     # Read the information from the file
     try:
@@ -341,8 +330,6 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
     v_data_ng, c_data_ng = eq.filter_negative_values(v_data, c_data)
     # checks for looped data and calculates the number of loops
     num_sweeps = check_for_loops(v_data)
-
-
 
     # create a dataframe for the device of all the data
     data = {'voltage': v_data,
@@ -367,9 +354,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
 
             }
 
-
     df = pd.DataFrame(data)
     df = df.dropna()
+
     # if there is more than one loop adds
     if num_sweeps > 1:
         loops = True
@@ -378,6 +365,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         # splits the loops depending on the number of sweeps
         split_v_data, split_c_data = split_loops(df['voltage'], df["current"], num_sweeps)
         # Calculates the metrics for each array returning the areas
+        #todo this needs checking its correct
         ps_areas, ng_areas, areas, normalized_areas, ron, roff, von, voff = calculate_metrics_for_loops(split_v_data,
                                                                                                         split_c_data)
 
