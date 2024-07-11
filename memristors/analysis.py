@@ -10,6 +10,7 @@ import pickle
 import memristors.Files_ as Files_
 import memristors.equations as eq
 import Graph.Origin.Origin as Origin
+import Graph.Gifs as Gifs
 
 
 debugging = False
@@ -188,11 +189,11 @@ def memristor_devices(path,params):
                                             if plot_gif:
                                                 if does_it_exist(output_gif_loc,re_save_graph):
                                                     # Creates Gifs of any sample with multiple sweeps
-                                                    plotting.create_gif_from_folder(folder_path, output_gif_loc, 2,
+                                                    Gifs.create_gif_from_folder(folder_path, output_gif_loc, 2,
                                                                                     restart_duration=10)
                                                 if does_it_exist(output_gif_loc2, re_save_graph):
                                                     # create slower gifs
-                                                    plotting.create_gif_from_folder(folder_path, output_gif_loc2, 1,
+                                                    Gifs.create_gif_from_folder(folder_path, output_gif_loc2, 1,
                                                                                     restart_duration=10)
                                             if len(list_of_file_stats) >= 2:
                                                 device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats,

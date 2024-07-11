@@ -1,0 +1,20 @@
+
+Seaborn:
+
+Built on top of Matplotlib, Seaborn provides a high-level interface for drawing attractive statistical graphics. It simplifies many aspects of creating visualizations, and its integration with Matplotlib makes it easy to combine plots.
+Plotly:
+
+Plotly is a graphing library that makes interactive, publication-quality graphs online. It supports various types of plots, including scatter plots, line charts, bar charts, and more. Plotly's make_subplots function allows you to combine multiple plots into a single figure easily.
+Bokeh:
+
+Bokeh is another interactive visualization library that targets modern web browsers for presentation. Bokeh can produce elegant and interactive graphics, and its gridplot function helps in combining multiple plots.
+Altair:
+
+Altair is a declarative statistical visualization library based on Vega and Vega-Lite visualization grammars. It is particularly well-suited for creating complex visualizations easily and supports combining multiple plots.
+ggplot (plotnine in Python):
+
+Inspired by ggplot2 in R, plotnine is a Python implementation of a grammar of graphics. It is powerful and flexible, allowing for complex plots to be created by combining simple components.
+SubplotMosaic (part of Matplotlib):
+
+Although part of Matplotlib, the subplot_mosaic function is a powerful tool to create complex layouts. It allows you to arrange your plots in a grid and specify the arrangement using a more readable syntax.
+Here's a brief example of using Plotly to combine plots:
