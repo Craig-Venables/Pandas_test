@@ -4,7 +4,8 @@ import math
 import os
 import excell as exc
 import re
-import plotting
+#import Plots
+import Graph.Plots as Plots
 import pandas as pd
 import pickle
 import memristors.Files_ as Files_
@@ -172,8 +173,9 @@ def memristor_devices(path,params):
                                                     if result is not None:
                                                         percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, file_data, file_stats = result
 
-                                                    else:
-                                                        print(f'Warning: mem_txt.txt_file returned None for file {file_name , file_path}')
+                                                    #else:
+                                                        #print(f'Warning: mem_txt.txt_file returned None for file {file_name , file_path}')
+
                                                         # Handle the None case appropriately, perhaps by setting default values
 
                                             ###############################################################################
@@ -218,7 +220,7 @@ def memristor_devices(path,params):
                                     section_sweeps_dict[f'{section_folder}'] = device_sweeps_dict
                                     section_data[f'{section_folder}'] = device_data
 
-                                    print(f'{sample_name}- {percentage_completed_files:.2f}% completed')
+                                    #print(f'{sample_name}- {percentage_completed_files:.2f}% completed')
 
                             ###############################################################################
                             """ For the Sample level only place in here any information that needs to be 
@@ -253,7 +255,7 @@ def memristor_devices(path,params):
                             print("")
                             print("################################")
                             print("Finished processing - ", sample_name)
-                            print(f'Total percentage all, {percentage_completed:.2f}% completed')
+                            # print(f'Total percentage all, {percentage_completed:.2f}% completed')
                             print("################################")
 
                             # access the dataframe for specific bits
@@ -358,6 +360,18 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
     df = pd.DataFrame(data)
     df = df.dropna()
 
+    #Plots.multi_graph(df)
+    #Plots.grid_spec(df)
+
+    # get the gradient of the line from x=0 - x=val for initial resistance if needed through 0 use below
+    # df_sections = split_data_in_sect(df['voltage'], df["current"],0.1,-0.1)
+    #slope = gradient(df['voltage'], df["current"],filepath)
+    try:
+        slope = gradient(df['voltage'], df["current"], filepath)
+    except:
+        #print("error in for slope calculation for ",filepath)
+        slope = "no data"
+
     # if there is more than one loop adds
     if num_sweeps > 1:
         loops = True
@@ -433,15 +447,15 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             for arr_v, arr_c in zip(split_v_data, split_c_data):
                 count += 1
                 # Plots all the graphs individually
-                folder_path = plotting.main_plot_loop(arr_v, arr_c, eq.absolute_val(arr_c),count ,save_loc, re_save_graph, file_info)
-                #plotting.images_in_row(arr_v, arr_c, absolute_val(arr_c) ,file_info, row_save)
+                folder_path = Plots.main_plot_loop(arr_v, arr_c, eq.absolute_val(arr_c), count, save_loc, re_save_graph, file_info,slope)
+                #Plots.images_in_row(arr_v, arr_c, absolute_val(arr_c) ,file_info, row_save)
 
             # Plots all the loops on one graph outside of the loop
 
             f.check_if_folder_exists(save_loc, "GIFS",)
             gif_save_loc = os.path.join(save_loc,"GIFS")
-            graph = plotting.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc, re_save_graph,
-                                       file_info,True,num_sweeps)
+            graph = Plots.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc, re_save_graph,
+                                    file_info,slope ,True, num_sweeps)
 
             # plots GIF of all graphs in looped data
             file_name = os.path.splitext(file_info.get('file_name'))[0]
@@ -449,12 +463,12 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             output_gif_loc = os.path.join(gif_save_loc, save_name_gif)
 
             if does_it_exist(output_gif_loc,re_save_graph):
-                plotting.create_gif_from_folder(folder_path, output_gif_loc, 2, restart_duration=10)
+                Plots.create_gif_from_folder(folder_path, output_gif_loc, 2, restart_duration=10)
 
             save_name_row = file_name + ".png"
             save_loc_images_in_folder = os.path.join(row_save,save_name_row)
             if does_it_exist(save_loc_images_in_folder,re_save_graph):
-                plotting.plot_images_in_folder(folder_path,save_loc_images_in_folder)
+                Plots.plot_images_in_folder(folder_path, save_loc_images_in_folder)
 
         else:
             graph = None
@@ -468,6 +482,10 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         # Data Processing for a single sweep
         ps_area, ng_area, area, normalized_area = area_under_curves(df['voltage'], df["current"])
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = on_off_values(df['voltage'], df["current"])
+
+        # calculate the initial resistance when first measuring
+
+
 
 
         file_stats = {'file_name': [file_info.get('file_name')],
@@ -487,15 +505,18 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         f.check_if_folder_exists(device_path, "python_images")
         save_loc = os.path.join(device_path, "python_images")
         save_loc_iv = device_path + '\\' + "Iv only"
+        f.check_if_folder_exists(device_path, "gridspec")
+        save_loc_grid = os.path.join(device_path, "gridspec")
 
-        #plotting.grid_spec(data)
+
+
 
         if plot_graph:
             # this needs finishing
-            graph = plotting.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc, re_save_graph, file_info)
-            #plotting.iv_and_log_iv_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc_iv,
+            graph = Plots.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc, re_save_graph, file_info,slope)
+            #Plots.iv_and_log_iv_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc_iv,
 #                                       cross_points, re_save_graph, file_info)
-
+            Plots.grid_spec(df,save_loc_grid,file_info)
         else:
             graph = None
 
@@ -507,6 +528,50 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         looped_array_info = None
     return num_sweeps, short_name, long_name, df, df_file_stats, graph
 
+
+def gradient(voltage, current, filename):
+    # Filter data for voltage between 0 and max_voltage
+    mask = (voltage >= 0) & (voltage <= (max(voltage)/10))
+    #print((max(voltage)/10)) #commonly 0.1
+    v_filtered = voltage[mask]
+    c_filtered = current[mask]
+
+    # Check for NaN, infinite, or zero values
+    if np.any(np.isnan(v_filtered)) or np.any(np.isnan(c_filtered)):
+        raise ValueError("Filtered data contains NaN values",filename)
+    if np.any(np.isinf(v_filtered)) or np.any(np.isinf(c_filtered)):
+        raise ValueError("Filtered data contains infinite values",filename)
+
+    # Ensure there are enough unique data points
+    if len(v_filtered) < 2 or len(c_filtered) < 2:
+        raise ValueError("Not enough data points to perform linear fit",filename)
+
+    if len(np.unique(v_filtered)) < 2 or len(np.unique(c_filtered)) < 2:
+        raise ValueError("Not enough unique data points to perform linear fit",filename)
+
+    # Debug: Print filtered data
+    #print("Filtered voltage data:", v_filtered)
+    #print("Filtered current data:", c_filtered)
+
+    # Calculate the gradient (slope) using numpy's polyfit for linear fit
+    try:
+        slope, intercept = np.polyfit(v_filtered, c_filtered, 1)
+    except np.linalg.LinAlgError as e:
+        raise RuntimeError("Linear fit did not converge") from e
+
+    return slope
+# def gradient(voltage, current, max_voltage):
+#     """ calculate the gradient between 0 and max voltage of a sweep
+#     """
+#     max_voltage2 = max(voltage)
+#     mask = (voltage >= 0) & (voltage <= max_voltage2)
+#     v_filtered = voltage[mask]
+#     c_filtered = current[mask]
+#
+#     # Calculate the gradient (slope) using numpy's polyfit for linear fit
+#     slope, intercept = np.polyfit(v_filtered, c_filtered, 1)
+#     #print(f"The gradient (slope) between 0 and 0.1V is: {slope}")
+#     return slope
 
 def does_it_exist(filepath, re_save):
     if os.path.exists(filepath):
@@ -797,74 +862,173 @@ def split_iv_sweep(filepath):
     return voltage, current
 
 
-def check_sweep_type(filepath):
-    with open(filepath, 'r') as file:
-        # Read the first line
+def check_sweep_type(filepath, output_file):
+    import re
+
+    def is_number(s):
+        """Check if a string represents a number."""
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
+    # Open the file at the given filepath
+    with open(filepath, 'r', encoding='utf-8') as file:
+        # Read the first line and remove any leading/trailing whitespace
         first_line = file.readline().strip()
-        #print(first_line)
+        # print(first_line)
 
         # Check if the first line is empty, indicating no more lines
         if not first_line:
             print("No more lines after the first. Returning None.")
+            with open(output_file, 'a', encoding='utf-8') as out_file:
+                out_file.write(filepath + '\n')
             return None
-            # Read the second line
 
+        # Read the second line and remove any leading/trailing whitespace
         second_line = file.readline().strip()
 
         # Check if the second line is empty, indicating no more lines
         if not second_line:
             # print("No more lines after the second. Returning None.")
+            with open(output_file, 'a', encoding='utf-8') as out_file:
+                out_file.write(filepath + '\n')
             return None
-        # Check if any of the next three lines contain the word "nan"
+
+        # Read the next three lines and remove any leading/trailing whitespace
         nan_check_lines = [file.readline().strip() for _ in range(3)]
+        # Check if any of the next three lines contain the word "NaN"
         if any('NaN' in line for line in nan_check_lines):
             # print("One of the lines contains 'nan'. Returning None.")
+            with open(output_file, 'a', encoding='utf-8') as out_file:
+                out_file.write(filepath + '\n')
             return None
-        # # Check if any line in the file contains the word "nan"
-        # if any('NaN' in line.lower() for line in file.readlines()):
-        #     print("The file contains 'nan'.")
-        #     return None
 
     # Define dictionaries for different types of sweeps and their expected column headings
-    # sweep_types = {
-    #     'Iv_sweep': ['voltage', 'current'],
-    #     'Endurance': ['Iteration #', 'Time (s)', 'Resistance (Set)', 'Set Voltage', 'Time (s)', 'Resistance (Reset)',
-    #                   'Reset Voltage'],
-    #     'Retention': ['Iteration #', 'Time (s)', 'Current (Set)'],
-    #     'type4': ['V', 'I', 'Pressure'], }
     sweep_types = {
         'Iv_sweep': [
             ['voltage', 'current'],  # Pattern 1
             ['vOLTAGE', 'cURRENT'],  # Pattern 2
             ['VSOURC - Plot 0', 'IMEAS - Plot 0'],
+            ['VSOURC - Plot 0	IMEAS - Plot 0'],
+
             # Add more patterns if needed
         ],
         'Endurance': ['Iteration #', 'Time (s)', 'Resistance (Set)', 'Set Voltage', 'Time (s)', 'Resistance (Reset)',
                       'Reset Voltage'],
         'Retention': ['Iteration #', 'Time (s)', 'Current (Set)'],
-        #'type4': ['V', 'z', 'Pressure'],
+        # 'type4': ['V', 'z', 'Pressure'],
     }
 
-    # # Check if the actual headings match any of the expected ones
-    # for sweep_type, expected_headings in sweep_types.items():
-    #     if all(heading in first_line for heading in expected_headings):
-    #         # print(f"Column headings match {sweep_type} sweep.")
-    #         # Perform your action here, e.g., return the sweep type or do something else
-    #         return sweep_type
-    # Check if the actual headings match any of the expected ones
     # Check if the actual headings match any of the expected ones
     for sweep_type, expected_patterns in sweep_types.items():
         for pattern in expected_patterns:
+            # Check if all headings in the pattern are present in the first line
             if all(heading in first_line for heading in pattern):
                 if pattern == ['VSOURC - Plot 0', 'IMEAS - Plot 0']:
-                    print("Warning: Pattern 3 matched for Iv_sweep. Consider updating the data format. check data, check_sweep_type, filepath below:")
-                    print("file found at",filepath)
-                #print(f"Column headings match {sweep_type} sweep.")
+                    print(
+                        "Warning: Pattern 3 matched for Iv_sweep. Consider updating the data format. Check data, check_sweep_type, filepath below:")
+                    print("file found at", filepath)
+                # print(f"Column headings match {sweep_type} sweep.")
                 return sweep_type
-    #print("Column headings do not match any expected sweep types.")
-    # Perform another action if needed, e.g., return None or do something else
+
+    # Check if there are only two columns and they start with numbers, indicating an IV sweep
+    first_line_values = first_line.split()
+    second_line_values = second_line.split()
+    if len(first_line_values) == 2 and len(second_line_values) == 2:
+        if is_number(first_line_values[0]) and is_number(first_line_values[1]) and is_number(
+                second_line_values[0]) and is_number(second_line_values[1]):
+            return 'Iv_sweep'
+
+    # print("Column headings do not match any expected sweep types.")
+    # Store the file path in the output file and return None
+    with open(output_file, 'a', encoding='utf-8') as out_file:
+        out_file.write(filepath + '\n')
+
     return None
 
+
+# def check_sweep_type(filepath):
+#     def is_number(s):
+#         """Check if a string represents a number."""
+#         try:
+#             float(s)
+#             return True
+#         except ValueError:
+#             return False
+#
+#     # Open the file at the given filepath
+#     with open(filepath, 'r') as file:
+#         # Read the first line and remove any leading/trailing whitespace
+#         first_line = file.readline().strip()
+#         # print(first_line)
+#
+#         # Check if the first line is empty, indicating no more lines
+#         if not first_line:
+#             print("No more lines after the first. Returning None.")
+#             return None
+#
+#         # Read the second line and remove any leading/trailing whitespace
+#         second_line = file.readline().strip()
+#
+#         # Check if the second line is empty, indicating no more lines
+#         if not second_line:
+#             # print("No more lines after the second. Returning None.")
+#             return None
+#
+#         # Read the next three lines and remove any leading/trailing whitespace
+#         nan_check_lines = [file.readline().strip() for _ in range(3)]
+#         # Check if any of the next three lines contain the word "NaN"
+#         if any('NaN' in line for line in nan_check_lines):
+#             # print("One of the lines contains 'nan'. Returning None.")
+#             return None
+#
+#         # # Check if any line in the file contains the word "nan"
+#         # if any('NaN' in line.lower() for line in file.readlines()):
+#         #     print("The file contains 'nan'.")
+#         #     return None
+#
+#     # Define dictionaries for different types of sweeps and their expected column headings
+#     sweep_types = {
+#         'Iv_sweep': [
+#             ['voltage', 'current'],  # Pattern 1
+#             ['vOLTAGE', 'cURRENT'],  # Pattern 2
+#             ['VSOURC - Plot 0', 'IMEAS - Plot 0'],
+#             # Add more patterns if needed
+#         ],
+#         'Endurance': ['Iteration #', 'Time (s)', 'Resistance (Set)', 'Set Voltage', 'Time (s)', 'Resistance (Reset)',
+#                       'Reset Voltage'],
+#         'Retention': ['Iteration #', 'Time (s)', 'Current (Set)'],
+#         # 'type4': ['V', 'z', 'Pressure'],
+#     }
+#
+#     # Check if the actual headings match any of the expected ones
+#     for sweep_type, expected_patterns in sweep_types.items():
+#         for pattern in expected_patterns:
+#             # Check if all headings in the pattern are present in the first line
+#             if all(heading in first_line for heading in pattern):
+#                 if pattern == ['VSOURC - Plot 0', 'IMEAS - Plot 0']:
+#                     print(
+#                         "Warning: Pattern 3 matched for Iv_sweep. Consider updating the data format. check data, check_sweep_type, filepath below:")
+#                     print("file found at", filepath)
+#                 # print(f"Column headings match {sweep_type} sweep.")
+#                 return sweep_type
+#
+#     # Check if there are only two columns and they start with numbers, indicating an IV sweep
+#     first_line_values = first_line.split()
+#     second_line_values = second_line.split()
+#     if len(first_line_values) == 2 and len(second_line_values) == 2:
+#         if is_number(first_line_values[0]) and is_number(first_line_values[1]) and is_number(
+#                 second_line_values[0]) and is_number(second_line_values[1]):
+#             return 'Iv_sweep'
+#
+#     # print("Column headings do not match any expected sweep types.")
+#     # Perform another action if needed, e.g., return None or do something else
+#
+#     with open(output_file, 'a') as out_file:
+#         out_file.write(filepath + '\n')
+#     return None
 
 ## ------------------------------------------------------------------------------------##
 

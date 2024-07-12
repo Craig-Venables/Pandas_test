@@ -91,9 +91,9 @@ def currated_data(path):
                                     sample_data[f'{sample}'] = file_data
                             #print(on_values)
                             # plot
-                            # plotting.plot_histograms(on_values,off_values)
-                            # plotting.plot_index_vs_values(on_values,off_values)
-                            # plotting.plot_filenames_vs_values(file_names, on_values, off_values)
+                            # Plots.plot_histograms(on_values,off_values)
+                            # Plots.plot_index_vs_values(on_values,off_values)
+                            # Plots.plot_filenames_vs_values(file_names, on_values, off_values)
                             #
                             # plot in origin here
                             Origin.plot_in_origin(sample_data, sample_path, 'transport')

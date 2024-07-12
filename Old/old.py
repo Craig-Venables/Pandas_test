@@ -1,3 +1,72 @@
+# def check_sweep_type(filepath):
+#     with open(filepath, 'r') as file:
+#         # Read the first line
+#         first_line = file.readline().strip()
+#         #print(first_line)
+#
+#         # Check if the first line is empty, indicating no more lines
+#         if not first_line:
+#             print("No more lines after the first. Returning None.")
+#             return None
+#             # Read the second line
+#
+#         second_line = file.readline().strip()
+#
+#         # Check if the second line is empty, indicating no more lines
+#         if not second_line:
+#             # print("No more lines after the second. Returning None.")
+#             return None
+#         # Check if any of the next three lines contain the word "nan"
+#         nan_check_lines = [file.readline().strip() for _ in range(3)]
+#         if any('NaN' in line for line in nan_check_lines):
+#             # print("One of the lines contains 'nan'. Returning None.")
+#             return None
+#         # # Check if any line in the file contains the word "nan"
+#         # if any('NaN' in line.lower() for line in file.readlines()):
+#         #     print("The file contains 'nan'.")
+#         #     return None
+#
+#     # Define dictionaries for different types of sweeps and their expected column headings
+#     # sweep_types = {
+#     #     'Iv_sweep': ['voltage', 'current'],
+#     #     'Endurance': ['Iteration #', 'Time (s)', 'Resistance (Set)', 'Set Voltage', 'Time (s)', 'Resistance (Reset)',
+#     #                   'Reset Voltage'],
+#     #     'Retention': ['Iteration #', 'Time (s)', 'Current (Set)'],
+#     #     'type4': ['V', 'I', 'Pressure'], }
+#     sweep_types = {
+#         'Iv_sweep': [
+#             ['voltage', 'current'],  # Pattern 1
+#             ['vOLTAGE', 'cURRENT'],  # Pattern 2
+#             ['VSOURC - Plot 0', 'IMEAS - Plot 0'],
+#             # Add more patterns if needed
+#         ],
+#         'Endurance': ['Iteration #', 'Time (s)', 'Resistance (Set)', 'Set Voltage', 'Time (s)', 'Resistance (Reset)',
+#                       'Reset Voltage'],
+#         'Retention': ['Iteration #', 'Time (s)', 'Current (Set)'],
+#         #'type4': ['V', 'z', 'Pressure'],
+#     }
+#
+#     # # Check if the actual headings match any of the expected ones
+#     # for sweep_type, expected_headings in sweep_types.items():
+#     #     if all(heading in first_line for heading in expected_headings):
+#     #         # print(f"Column headings match {sweep_type} sweep.")
+#     #         # Perform your action here, e.g., return the sweep type or do something else
+#     #         return sweep_type
+#     # Check if the actual headings match any of the expected ones
+#     # Check if the actual headings match any of the expected ones
+#     for sweep_type, expected_patterns in sweep_types.items():
+#         for pattern in expected_patterns:
+#             if all(heading in first_line for heading in pattern):
+#                 if pattern == ['VSOURC - Plot 0', 'IMEAS - Plot 0']:
+#                     print("Warning: Pattern 3 matched for Iv_sweep. Consider updating the data format. check data, check_sweep_type, filepath below:")
+#                     print("file found at",filepath)
+#                 #print(f"Column headings match {sweep_type} sweep.")
+#                 return sweep_type
+#     #print("Column headings do not match any expected sweep types.")
+#     # Perform another action if needed, e.g., return None or do something else
+#     return None
+
+
 # def test(voltage, current):
 #     def calculate_gradient(x, y):
 #         A = np.vstack([x, np.ones(len(x))]).T

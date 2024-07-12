@@ -1,7 +1,7 @@
 import originpro as op
 import os
 
-""" For plotting the data into origin """
+""" For Plots the data into origin """
 
 # def data_copy_origin(material_data):
 #     """ function for sorting and moving the good files."""

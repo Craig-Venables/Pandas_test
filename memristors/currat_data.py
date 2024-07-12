@@ -2,7 +2,7 @@ import os
 import matplotlib.pyplot as plt
 import keyboard
 import shutil
-import plotting as plotting
+from Old import plotting as plotting
 import pickle
 import sys
 import file as f
@@ -30,14 +30,14 @@ def data_copy(material_data):
 
     def load_checked_files():
         try:
-            with open('../checked_files.pkl', 'rb') as f:
+            with open('checked_files.pkl', 'rb') as f:
 
                 return pickle.load(f)
         except FileNotFoundError:
             return {}
 
     def save_checked_files(checked_files):
-        with open('../checked_files.pkl', 'wb') as f:
+        with open('memristors\\checked_files.pkl', 'wb') as f:
             pickle.dump(checked_files, f)
 
     def count_y_for_sample_name(checked_files, sample_name):
@@ -211,13 +211,13 @@ class yes_no():
 
     def load_checked_files(self):
         try:
-            with open('../checked_files.pkl', 'rb') as f:
+            with open('checked_files.pkl', 'rb') as f:
                 return pickle.load(f)
         except FileNotFoundError:
             return {}
 
     def save_checked_files(self, checked_files):
-        with open('../checked_files.pkl', 'wb') as f:
+        with open('checked_files.pkl', 'wb') as f:
             pickle.dump(checked_files, f)
 
     def modify_filename(self, original_filename):
@@ -267,7 +267,7 @@ class yes_no():
     #         output_file_path = os.path.join(self.output_folder, self.file_name)
     #
     #         # should reuse code but cba this will do for now
-    #         fig = plotting.graph_temp(self.voltage, self.current, self.abs_current, self.material,self.polymer,self.sample_name,self.section_folder,self.device_folder,self.file_name)
+    #         fig = Plots.graph_temp(self.voltage, self.current, self.abs_current, self.material,self.polymer,self.sample_name,self.section_folder,self.device_folder,self.file_name)
     #
     #         print("Do you want to copy this file? (y/n): ")
     #         event = keyboard.read_event(suppress=True)

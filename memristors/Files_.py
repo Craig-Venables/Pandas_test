@@ -1,7 +1,9 @@
 import memristors.analysis as eq
 import statistics as stats_module
 import math
+import os
 
+""" any work on the file goes here"""
 
 def txt_file(file_name,file_path,device_path,total_files, list_of_file_stats, file_data, processed_files, short_name,long_name,num_of_sweeps=0,plot_graph=False, save_df=False,re_save_graph=False):
     # began changing this into function not sure yet
@@ -14,9 +16,8 @@ def txt_file(file_name,file_path,device_path,total_files, list_of_file_stats, fi
 
     # Checks and returns the sweep type of the file also checks for nan
     # values if nan values are present returns None
-
-    sweep_type = eq.check_sweep_type(file_path)
-    # print(sweep_type)
+    output_file = 'memristors\\error_files.txt'
+    sweep_type = eq.check_sweep_type(file_path,output_file)
 
     if sweep_type == 'Iv_sweep':
         """ for simple iv sweeps"""
@@ -24,11 +25,6 @@ def txt_file(file_name,file_path,device_path,total_files, list_of_file_stats, fi
         # Performs analysis on the file given returning the dataframe
         analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
                                            device_path, re_save_graph,short_name,long_name)
-
-        # if analysis_result is None:
-        #     # if there is an error in reading the file it will just continue
-        #     # skipping
-        #     continue
 
         num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
 
@@ -41,10 +37,10 @@ def txt_file(file_name,file_path,device_path,total_files, list_of_file_stats, fi
         file_data[f'{file_name}'] = data
 
         return percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, file_data, file_stats
-    else:
-        # if there is an error in reading the file it will just continue
-        # skipping
-        print("Not iv sweep")
+    # else:
+    #     # if there is an error in reading the file it will just continue
+    #     # skipping
+    #     print("Not iv sweep")
 
         # continue
 

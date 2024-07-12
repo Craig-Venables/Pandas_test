@@ -1,5 +1,16 @@
 # anything gifs here
 
+import numpy as np
+import imageio
+import os
+from PIL import Image, ImageDraw, ImageFont
+from PIL import ImageFile
+import re
+
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+
 
 def create_gif_from_folder(folder_path, output_gif, fps=2, restart_duration=2):
     """

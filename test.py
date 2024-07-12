@@ -48,7 +48,7 @@ def remove_entries_containing_substring(pickle_file, substring_to_remove):
         print("Pickle file updated.")
 
 # Example usage:
-pickle_file = 'checked_files.pkl'
+pickle_file = 'memristors/checked_files.pkl'
 substring_to_remove = "D35-0.4mgml-Gold-PS(2%)-Gold-s6"
 #remove_entries_containing_substring(pickle_file, substring_to_remove)
 # with open(pickle_file, 'rb') as f:
@@ -71,5 +71,5 @@ def read_and_print_pickle_file(pickle_file):
         print(f"The file '{pickle_file}' contains invalid pickle data.")
 
 # Example usage
-pickle_file = 'checked_files.pkl'
+pickle_file = 'memristors/checked_files.pkl'
 read_and_print_pickle_file(pickle_file)
