@@ -296,16 +296,16 @@ def memristor_devices(path,params):
             material_data[f'{material}'] = polymer_data
 
     # save all the information to pkl file
-    with open(f.main_dir + '/material_stats_dict_all.pkl', 'wb') as file:
+    with open(path + '/material_stats_dict_all.pkl', 'wb') as file:
         pickle.dump(material_stats_dict, file)
 
-    with open(f.main_dir + '/material_sweeps_dict_all.pkl', 'wb') as file:
+    with open(path + '/material_sweeps_dict_all.pkl', 'wb') as file:
         pickle.dump(material_sweeps_dict, file)
 
-    with open(f.main_dir + '/material_data_all.pkl', 'wb') as file:
+    with open(path + '/material_data_all.pkl', 'wb') as file:
         pickle.dump(material_data, file)
 
-    with open(f.main_dir + '/file_info_dict.pkl', 'wb') as file:
+    with open(path + '/file_info_dict.pkl', 'wb') as file:
         pickle.dump(file_info_dict, file)
 
 
@@ -463,7 +463,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             output_gif_loc = os.path.join(gif_save_loc, save_name_gif)
 
             if does_it_exist(output_gif_loc,re_save_graph):
-                Plots.create_gif_from_folder(folder_path, output_gif_loc, 2, restart_duration=10)
+                Gifs.create_gif_from_folder(folder_path, output_gif_loc, 2, restart_duration=10)
 
             save_name_row = file_name + ".png"
             save_loc_images_in_folder = os.path.join(row_save,save_name_row)
@@ -516,7 +516,7 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             graph = Plots.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc, re_save_graph, file_info,slope)
             #Plots.iv_and_log_iv_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc_iv,
 #                                       cross_points, re_save_graph, file_info)
-            Plots.grid_spec(df,save_loc_grid,file_info)
+            #Plots.grid_spec(df,save_loc_grid,file_info)
         else:
             graph = None
 

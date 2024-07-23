@@ -6,6 +6,7 @@ from file import Tee
 import memristors.analysis as mem
 import memristors.statistics_mem as stat_mem
 import memristors.analysis_curated as curr
+import memristors.Files_ as Files
 import configparser
 
 # to add
@@ -45,7 +46,7 @@ currated = False   # analyses curated data
 
 plot_graph = True
 plot_gif = True
-sort_graphs = False
+sort_graphs = True
 # Plot all the data into origin?
 origin_graphs = False
 pull_fabrication_info_excell = False
@@ -105,7 +106,7 @@ print("")
 # For sorting the graphs and copying the data
 if sort_graphs:
     print("Sorting graphs")
-    m.data_copy(material_data)
+    m.data_copy(material_data,main_dir)
     #origin.plot_in_origin(device_data, device_path, 'transport')
 
 if currated:
@@ -126,9 +127,9 @@ sample_sweeps = stat_mem.get_num_sweeps_ordered(file_info_dict, material_sweeps_
 p.top_10_measured(sample_sweeps)  # prints top 10 measured samples
 
 # Call the function to process 'ON_OFF_Ratio'
-on_off_ratio_info = mem.process_property(material_stats_dict, 'ON_OFF_Ratio')
+on_off_ratio_info = Files.process_property(material_stats_dict, 'ON_OFF_Ratio')
 # Call the function to process 'normalised_area'
-normalised_area_info = mem.process_property(material_stats_dict, 'normalised_area')
+normalised_area_info = Files.process_property(material_stats_dict, 'normalised_area')
 
 # print the values from above
 p.print_on_off_ratio_info(on_off_ratio_info)

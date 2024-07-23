@@ -32,7 +32,6 @@ def long_name(filepath):
     return long_name
 
 
-
 def filereader(filepath):
     with open(filepath, "r") as f:  # open the file as read only
         fread = f.readlines()
@@ -97,28 +96,3 @@ class Tee:
             self.file.close()
             self.closed = True
 
-
-# # notts computers
-#
-# #excel_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
-# #main_dir = r'C:\Users\ppxcv1\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors'
-# #main_dir = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
-# # Template_for_device_xls_path = r"C:\Users\ppxcv1\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
-#
-# # home pc
-#
-# excel_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
-# #main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
-# #main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
-# main_dir = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\1) Memristors"
-# # Template_for_device_xls_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
-# curr_data_path = r"C:\Users\Craig-Desktop\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"
-#
-# # Laptop
-#
-# #excel_path = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\solutions and devices.xlsx"
-# #main_dir = r"C:\Users\craig\OneDrive - The University of Nottingham\Desktop\Origin Test Folder\1) Memristors"
-# #main_dir = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\0) old data backup\1) Memristors"
-# #main_dir = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\2) Data\1) Devices\1) Memristors"
-# # Template_for_device_xls_path = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\Template for device.xlsx"
-# #curr_data_path = r"C:\Users\craig\OneDrive - The University of Nottingham\Documents\Phd\1) Projects\1) Memristors\1) Curated Data"

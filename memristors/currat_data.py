@@ -7,7 +7,7 @@ import pickle
 import sys
 import file as f
 
-def data_copy(material_data):
+def data_copy(material_data,main_dir):
     """ function for sorting and moving the good files."""
 
     def traverse_dict(dictionary):
@@ -30,7 +30,7 @@ def data_copy(material_data):
 
     def load_checked_files():
         try:
-            with open('checked_files.pkl', 'rb') as f:
+            with open('memristors/checked_files.pkl', 'rb') as f:
 
                 return pickle.load(f)
         except FileNotFoundError:
@@ -71,7 +71,7 @@ def data_copy(material_data):
         #print(checked_files)
 
         # filepath for the current file
-        filepath_file = os.path.join(f.main_dir, material, polymer, sample_name, section, device, filename)
+        filepath_file = os.path.join(main_dir, material, polymer, sample_name, section, device, filename)
 
         # check if file has been checked already if no move on
         if key in checked_files:
@@ -211,13 +211,13 @@ class yes_no():
 
     def load_checked_files(self):
         try:
-            with open('checked_files.pkl', 'rb') as f:
+            with open('memristors/checked_files.pkl', 'rb') as f:
                 return pickle.load(f)
         except FileNotFoundError:
             return {}
 
     def save_checked_files(self, checked_files):
-        with open('checked_files.pkl', 'wb') as f:
+        with open('memristors/checked_files.pkl', 'wb') as f:
             pickle.dump(checked_files, f)
 
     def modify_filename(self, original_filename):
