@@ -24,7 +24,7 @@ def memristors_currated(loc):
     # using the repo suggested by mike smith
 
 
-def memristor_devices(path,params):
+def memristor_devices(path,params,excel_path):
     """ Takes the path sorts the data and returns file info
 
     :param path: Path to the folder containing all the data
@@ -88,7 +88,7 @@ def memristor_devices(path,params):
 
                             if pull_fabrication_info_excell:
                                 # Pulls information on fabrication from excell file
-                                fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name,f.excel_path,sample_path)
+                                fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name,excel_path,sample_path)
                             # Pulls information from the device sweep excell sheet
                             sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
 

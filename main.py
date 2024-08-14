@@ -48,8 +48,8 @@ plot_graph = True
 plot_gif = True
 sort_graphs = True
 # Plot all the data into origin?
-origin_graphs = False
-pull_fabrication_info_excell = False
+origin_graphs = True
+pull_fabrication_info_excell = True
 save_df = False
 re_save_graph = False
 re_analyse = False
@@ -67,7 +67,7 @@ mem.set_pandas_display_options()
 
 # This is for Memristors, create a new one for other device measurements
 if memristors_data:
-    material_stats_dict, material_sweeps_dict, material_data, file_info_dict = mem.memristor_devices(main_dir, params)
+    material_stats_dict, material_sweeps_dict, material_data, file_info_dict = mem.memristor_devices(main_dir, params,excel_path)
 else:
     print("not analysing")
 
