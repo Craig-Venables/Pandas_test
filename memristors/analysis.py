@@ -473,6 +473,12 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         else:
             graph = None
 
+        if num_sweeps >= 20:
+            print("doing endurance graph")
+            #
+            # find the values at 0.1
+
+
     # # this is for later
     # if num_sweeps == 0.5:
     #     # print("skipping as half sweep")

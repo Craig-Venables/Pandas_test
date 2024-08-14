@@ -42,7 +42,7 @@ print(f"Template for Device XLS Path: {template_for_device_xls_path}")
 
 # Initial Params
 memristors_data = True  # analysis all raw data
-currated = False   # analyses curated data
+currated = True   # analyses curated data
 
 plot_graph = True
 plot_gif = True

@@ -1,6 +1,7 @@
 import os
 import memristors.Files_ as Files_
 import Graph.Origin.Origin as Origin
+import Graph.Plots as Plots
 
 """ for working on the currated data"""
 """ Curated data Analysis"""
@@ -91,9 +92,9 @@ def currated_data(path):
                                     sample_data[f'{sample}'] = file_data
                             #print(on_values)
                             # plot
-                            # Plots.plot_histograms(on_values,off_values)
-                            # Plots.plot_index_vs_values(on_values,off_values)
-                            # Plots.plot_filenames_vs_values(file_names, on_values, off_values)
+                            #Plots.plot_histograms(on_values,off_values)
+                            #Plots.plot_index_vs_values(on_values,off_values)
+                            #Plots.plot_filenames_vs_values(file_names, on_values, off_values)
                             #
                             # plot in origin here
                             Origin.plot_in_origin(sample_data, sample_path, 'transport')
