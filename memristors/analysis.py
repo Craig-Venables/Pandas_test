@@ -12,6 +12,7 @@ import memristors.Files_ as Files_
 import memristors.equations as eq
 import Graph.Origin.Origin as Origin
 import Graph.Gifs as Gifs
+import matplotlib.pyplot as plt
 
 
 debugging = False
@@ -207,7 +208,11 @@ def memristor_devices(path,params,excel_path):
 
                                             if origin_graphs:
                                                 # plot the data in origin for use later
-                                                Origin.plot_in_origin(device_data, device_path, 'transport')
+                                                try:
+                                                    Origin.plot_in_origin(device_data, device_path, 'transport')
+                                                    Origin.plot_in_origin(device_data, device_path, 'iv_log')
+                                                except:
+                                                    print("failed to plot in origin ")
 
                                             # plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
 
@@ -360,8 +365,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
     df = pd.DataFrame(data)
     df = df.dropna()
 
-    #Plots.multi_graph(df)
-    #Plots.grid_spec(df)
+    # Plots.multi_graph(df)
+    # Plots.grid_spec(df,file_info)
 
     # get the gradient of the line from x=0 - x=val for initial resistance if needed through 0 use below
     # df_sections = split_data_in_sect(df['voltage'], df["current"],0.1,-0.1)
@@ -470,13 +475,151 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             if does_it_exist(save_loc_images_in_folder,re_save_graph):
                 Plots.plot_images_in_folder(folder_path, save_loc_images_in_folder)
 
+            if num_sweeps >= 20:
+                print("doing endurance graph")
+                f.check_if_folder_exists(save_loc, "Dc-Endurance")
+
+                def find_nearest_indices(array, value):
+                    array = np.array(array)
+                    indices = np.where(np.isclose(array, value, atol=1e-3))[0]
+                    return indices
+
+                def extract_current_values(split_v_data, split_c_data, voltages, num_sweeps):
+                    # Ensure num_sweeps is an integer
+                    num_sweeps = int(num_sweeps)
+
+                    # Initialize a dictionary to store the current values for each voltage, including negatives
+                    all_voltages = voltages + [-v for v in voltages]
+                    results = {v: [] for v in all_voltages}
+
+                    # Iterate over each cycle starting from 1 instead of 0
+                    for cycle in range(1, num_sweeps + 1):
+                        v_data = split_v_data[cycle - 1]  # Adjusting index to match 0-based indexing
+                        c_data = split_c_data[cycle - 1]
+
+                        # For each voltage, find the closest current values and store them
+                        for v in voltages:
+                            indices = np.where(np.isclose(v_data.values, v, atol=1e-3))[
+                                0]  # Use .values to handle any index issues
+                            if len(indices) == 2:  # Expect exactly two matches (forward and reverse sweep)
+                                current_values = [c_data.iloc[indices[0]], c_data.iloc[indices[1]]]
+                            else:
+                                current_values = [np.nan, np.nan]  # Fallback if not exactly two matches
+                            results[v].append(current_values)
+
+                        # Now handle the negative voltages similarly
+                        for v in [-v for v in voltages]:
+                            indices = np.where(np.isclose(v_data.values, v, atol=1e-3))[0]
+                            if len(indices) == 2:  # Expect exactly two matches (forward and reverse sweep)
+                                current_values = [c_data.iloc[indices[0]], c_data.iloc[indices[1]]]
+                            else:
+                                current_values = [np.nan, np.nan]
+                            results[v].append(current_values)
+
+                    # Convert results to DataFrames
+                    dfs = {}
+                    for v in voltages:
+                        # Combine positive and negative voltage data into one DataFrame
+                        pos_data = pd.DataFrame(results[v], columns=[f'Current_Forward_(OFF)_{v}V', f'Current_Reverse_(ON)_{v}V'])
+                        neg_data = pd.DataFrame(results[-v],
+                                                columns=[f'Current_Forward_(ON)_{-v}V', f'Current_Reverse_(OFF)_{-v}V'])
+                        combined_df = pd.concat([pos_data, neg_data], axis=1)
+                        combined_df.index += 1  # Adjust the DataFrame index to start from 1
+                        dfs[v] = combined_df
+
+
+                        # Save Paths
+                        save_loc_dc_endurance_df = os.path.join(save_loc,'Dc-Endurance','Data')
+                        f.check_if_folder_exists(os.path.join(save_loc,'Dc-Endurance'),'Data')
+                        save_loc_dc_endurance_images = os.path.join(save_loc, 'Dc-Endurance')
+
+
+                        # Save DataFrame to CSV
+                        csv_file = f'{file_name}_current_values_{v}V.csv'
+                        combined_df.to_csv(os.path.join(save_loc_dc_endurance_df,csv_file), index_label='Cycle')
+
+
+                        # Plot the graphs and save the figure
+                        fig, ax = plt.subplots(2, 1, figsize=(10, 8))
+
+                        # First subplot: Positive voltages
+                        ax[0].plot(combined_df.index, combined_df[f'Current_Forward_(OFF)_{v}V'], marker='o',
+                                   label=f'OFF Value {v}V')
+                        ax[0].plot(combined_df.index, combined_df[f'Current_Reverse_(ON)_{v}V'], marker='o',
+                                   label=f'ON Value {v}V')
+                        ax[0].set_xlabel('Cycle')
+                        ax[0].set_ylabel('Current (A)')
+                        ax[0].set_title(f'Current vs Cycle for {v}V {file_name}')
+                        ax[0].legend()
+                        ax[0].grid(True)
+
+                        # Second subplot: Negative voltages
+                        ax[1].plot(combined_df.index, combined_df[f'Current_Forward_(ON)_{-v}V'], marker='o',
+                                   label=f'ON Value {-v}V')
+                        ax[1].plot(combined_df.index, combined_df[f'Current_Reverse_(OFF)_{-v}V'], marker='o',
+                                   label=f'OFF Value {-v}V')
+                        ax[1].set_xlabel('Cycle')
+                        ax[1].set_ylabel('Current (A)')
+                        ax[1].set_title(f'Current vs Cycle for {-v}V')
+                        ax[1].legend()
+                        ax[1].grid(True)
+
+                        # Adjust layout and save the plot
+                        fig.tight_layout()
+                        fig_file = os.path.join(save_loc_dc_endurance_images,f'{file_name}_plot_{v}V.png')
+                        plt.savefig(fig_file)
+                        plt.close(fig)  # Close the figure after saving to free up memory
+
+                        # Create a final plot with all the voltages
+                    num_voltages = len(voltages)
+                    fig, axs = plt.subplots(num_voltages, 2, figsize=(12, 4 * num_voltages))
+
+                    for i, v in enumerate(voltages):
+                        # Plot for positive voltages
+                        axs[i, 0].plot(dfs[v].index, dfs[v][f'Current_Forward_(OFF)_{v}V'], marker='o', label=f'OFF Value {v}V')
+                        axs[i, 0].plot(dfs[v].index, dfs[v][f'Current_Reverse_(ON)_{v}V'], marker='o', label=f'ON Value {v}V')
+                        axs[i, 0].set_xlabel('Cycle')
+                        axs[i, 0].set_ylabel('Current (A)')
+                        axs[i, 0].set_title(f'Current vs Cycle for {v}V')
+                        axs[i, 0].legend()
+                        axs[i, 0].grid(True)
+
+                        # Plot for negative voltages
+                        axs[i, 1].plot(dfs[v].index, dfs[v][f'Current_Forward_(ON)_{-v}V'], marker='o',
+                                       label=f'ON Value {-v}V')
+                        axs[i, 1].plot(dfs[v].index, dfs[v][f'Current_Reverse_(OFF)_{-v}V'], marker='o',
+                                       label=f'OFF Value {-v}V')
+                        axs[i, 1].set_xlabel('Cycle')
+                        axs[i, 1].set_ylabel('Current (A)')
+                        axs[i, 1].set_title(f'Current vs Cycle for {-v}V')
+                        axs[i, 1].legend()
+                        axs[i, 1].grid(True)
+
+
+                    # Add a main title with the filename
+                    fig.suptitle(f'Current vs Cycle for Different Voltages ({file_name})', fontsize=16)
+                    fig.suptitle(short_name, fontsize=16)
+
+                    fig.tight_layout()
+                    final_fig_file = os.path.join(save_loc_dc_endurance_images,f'_{file_name}_final_plot.png')
+                    plt.savefig(final_fig_file)
+                    plt.close(fig)  # Close the figure after saving
+
+                    return dfs
+
+                voltages = [0.1,0.15,0.2]
+
+                # Extract current values
+                extract_current_values(split_v_data, split_c_data, voltages, num_sweeps)
+
+                # # Print the resulting DataFrames
+                # for v, df in dfs.items():
+                #     print(f"DataFrame for {v}V:\n", df, "\n")
+
         else:
             graph = None
 
-        if num_sweeps >= 20:
-            print("doing endurance graph")
-            #
-            # find the values at 0.1
+
 
 
     # # this is for later
@@ -490,9 +633,6 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         resistance_on_value, resistance_off_value, voltage_on_value, voltage_off_value = on_off_values(df['voltage'], df["current"])
 
         # calculate the initial resistance when first measuring
-
-
-
 
         file_stats = {'file_name': [file_info.get('file_name')],
                       'ps_area': [ps_area],
@@ -511,18 +651,17 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         f.check_if_folder_exists(device_path, "python_images")
         save_loc = os.path.join(device_path, "python_images")
         save_loc_iv = device_path + '\\' + "Iv only"
-        f.check_if_folder_exists(device_path, "gridspec")
-        save_loc_grid = os.path.join(device_path, "gridspec")
-
-
-
+        f.check_if_folder_exists(save_loc, "Concution_graphs")
+        save_loc_grid = os.path.join(save_loc,"Concution_graphs")
 
         if plot_graph:
             # this needs finishing
             graph = Plots.main_plot(df['voltage'], df['current'], df['abs_current'], save_loc, re_save_graph, file_info,slope)
             #Plots.iv_and_log_iv_plot(data.get('voltage'), data.get('current'), data.get('abs_current'), save_loc_iv,
 #                                       cross_points, re_save_graph, file_info)
-            #Plots.grid_spec(df,save_loc_grid,file_info)
+
+            if does_it_exist(save_loc_grid,re_save_graph):
+                Plots.grid_spec(df,save_loc_grid,file_info)
         else:
             graph = None
 

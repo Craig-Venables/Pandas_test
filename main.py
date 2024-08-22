@@ -48,7 +48,7 @@ plot_graph = True
 plot_gif = True
 sort_graphs = True
 # Plot all the data into origin?
-origin_graphs = True
+origin_graphs = False
 pull_fabrication_info_excell = True
 save_df = False
 re_save_graph = False

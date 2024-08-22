@@ -91,6 +91,7 @@ def plot_in_origin(device_data,device_path,plot_type,save_file = True):
         for file_name, data_dict in device_data_dict.items():
 
             # Graphs use python for the calculations
+            print(device_path + "/" + file_name)
             pg = plot(data_dict, file_name,device_path)
             pg.plot_origin_using_python(plot_type)
 

@@ -103,161 +103,6 @@ def multi_graph(df):
     plt.show()
 
 
-# def multi_graph(df):
-#
-#     # data = {'voltage': v_data,
-#     #         'current': c_data,
-#     #         'abs_current': eq.absolute_val(c_data),
-#     #         'resistance': eq.resistance(v_data, c_data),
-#     #         'voltage_ps': v_data_ps,
-#     #         'current_ps': c_data_ps,
-#     #         'voltage_ng': v_data_ng,
-#     #         'current_ng': c_data_ng,
-#     #         'log_Resistance': eq.log_value(eq.resistance(v_data, c_data)),
-#     #         'abs_Current_ps': eq.absolute_val(c_data_ps),
-#     #         'abs_Current_ng': eq.absolute_val(c_data_ng),
-#     #         'current_Density_ps': eq.absolute_val(eq.current_density_eq(v_data_ps, c_data_ps)),
-#     #         'current_Density_ng': eq.absolute_val(eq.current_density_eq(v_data_ng, c_data_ng)),
-#     #         'electric_field_ps': eq.electric_field_eq(v_data_ps),
-#     #         'electric_field_ng': eq.absolute_val(eq.electric_field_eq(v_data_ng)),
-#     #         'inverse_resistance_ps': eq.inverse_resistance_eq(v_data_ps, c_data_ps),
-#     #         'inverse_resistance_ng': eq.absolute_val(eq.inverse_resistance_eq(v_data_ng, c_data_ng)),
-#     #         'sqrt_Voltage_ps': eq.sqrt_array(v_data_ps),
-#     #         'sqrt_Voltage_ng': eq.absolute_val(eq.sqrt_array(v_data_ng))}
-#
-#     voltage = df['voltage']
-#     current = df['current']
-#     abs_current = df['abs_current']
-#     current_voltage = df['inverse_resistance_ps']
-#     voltage_half = df['sqrt_Voltage_ps']
-#
-#     # def plot_4x4_top_mid(ax):
-#     #     ax.plot(np.random.rand(10))
-#     #     ax.set_title('4x4 Top Mid')
-#     #
-#     def plot_4x4_top_left(ax):
-#         ax.plot(np.random.rand(10))
-#         ax.set_title('4x4 Top Left')
-#
-#     def plot_4x4_top_mid(ax):
-#         ax.plot(np.random.rand(10))
-#         ax.set_title('4x4 Top Mid')
-#
-#     def plot_4x2_top_right(ax):
-#         ax.plot(np.random.rand(10))
-#         ax.set_title('4x2 Top Right')
-#
-#     def plot_2x2_mid_left_left(ax):
-#         ax.plot(np.random.rand(10))
-#         ax.set_title('2x2 Mid Left Left')
-#
-#     def plot_2x2_mid_left_mid(ax):
-#         ax.plot(np.random.rand(10))
-#         ax.set_title('2x2 Mid Left Mid')
-#
-#     def plot_2x2_mid_mid_left(ax):
-#         ax.plot(np.random.rand(10))
-#         ax.set_title('2x2 Mid Mid Left')
-#
-#     def plot_2x2_mid_mid_right(ax):
-#         ax.plot(np.random.rand(10))
-#         ax.set_title('2x2 Mid Mid Right')
-#
-#     def plot_2x2_mid_right_right(ax):
-#         ax.plot(np.random.rand(10))
-#         ax.set_title('2x2 Mid Right Right')
-#
-#     # Create a 10x10 grid of subplots
-#     fig = plt.figure(figsize=(12, 10))
-#     gs = gridspec.GridSpec(6, 10, figure=fig)
-#
-#     # Add a 4x4 subplot at the top left corner
-#     ax1 = fig.add_subplot(gs[0:4, 0:4])
-#     Plot_types.plot_iv(voltage,current)
-#
-#     # Add a 4x4 subplot at the top middle
-#     ax2 = fig.add_subplot(gs[0:4, 4:8])
-#     Plot_types.plot_logiv(voltage,abs_current)
-#
-#     # Add a 4x2 subplot at the top right
-#     ax3 = fig.add_subplot(gs[0:4, 8:10])
-#     plot_4x2_top_right(ax3)
-#
-#     # # Add 2x2 subplots in the middle section
-#     # plot_functions = [Plot_types.plot_iv_avg(voltage,current),
-#     #                   Plot_types.sclc_ps(voltage,current),
-#     #                   Plot_types.poole_frenkel_ps(current_voltage,voltage_half), Plot_types.schottky_emission_ps(voltage_half,current),
-#     #                   Plot_types.plot_current_count(current)]
-#
-#     # Add 2x2 subplots in the middle section
-#     plot_functions = [plot_2x2_mid_left_left, plot_2x2_mid_left_mid,
-#                       plot_2x2_mid_mid_left, plot_2x2_mid_mid_right,
-#                       plot_2x2_mid_right_right]
-#
-#     for idx, (row, col, title) in enumerate([(4, 0, '2x2 Mid Left Left'),
-#                                              (4, 2, '2x2 Mid Left Mid'),
-#                                              (4, 4, '2x2 Mid Mid Left'),
-#                                              (4, 6, '2x2 Mid Mid Right'),
-#                                              (4, 8, '2x2 Mid Right Right')]):
-#         ax = fig.add_subplot(gs[row:row+2, col:col+2])
-#         plot_functions[idx](ax)
-#
-#     plt.tight_layout()
-#     plt.show()
-#
-#
-# def multi_graph(df):
-#
-#     voltage = df['voltage']
-#     current = df['current']
-#     abs_current = df['abs_current']
-#     current_voltage = df['inverse_resistance_ps']
-#     voltage_half = df['sqrt_Voltage_ps']
-#
-#     # def plot_4x4_top_mid(ax):
-#     #     ax.plot(np.random.rand(10))
-#     #     ax.set_title('4x4 Top Mid')
-#     #
-#     def plot_4x2_top_right(ax):
-#         ax.plot(np.random.rand(10))
-#         ax.set_title('4x2 Top Right')
-#
-#
-#     # Create a 10x10 grid of subplots
-#     fig = plt.figure(figsize=(12, 10))
-#     gs = gridspec.GridSpec(6, 10, figure=fig)
-#
-#     # Add a 4x4 subplot at the top left corner
-#     ax1 = fig.add_subplot(gs[0:4, 0:4])
-#     Plot_types.plot_iv(voltage,current)
-#
-#     # Add a 4x4 subplot at the top middle
-#     ax2 = fig.add_subplot(gs[0:4, 4:8])
-#     Plot_types.plot_logiv(voltage,abs_current)
-#
-#     # Add a 4x2 subplot at the top right
-#     ax3 = fig.add_subplot(gs[0:4, 8:10])
-#     plot_4x2_top_right(ax3)
-#
-#     # Add 2x2 subplots in the middle section
-#     plot_functions = [Plot_types.plot_iv_avg(voltage,current),
-#                       Plot_types.sclc_ps(voltage,current),
-#                       Plot_types.poole_frenkel_ps(current_voltage,voltage_half), Plot_types.schottky_emission_ps(voltage_half,current),
-#                       Plot_types.plot_current_count(current)]
-#
-#     for idx, (row, col, title) in enumerate([(4, 0, '2x2 Mid Left Left'),
-#                                              (4, 2, '2x2 Mid Left Mid'),
-#                                              (4, 4, '2x2 Mid Mid Left'),
-#                                              (4, 6, '2x2 Mid Mid Right'),
-#                                              (4, 8, '2x2 Mid Right Right')]):
-#         ax = fig.add_subplot(gs[row:row+2, col:col+2])
-#         plot_functions[idx](ax)
-#
-#     plt.tight_layout()
-#     plt.show()
-
-
-
 def main_plot(voltage, current, abs_current, save_loc, re_save, file_info,slope,loop=False, num_sweeps=0):
     # Main function to handle Plots and saving graphs
     short_filename = os.path.splitext(file_info['file_name'])[0]
@@ -414,10 +259,11 @@ def plot_filenames_vs_values(filenames, on_values, off_values):
     plt.tight_layout()
     plt.show()
 
-def grid_spec(df,save_loc,file_info):
+def grid_spec(df, save_loc, file_info):
 
     short_filename = os.path.splitext(file_info['file_name'])[0]
     save_path = os.path.join(save_loc, f"{short_filename}.png")
+
     def format_tick(value, pos):
         # Format tick label as 10^x
         return f'$10^{{{int(value)}}}$'
@@ -434,13 +280,14 @@ def grid_spec(df,save_loc,file_info):
     current_density_ng = df['current_Density_ng']
     resistance = df['resistance']
 
-
     fontsize = 5
+    plt.figure(figsize=(15, 10))  # Ensure a new figure is created
+
     gs = gridspec.GridSpec(4, 5, wspace=0.3, hspace=0.3)
 
     ax1 = plt.subplot(gs[0:2, 0:2])  # Rows 0 and 1 Columns 0 and 1 iv
     ax1.text(0.05, 0.95, 'Iv ', transform=ax1.transAxes, fontsize=8, va='top', ha='left', color="red")
-    Plot_types.plot_iv(voltage,current, fontsize)
+    Plot_types.plot_iv(voltage, current, fontsize)
 
     ax2 = plt.subplot(gs[0:2, 2:4])  # logiv
     ax2.text(0.05, 0.95, 'Iv_log ', transform=ax2.transAxes, fontsize=8, va='top', ha='left', color="red")
@@ -454,32 +301,33 @@ def grid_spec(df,save_loc,file_info):
     ax4.text(0.05, 0.95, 'sclc -ve', transform=ax4.transAxes, fontsize=8, va='top', ha='left', color="red")
     Plot_types.sclc_ng(voltage_ng, current_density_ng, fontsize)
 
-    ax5 = plt.subplot(gs[2, 2])  # scxotty
+    ax5 = plt.subplot(gs[2, 2])  # schottky
     ax5.text(0.05, 0.95, 'schottky', transform=ax5.transAxes, fontsize=8, va='top', ha='left', color="red")
     Plot_types.schottky_emission_ps(voltage_half, current, fontsize)
 
-    ax6 = plt.subplot(gs[2, 3])  # scotty
-    ax6.text(0.05, 0.95, 'shottky -ve', transform=ax6.transAxes, fontsize=8, va='top', ha='left', color="red")
+    ax6 = plt.subplot(gs[2, 3])  # schottky -ve
+    ax6.text(0.05, 0.95, 'schottky -ve', transform=ax6.transAxes, fontsize=8, va='top', ha='left', color="red")
     Plot_types.schottky_emission_ng(voltage_half_ng, current, fontsize)
 
     ax7 = plt.subplot(gs[0, 4])  # pf +ve
     ax7.text(0.05, 0.95, 'pf +ve', transform=ax7.transAxes, fontsize=8, va='top', ha='left', color="red")
     Plot_types.poole_frenkel_ps(current_voltage, voltage_half, fontsize)
 
-    ax8 = plt.subplot(gs[1, 4])  # pf-ve
+    ax8 = plt.subplot(gs[1, 4])  # pf -ve
     ax8.text(0.05, 0.95, 'Poole-frenkel -ve', transform=ax8.transAxes, fontsize=8, va='top', ha='left', color="red")
     Plot_types.poole_frenkel_ng(current_voltage_ng, voltage_half_ng, fontsize)
 
-    ax9 = plt.subplot(gs[3, 0:2])  # resis coubt
+    ax9 = plt.subplot(gs[3, 0:2])  # resistance time
     ax9.text(0.05, 0.95, 'resistance time', transform=ax9.transAxes, fontsize=8, va='top', ha='left', color="red")
     Plot_types.resistance_time(resistance)
 
-    ax10 = plt.subplot(gs[3, 2:4])  # volt count
+    ax10 = plt.subplot(gs[3, 2:4])  # voltage count
     ax10.text(0.05, 0.95, 'voltage count', transform=ax10.transAxes, fontsize=8, va='top', ha='left', color="red")
-    Plot_types.plot_current_count(current,fontsize)
+    Plot_types.plot_current_count(current, fontsize)
+
     ax11 = plt.subplot(gs[3, 4])  # direction
     ax11.text(0.05, 0.95, 'direction', transform=ax11.transAxes, fontsize=8, va='top', ha='left', color="red")
-    Plot_types.plot_iv_avg(voltage,current, 20, fontsize)
+    Plot_types.plot_iv_avg(voltage, current, 20, fontsize)
 
     ax12 = plt.subplot(gs[2, 4])  # information
     ax12.text(0.05, 0.95, 'info', transform=ax12.transAxes, fontsize=8, va='top', ha='left', color="red")
@@ -492,16 +340,13 @@ def grid_spec(df,save_loc,file_info):
         ax.xaxis.set_major_formatter(FuncFormatter(format_tick))
         ax.yaxis.set_major_formatter(FuncFormatter(format_tick))
 
-        # ax.xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
-        # ax.yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
-
     # Adjust layout to prevent overlap
-    # plt.tight_layout()
+    #plt.tight_layout()
 
-    # Show plot
-    #plt.show()
+    plt.suptitle((file_info['sample_name'],file_info['file_name']), fontsize=16)
 
-    plt.ioff()
-    plt.tight_layout()
-    plt.savefig(save_path,  dpi=300)
+
+    # Save the figure
+    plt.savefig(save_path, dpi=300)
+    plt.close()  # Close the figure to prevent reuse and overlap issues
     print(f"File saved successfully at {save_path}")
