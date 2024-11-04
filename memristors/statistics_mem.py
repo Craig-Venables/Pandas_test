@@ -20,15 +20,18 @@ def calculate_yield(material_sweeps_dict: dict) -> dict:
 
                 measured = 0
                 memristive_device_count = 0
+                ohmic_device_count = 0
                 for section_name, device_dict in section_dict.items():
                     num_measured_devices = len(device_dict)
 
                     memristive_count = sum(
                         1 for device_data in device_dict.values() if device_data.get('classification') == 'Memristive')
-
+                    ohmic_count = sum(
+                        1 for device_data in device_dict.values() if device_data.get('classification') == 'Ohmic')
                     # Update measured and memristive_device_count for each section
                     measured += num_measured_devices
                     memristive_device_count += memristive_count
+                    ohmic_device_count += ohmic_count
 
                     if num_measured_devices > 0:
                         yield_value = memristive_count / num_measured_devices

@@ -322,7 +322,7 @@ def memristor_devices(path,params,excel_path):
 def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,short_name,long_name):
     """ For all info from a single file this determines if a file is a single sweep or multiple sweep and does
      the appropriate action  """
-
+    print(filepath)
     file_info = f.extract_folder_names(filepath)
 
     # Read the information from the file
@@ -475,8 +475,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             if does_it_exist(save_loc_images_in_folder,re_save_graph):
                 Plots.plot_images_in_folder(folder_path, save_loc_images_in_folder)
 
-            if num_sweeps >= 20:
-                print("doing endurance graph")
+            if num_sweeps >= 10:
+
                 f.check_if_folder_exists(save_loc, "Dc-Endurance")
 
                 def find_nearest_indices(array, value):

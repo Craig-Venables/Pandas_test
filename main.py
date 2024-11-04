@@ -42,17 +42,17 @@ print(f"Template for Device XLS Path: {template_for_device_xls_path}")
 
 # Initial Params
 memristors_data = True  # analysis all raw data
-currated = True   # analyses curated data
+currated = False   # analyses curated data
 
 plot_graph = True
-plot_gif = True
-sort_graphs = True
+plot_gif = False
+sort_graphs = False
 # Plot all the data into origin?
 origin_graphs = False
 pull_fabrication_info_excell = True
 save_df = False
 re_save_graph = False
-re_analyse = False
+re_analyse = True
 
 # Params Dictionary
 params = f.create_params_dict(plot_graph, plot_gif, sort_graphs, origin_graphs,

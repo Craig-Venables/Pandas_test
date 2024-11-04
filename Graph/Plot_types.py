@@ -23,9 +23,13 @@ def plot_current_count(current, fontsize=8):
     plt.ylabel('Current', fontsize=fontsize)
     plt.xlabel('Index', fontsize=fontsize)
 
-def plot_iv_avg(voltage, current, num_points=20, fontsize=8):
+def plot_iv_avg(voltage, current, num_points=10, fontsize=8):
     # Plot averaged IV curve with arrows indicating direction
     step_size = len(voltage) // num_points
+    print(step_size)
+    # of broken check below:
+    if step_size <= 1:
+        step_size = 1
     avg_voltage = [np.mean(voltage[i:i + step_size]) for i in range(0, len(voltage), step_size)]
     avg_current = [np.mean(current[i:i + step_size]) for i in range(0, len(current), step_size)]
 
