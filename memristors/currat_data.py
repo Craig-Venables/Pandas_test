@@ -222,8 +222,6 @@ class yes_no():
             pickle.dump(checked_files, f)
 
     def modify_filename(self, original_filename):
-        # Customize your filename modification logic here,
-        # For example, you can add prefixes, suffixes, or change the extension
         modified_filename = f"{self.section_folder} - {self.device_folder} - " + original_filename
         return modified_filename
 
