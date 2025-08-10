@@ -8,6 +8,7 @@ import memristors.statistics_mem as stat_mem
 import memristors.analysis_curated as curr
 import memristors.Files_ as Files
 import configparser
+import logging
 
 # to add
 # - histogram all the data
@@ -34,11 +35,12 @@ ignore_files_str = config['IGNORE_FILES']['files']
 ignore_files = tuple(ignore_files_str.split(', '))
 
 
-# Print paths to verify (optional)
-print(f"Excel Path: {excel_path}")
-print(f"Main Directory: {main_dir}")
-print(f"Current Data Path: {curr_data_path}")
-print(f"Template for Device XLS Path: {template_for_device_xls_path}")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s: %(message)s')
+logger = logging.getLogger("main")
+logger.info(f"Excel Path: {excel_path}")
+logger.info(f"Main Directory: {main_dir}")
+logger.info(f"Current Data Path: {curr_data_path}")
+logger.info(f"Template for Device XLS Path: {template_for_device_xls_path}")
 
 # Initial Params
 memristors_data = True  # analysis all raw data
@@ -49,10 +51,10 @@ plot_gif = False
 sort_graphs = False
 # Plot all the data into origin?
 origin_graphs = False
-pull_fabrication_info_excell = True
+pull_fabrication_info_excell = False
 save_df = False
 re_save_graph = False
-re_analyse = True
+re_analyse = False
 
 # Params Dictionary
 params = f.create_params_dict(plot_graph, plot_gif, sort_graphs, origin_graphs,

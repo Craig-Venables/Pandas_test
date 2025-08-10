@@ -1,14 +1,29 @@
 import os
+import configparser
 ''' This file contains everything to do with files, this includes the file location as a variable, this is so it can be imported in all files n'''
 #other file too test
 
-ignore_files = ('.xlsx',  '.gif', '.bmp', '.tiff', '.ico', '.odt', '.ods', '.odp', '.txt', '.rtf', '.csv', '.json',\
-    '.xml', '.yaml', '.html', '.css', '.js', '.php', '.sql', '.log', '.bak', '.tar', '.gz', '.zip', '.7z', '.rar', \
-    '.tgz', '.java', '.class', '.jar', '.bat', '.sh', '.ps1', '.cmd', '.dll', '.lib', '.obj', '.pdb', '.exe', '.iso',\
-    '.mp3', '.wav', '.flac', '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.pdf', '.epub', '.mobi', '.djvu', '.chm',\
-    '.jpg', '.png', '.svg', '.eps', '.ai', '.psd', '.tif', '.bat', '.cfg', '.ini', '.conf', '.md', '.bak', '.patch',\
-    '.diff', '.sql', '.bak', '.bak2', '.bak3', '.bak4', '.bak5', '.backup', '.old', '.new', '.temp', '.tmp', '.swp', \
-    '.swo', '.swn', '.swo', '.log', '.out', '.err''.doc','.docx','.ogwu','.opju', '.Wdf','.pptx', '.jpeg','.xls')
+# Centralized ignore files list. Tries to load from config.ini [IGNORE_FILES] first, else falls back.
+def _load_ignore_files_from_config() -> tuple:
+    config = configparser.ConfigParser()
+    try:
+        config.read('config.ini')
+        if 'IGNORE_FILES' in config and 'files' in config['IGNORE_FILES']:
+            raw = config['IGNORE_FILES']['files']
+            items = [ext.strip() for ext in raw.split(',') if ext.strip()]
+            return tuple(items)
+    except Exception:
+        pass
+    # Fallback default
+    return ('.xlsx',  '.gif', '.bmp', '.tiff', '.ico', '.odt', '.ods', '.odp', '.txt', '.rtf', '.csv', '.json',
+            '.xml', '.yaml', '.html', '.css', '.js', '.php', '.sql', '.log', '.bak', '.tar', '.gz', '.zip', '.7z', '.rar',
+            '.tgz', '.java', '.class', '.jar', '.bat', '.sh', '.ps1', '.cmd', '.dll', '.lib', '.obj', '.pdb', '.exe', '.iso',
+            '.mp3', '.wav', '.flac', '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.pdf', '.epub', '.mobi', '.djvu', '.chm',
+            '.jpg', '.png', '.svg', '.eps', '.ai', '.psd', '.tif', '.bat', '.cfg', '.ini', '.conf', '.md', '.bak', '.patch',
+            '.diff', '.sql', '.bak', '.bak2', '.bak3', '.bak4', '.bak5', '.backup', '.old', '.new', '.temp', '.tmp', '.swp',
+            '.swo', '.swn', '.swo', '.log', '.out', '.err', '.doc', '.docx', '.ogwu', '.opju', '.Wdf', '.pptx', '.jpeg', '.xls')
+
+ignore_files = _load_ignore_files_from_config()
 
 def check_if_folder_exists(d_path,fol_name):
     if not os.path.exists(str(d_path) + '\\' + f"{fol_name}"):
@@ -63,7 +78,8 @@ def extract_folder_names(file_path, base_folder="Memristors", folder_structure=N
     return variable_names
 
 def create_params_dict(plot_graph, plot_gif, sort_graphs, origin_graphs,
-                       pull_fabrication_info_excell, save_df, re_save_graph, re_analyse):
+                       pull_fabrication_info_excell, save_df, re_save_graph, re_analyse,
+                       skip_half_sweeps=False, parallel_workers=1, save_parquet=False):
     return {
         'plot_graph': plot_graph,
         'plot_gif': plot_gif,
@@ -72,7 +88,10 @@ def create_params_dict(plot_graph, plot_gif, sort_graphs, origin_graphs,
         'pull_fabrication_info_excell': pull_fabrication_info_excell,
         'save_df': save_df,
         're_save_graph': re_save_graph,
-        're_analyse': re_analyse
+        're_analyse': re_analyse,
+        'skip_half_sweeps': skip_half_sweeps,
+        'parallel_workers': int(parallel_workers) if parallel_workers else 1,
+        'save_parquet': save_parquet,
     }
 
 class Tee:

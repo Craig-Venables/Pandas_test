@@ -31,6 +31,9 @@ def print_normalised_area_info(input):
 
 def yield_calc(material_sweeps_dict):
     yield_dict, yield_dict_sect = stat_mem.calculate_yield(material_sweeps_dict)
+    print(yield_dict)
+    print(yield_dict_sect)
+    print('**********************')
     print("Yield for each sample, descending order")
     print('-' * 25)
     for key, value in yield_dict.items():

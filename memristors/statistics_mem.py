@@ -1,5 +1,7 @@
 import math
-
+import numpy as np
+from pathlib import Path
+import json
 """ statistics for post processing of the data related to more than a single file"""
 
 def calculate_yield(material_sweeps_dict: dict) -> dict:
@@ -21,6 +23,12 @@ def calculate_yield(material_sweeps_dict: dict) -> dict:
                 measured = 0
                 memristive_device_count = 0
                 ohmic_device_count = 0
+                capacative_device_count = 0
+                non_conductive_device_count = 0
+                conductive_device_count = 0
+                intermittent_device_count = 0
+                Mem_Capacitance_device_count = 0
+
                 for section_name, device_dict in section_dict.items():
                     num_measured_devices = len(device_dict)
 
@@ -28,21 +36,48 @@ def calculate_yield(material_sweeps_dict: dict) -> dict:
                         1 for device_data in device_dict.values() if device_data.get('classification') == 'Memristive')
                     ohmic_count = sum(
                         1 for device_data in device_dict.values() if device_data.get('classification') == 'Ohmic')
+                    capacative_count = sum(
+                        1 for device_data in device_dict.values() if device_data.get('classification') == 'Capacative')
+                    non_conductive_count = sum(
+                        1 for device_data in device_dict.values() if device_data.get('classification') == 'Non-Conductive')
+                    conductive_count = sum(
+                        1 for device_data in device_dict.values() if device_data.get('classification') == 'Conductive')
+                    intermittent_count = sum(
+                        1 for device_data in device_dict.values() if device_data.get('classification') == 'intermittent')
+                    Mem_Capacitance_count = sum(
+                        1 for device_data in device_dict.values() if
+                        device_data.get('classification') == 'Mem-Capacitance')
+
                     # Update measured and memristive_device_count for each section
                     measured += num_measured_devices
                     memristive_device_count += memristive_count
                     ohmic_device_count += ohmic_count
+                    capacative_device_count += capacative_count
+                    non_conductive_count += non_conductive_count
+                    conductive_device_count += conductive_count
+                    intermittent_device_count += intermittent_count
+                    Mem_Capacitance_device_count += Mem_Capacitance_count
 
                     if num_measured_devices > 0:
                         yield_value = memristive_count / num_measured_devices
-                        yield_dict_sect[f'{material}_{polymer}_{sample_name}_{section_name}'] = yield_value
+                        yield_dict_sect[f'{sample_name}_{section_name}'] = yield_value
 
                 if measured > 0:
                     yield_value_sample = memristive_device_count / measured
-                    yield_dict[f'{material}_{polymer}_{sample_name}'] = yield_value_sample
+                    yield_dict[f'{sample_name}'] = yield_value_sample
 
     sorted_yield_dict = dict(sorted(yield_dict.items(), key=lambda item: item[1], reverse=True))
     sorted_yield_dict_sect = dict(sorted(yield_dict_sect.items(), key=lambda item: item[1], reverse=True))
+
+    save_loc = Path(
+        "C:/Users/Craig-Desktop/OneDrive - The University of Nottingham/Documents/Phd/1) Projects/1) Memristors/1) Curated Data")
+
+    # Save as JSON (better for structured data)
+    with open(save_loc / "yield_dict.json", "w") as f:
+        json.dump(sorted_yield_dict, f, indent=4)
+
+    with open(save_loc / "yield_dict_section.json", "w") as f:
+        json.dump(sorted_yield_dict_sect, f, indent=4)
 
     return sorted_yield_dict, sorted_yield_dict_sect
 

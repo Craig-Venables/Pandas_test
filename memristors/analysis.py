@@ -4,15 +4,27 @@ import math
 import os
 import excell as exc
 import re
+import logging
 #import Plots
+import matplotlib
+# Force non-interactive backend before any pyplot is imported by other modules
+matplotlib.use("Agg")
 import Graph.Plots as Plots
 import pandas as pd
 import pickle
 import memristors.Files_ as Files_
 import memristors.equations as eq
-import Graph.Origin.Origin as Origin
 import Graph.Gifs as Gifs
 import matplotlib.pyplot as plt
+from typing import Tuple, List, Dict, Any
+from concurrent.futures import ProcessPoolExecutor, as_completed
+
+logger = logging.getLogger("mem_analysis")
+if not logger.handlers:
+    logger.setLevel(logging.INFO)
+    _handler = logging.StreamHandler()
+    _handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s: %(message)s'))
+    logger.addHandler(_handler)
 
 
 debugging = False
@@ -25,7 +37,42 @@ def memristors_currated(loc):
     # using the repo suggested by mike smith
 
 
-def memristor_devices(path,params,excel_path):
+def _process_file_worker(args: tuple) -> Any:
+    """Worker for parallel per-file processing.
+    Returns None if file should be skipped, else a tuple:
+    (file_name, short_name, long_name, num_sweeps, df_file_stats, df)
+    """
+    (
+        file_name,
+        file_path,
+        device_path,
+        plot_graph,
+        save_df,
+        re_save_graph,
+        short_name,
+        long_name,
+        skip_half_sweeps,
+        save_parquet,
+    ) = args
+
+    result = file_analysis(
+        filepath=file_path,
+        plot_graph=plot_graph,
+        save_df=save_df,
+        device_path=device_path,
+        re_save_graph=re_save_graph,
+        short_name=short_name,
+        long_name=long_name,
+        skip_half_sweeps=skip_half_sweeps,
+        save_parquet=save_parquet,
+    )
+    if result is None:
+        return None
+    num_sweeps, short_name, long_name, df, df_file_stats, _graph = result
+    return (file_name, short_name, long_name, num_sweeps, df_file_stats, df)
+
+
+def memristor_devices(path, params, excel_path):
     """ Takes the path sorts the data and returns file info
 
     :param path: Path to the folder containing all the data
@@ -35,7 +82,7 @@ def memristor_devices(path,params,excel_path):
     Material_data = Contains all the data extracted from the sweep (Voltage,current,abs_current etc....)
 
     """
-    print("Starting Memristors ")
+    logger.info("Starting Memristors analysis")
 
     # empty dictionary's for later use
     material_stats_dict = {}
@@ -53,252 +100,212 @@ def memristor_devices(path,params,excel_path):
     re_analyse = params['re_analyse']
 
 
-    for material in os.listdir(path):
-        material_path = os.path.join(path, material)
-        if os.path.isdir(material_path):  # Check if material_path is a directory
-            # Navigate through sub-folders (e.g., polymer)
-            polymer_stats_dict = {}
-            polymer_sweeps_dict = {}
-            polymer_data = {}
+    # Pre-compute totals once for progress tracking
+    total_samples = sum(1 for e in os.scandir(path) if e.is_dir())
+    total_files = sum(len(files) for _, _, files in os.walk(path))
+    processed_samples = 0
+    processed_files = 0
 
+    # Load processed cache once
+    checked_cache_path = os.path.join('memristors', 'checked_files.pkl')
+    try:
+        with open(checked_cache_path, 'rb') as _cf:
+            checked_cache = pickle.load(_cf)
+    except Exception:
+        checked_cache = {}
 
-            total_samples = sum(1 for _ in os.listdir(path) if os.path.isdir(os.path.join(path, _)))
-            total_files = sum(len(files) for _, _, files in os.walk(path))
-            # this passes through and goes above 100% due to
-            processed_samples = 0
-            processed_files = 0
+    for material_entry in os.scandir(path):
+        if not material_entry.is_dir():
+            continue
+        material = material_entry.name
+        material_path = material_entry.path
 
-            for polymer in os.listdir(material_path):
-                polymer_path = os.path.join(material_path, polymer)
-                if os.path.isdir(polymer_path):  # Check if polymer_path is a directory
-                    # Navigate through sample_name folders
-                    sample_stats_dict = {}
-                    sample_sweeps_dict = {}
-                    sample_data = {}
+        # Navigate through polymers
+        polymer_stats_dict = {}
+        polymer_sweeps_dict = {}
+        polymer_data = {}
 
+        for polymer_entry in os.scandir(material_path):
+            if not polymer_entry.is_dir():
+                continue
+            polymer = polymer_entry.name
+            polymer_path = polymer_entry.path
 
-                    for sample_name in os.listdir(polymer_path):
-                        sample_path = os.path.join(polymer_path, sample_name)
-                        if os.path.isdir(sample_path):  # Check if path is a directory this is needed
-                            """ working on a sample folders, here do anything for work on the device that dosnt 
-                            involve analysis of data:
-                            Sample name = ie D14-Stock-Gold-PVA(2%)-Gold-s7 """
+            # Navigate through samples
+            sample_stats_dict = {}
+            sample_sweeps_dict = {}
+            sample_data = {}
 
-                            processed_samples += 1 # Add one to the number of samples measured
-                            percentage_completed = (processed_samples / total_samples) * 100
+            for sample_entry in os.scandir(polymer_path):
+                if not sample_entry.is_dir():
+                    continue
+                sample_name = sample_entry.name
+                sample_path = sample_entry.path
 
-                            if pull_fabrication_info_excell:
-                                # Pulls information on fabrication from excell file
-                                fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name,excel_path,sample_path)
-                            # Pulls information from the device sweep excell sheet
-                            sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
+                processed_samples += 1
+                percentage_completed = (processed_samples / total_samples) * 100
 
-                            # empty list for storing all measured devices
-                            list_of_measured_files_devices_sections = []
-                            section_stats_dict = {}
-                            section_sweeps_dict = {}
-                            section_data = {}
+                if pull_fabrication_info_excell:
+                    fabrication_info_dict = exc.save_info_from_solution_devices_excell(sample_name, excel_path, sample_path)
+                sample_sweep_excell_dict = exc.save_info_from_device_info_excell(sample_name, sample_path)
 
-                            # Navigate through section folders
-                            for section_folder in os.listdir(sample_path):
-                                # Anything to section that doesn't require information on individual sweeps
-                                section_path = os.path.join(sample_path, section_folder)
-                                if os.path.isdir(section_path):  # Check if path is a directory this is needed
+                section_stats_dict = {}
+                section_sweeps_dict = {}
+                section_data = {}
 
-                                    """ working on section folder"""
-                                    #print("working on ", sample_name, section_folder)
+                # Sections
+                for section_entry in os.scandir(sample_path):
+                    if not section_entry.is_dir():
+                        continue
+                    section_folder = section_entry.name
+                    section_path = section_entry.path
 
-                                    # More empty arrays for storing all measured devices
-                                    device_sweeps_dict = {}
-                                    device_stats_dict = {}
-                                    device_data = {}
+                    device_sweeps_dict = {}
+                    device_stats_dict = {}
+                    device_data = {}
 
-                                    def extract_numeric_part(filename):
-                                        match = re.search(r'\d+', filename)
-                                        return int(match.group()) if match else float('inf')
+                    numeric_pattern = re.compile(r'\d+')
+                    def extract_numeric_part(name: str) -> int:
+                        m = numeric_pattern.search(name)
+                        return int(m.group()) if m else 0
 
-                                    # Sort the list of filenames based on the numeric part
-                                    sorted_files = sorted(os.listdir(section_path), key=extract_numeric_part)
+                    sorted_devices = sorted([e.name for e in os.scandir(section_path) if e.is_dir()], key=extract_numeric_part)
+                    for device_folder in sorted_devices:
+                        if device_folder == 'plots_combined':
+                            continue
+                        device_path = os.path.join(section_path, device_folder)
 
-                                    for device_folder in sorted_files:
-                                        device_path = os.path.join(section_path, device_folder)
-                                        if os.path.isdir(device_path):  # Check if path is a directory this is needed
-                                            # print(device_folder)
-                                            """ Working on individual devices"""
-                                            # print("working in folder ", sample_name, section_folder, device_folder)
+                        list_of_file_stats: List[pd.DataFrame] = []
+                        file_data: Dict[str, pd.DataFrame] = {}
+                        num_of_sweeps = 0
 
-                                            # keeps a list of all files processed for each device
-                                            list_of_measured_files = []
-                                            list_of_file_stats = []
-                                            list_of_areas_loops = []
-                                            list_of_looped_array_info = []
-                                            list_of_data_dfs = []
-                                            list_of_graphs = []
-                                            num_of_sweeps = 0
-                                            file_data = {}
+                        classification = Files_.device_clasification(sample_sweep_excell_dict, device_folder, section_folder, device_path)
 
-                                            # determines the classification of a device from the excell sheet
-                                            classification = Files_.device_clasification(sample_sweep_excell_dict,
-                                                                                     device_folder, section_folder,
-                                                                                     device_path)
+                        # Build tasks
+                        tasks = []
+                        for f_entry in os.scandir(device_path):
+                            if not f_entry.is_file():
+                                continue
+                            file_name = f_entry.name
+                            file_path = f_entry.path
+                            file_key = f'{material}_{polymer}_{sample_name}_{section_folder}_{device_folder}_{file_name}'
+                            file_info_dict[file_key] = {
+                                'material': material,
+                                'polymer': polymer,
+                                'sample_name': sample_name,
+                                'section_folder': section_folder,
+                                'device_folder': device_folder,
+                                'file_name': file_name,
+                                'file_path': file_path,
+                            }
+                            if not file_name.endswith('.txt'):
+                                continue
+                            short_name = f.short_name(file_path)
+                            long_name = f.long_name(file_path)
+                            cache_key = long_name
+                            if (not re_analyse) and (checked_cache.get(cache_key) == 'done'):
+                                continue
 
-                                            # add more here into how each array changes over each array
-                                            # Process each file in the device_number folder
-                                            # print(os.listdir(device_path))
+                            tasks.append((
+                                file_name,
+                                file_path,
+                                device_path,
+                                plot_graph,
+                                save_df,
+                                re_save_graph,
+                                short_name,
+                                long_name,
+                                params.get('skip_half_sweeps', False),
+                                params.get('save_parquet', False),
+                            ))
 
-                                            for file_name in (os.listdir(device_path)):
-                                                file_path = os.path.join(device_path, file_name)
-                                                """ For each file """
-                                                # Set file key
-                                                file_key = f'{material}_{polymer}_{sample_name}_{section_folder}_{device_folder}_{file_name}'
+                        # Execute tasks
+                        results = []
+                        workers = max(1, int(params.get('parallel_workers', 1)))
+                        if workers > 1 and tasks:
+                            with ProcessPoolExecutor(max_workers=workers) as ex:
+                                fut_map = {ex.submit(_process_file_worker, t): t for t in tasks}
+                                for fut in as_completed(fut_map):
+                                    try:
+                                        res = fut.result()
+                                        if res is not None:
+                                            results.append(res)
+                                    except Exception as e:
+                                        logger.warning("Worker failed for %s: %s", fut_map[fut][0], e)
+                        else:
+                            for t in tasks:
+                                try:
+                                    res = _process_file_worker(t)
+                                    if res is not None:
+                                        results.append(res)
+                                except Exception as e:
+                                    logger.warning("Sequential processing failed for %s: %s", t[0], e)
 
-                                                # Store the file information in the dictionary
-                                                file_info_dict[file_key] = {
-                                                    'material': material,
-                                                    'polymer': polymer,
-                                                    'sample_name': sample_name,
-                                                    'section_folder': section_folder,
-                                                    'device_folder': device_folder,
-                                                    'file_name': file_name,
-                                                    'file_path': os.path.join(device_path, file_name)
-                                                }
-                                                if file_name.endswith('.txt'):
-                                                    # for all files that end in txt
+                        # Merge results
+                        for file_name, short_name, long_name, num_sweeps, df_file_stats, df in results:
+                            num_of_sweeps += num_sweeps
+                            list_of_file_stats.append(df_file_stats)
+                            file_data[file_name] = df
+                            checked_cache[long_name] = 'done'
 
-                                                    # sort names here , long name short name etc and pass thorugh too Files_
-                                                    short_name = f.short_name(file_path)
-                                                    long_name = f.long_name(file_path)
+                        # Device-level outputs
+                        save_name = "_Device" + f"{device_folder}" + ".gif"
+                        save_name_slow = "_Device_slow" + f"{device_folder}" + ".gif"
+                        folder_path = device_path + '\\' + "python_images"
+                        output_gif_loc = os.path.join(folder_path, save_name)
+                        output_gif_loc2 = os.path.join(folder_path, save_name_slow)
 
-                                                    result = Files_.txt_file(file_name, file_path, device_path, total_files, list_of_file_stats, file_data, processed_files, short_name, long_name, num_of_sweeps, plot_graph, save_df, re_save_graph)
+                        if plot_gif:
+                            if does_it_exist(output_gif_loc, re_save_graph):
+                                Gifs.create_gif_from_folder(folder_path, output_gif_loc, 2, restart_duration=10)
+                            if does_it_exist(output_gif_loc2, re_save_graph):
+                                Gifs.create_gif_from_folder(folder_path, output_gif_loc2, 1, restart_duration=10)
 
-                                                    if result is not None:
-                                                        percentage_completed_files, processed_files, num_of_sweeps, num_sweeps, short_name, long_name, file_data, file_stats = result
+                        if len(list_of_file_stats) >= 2:
+                            device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats, ignore_index=True)
 
-                                                    #else:
-                                                        #print(f'Warning: mem_txt.txt_file returned None for file {file_name , file_path}')
+                        device_data[f'{device_folder}'] = file_data
+                        device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps': num_of_sweeps, 'classification': classification}
 
-                                                        # Handle the None case appropriately, perhaps by setting default values
+                        if origin_graphs:
+                            try:
+                                from Graph.Origin import Origin as OriginMod
+                                OriginMod.plot_in_origin(device_data, device_path, 'transport')
+                                OriginMod.plot_in_origin(device_data, device_path, 'iv_log')
+                            except Exception as e:
+                                logger.warning("Failed to plot in Origin: %s", e)
 
-                                            ###############################################################################
-                                            """ For the device level only place in here any information that needs to be 
-                                            done on an individual device """
+                    # Section-level
+                    section_stats_dict[f'{section_folder}'] = device_stats_dict
+                    section_sweeps_dict[f'{section_folder}'] = device_sweeps_dict
+                    section_data[f'{section_folder}'] = device_data
 
-                                            save_name = "_Device" + f"{device_folder}" + ".gif"
-                                            save_name_slow = "_Device_slow" + f"{device_folder}" + ".gif"
-                                            folder_path = device_path + '\\' + "python_images"
-                                            output_gif_loc = os.path.join(folder_path, save_name)
-                                            output_gif_loc2 = os.path.join(folder_path, save_name_slow)
+                # Sample-level
+                sample_stats_dict[f'{sample_name}'] = section_stats_dict
+                sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
+                sample_data[f'{sample_name}'] = section_data
 
-                                            if plot_gif:
-                                                if does_it_exist(output_gif_loc,re_save_graph):
-                                                    # Creates Gifs of any sample with multiple sweeps
-                                                    Gifs.create_gif_from_folder(folder_path, output_gif_loc, 2,
-                                                                                    restart_duration=10)
-                                                if does_it_exist(output_gif_loc2, re_save_graph):
-                                                    # create slower gifs
-                                                    Gifs.create_gif_from_folder(folder_path, output_gif_loc2, 1,
-                                                                                    restart_duration=10)
-                                            if len(list_of_file_stats) >= 2:
-                                                device_stats_dict[f'{device_folder}'] = pd.concat(list_of_file_stats,
-                                                                                                  ignore_index=True)
+                print("")
+                print("################################")
+                print("Finished processing - ", sample_name)
+                print("################################")
 
-                                            device_data[f'{device_folder}'] = file_data
-                                            device_sweeps_dict[f'{device_folder}'] = {'num_of_sweeps': num_of_sweeps,
-                                                                                      'classification': classification}
+                # Persist stats in sample folder
+                with open(sample_path + '/' + sample_name + '_Stats', 'wb') as file:
+                    pickle.dump(sample_stats_dict, file)
+                with open(sample_path + '/' + sample_name + '_data', 'wb') as file:
+                    pickle.dump(sample_data, file)
+                save_df_off_stats(sample_path, sample_stats_dict, sample_sweeps_dict)
 
-                                            if origin_graphs:
-                                                # plot the data in origin for use later
-                                                try:
-                                                    Origin.plot_in_origin(device_data, device_path, 'transport')
-                                                    Origin.plot_in_origin(device_data, device_path, 'iv_log')
-                                                except:
-                                                    print("failed to plot in origin ")
+            # Polymer-level
+            polymer_stats_dict[f'{polymer}'] = sample_stats_dict
+            polymer_sweeps_dict[f'{polymer}'] = sample_sweeps_dict
+            polymer_data[f'{polymer}'] = sample_data
 
-                                            # plt.hist(device_stats_dict[f'{device_folder}']['ON_OFF_Ratio'], bins=30, edgecolor='black')
-
-                                    ###############################################################################
-                                    """ For the Section level only place in here any information that needs to be 
-                                    done on an individual section """
-
-                                    # Creating Dictionary's for device stats as a section
-                                    section_stats_dict[f'{section_folder}'] = device_stats_dict
-                                    section_sweeps_dict[f'{section_folder}'] = device_sweeps_dict
-                                    section_data[f'{section_folder}'] = device_data
-
-                                    #print(f'{sample_name}- {percentage_completed_files:.2f}% completed')
-
-                            ###############################################################################
-                            """ For the Sample level only place in here any information that needs to be 
-                            done on an individual Sample level """
-
-                            # Names the final dictionary the sample name for storage later if necessary
-                            sample_stats_dict[f'{sample_name}'] = section_stats_dict
-                            sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
-                            sample_data[f'{sample_name}'] = section_data
-
-                            ######################################
-                            # this is for auto adding sweeps into the excell file pls keep
-                            # for section_name, section_data in sample_sweep_excell_dict.items():
-                            #     section_letter = section_name[0]  # Take the first letter of the section name
-                            #     print(section_letter)
-                            #     # Check if the section letter exists
-                            #     #print(section_letter)
-                            #     #print(section_data)
-                            #     # Find the first key containing the letter 'A'
-                            #     matching_key = next((key for key in sample_sweeps_dict if section_letter in key), None)
-                            #     print(matching_key , "matching key")
-                            #     if matching_key is not None:
-                            #         data_s = sample_sweeps_dict[matching_key]
-                            #         print(data_s)
-                            #         #not sure if this works but give it a try
-                            #         #exc.update_and_save_to_excel(sample_name, sample_path, matching_key, data_s)
-                            #     else:
-                            #         print("No key containing", section_letter , " found in sample_sweeps_dict.")
-                            ######################################
-
-
-                            print("")
-                            print("################################")
-                            print("Finished processing - ", sample_name)
-                            # print(f'Total percentage all, {percentage_completed:.2f}% completed')
-                            print("################################")
-
-                            # access the dataframe for specific bits
-                            # print(sample_stats_dict[f'{sample_name}']['G 200µm'])
-
-                            # graphs = some_function_comparing_all_files
-                            # pdf.create_pdf_with_graphs_and_data_for_sample(sample_path,f"{sample_name}.pdf",info_dict,sample_stats_dict)
-                            sample_stats_dict[f'{sample_name}'] = section_stats_dict
-                            sample_sweeps_dict[f'{sample_name}'] = section_sweeps_dict
-                            sample_data[f'{sample_name}'] = section_data
-
-                            # Saves information for later use
-                            with open(sample_path + '/' + sample_name + '_Stats', 'wb') as file:
-                                pickle.dump(sample_stats_dict, file)
-
-                            # with open(sample_path + '/material_stats_dict.pkl', 'wb') as file:
-                            #     pickle.dump(sample_stats_dict, file)
-
-                            with open(sample_path + '/' + sample_name + '_data', 'wb') as file:
-                                # all the data for the given sample
-                                pickle.dump(sample_data, file)
-
-                            # save the dataframe for stats within the sample folder in txt format
-                            # this saves all prior stats samples aswell due to the way its formated
-                            save_df_off_stats(sample_path, sample_stats_dict, sample_sweeps_dict)
-
-                            # saves df in text format for each sample
-                            # save_df_off_data(sample_path, sample_data, sample_sweeps_dict)
-
-                    # More dictionary stuff
-                    polymer_stats_dict[f'{polymer}'] = sample_stats_dict
-                    polymer_sweeps_dict[f'{polymer}'] = sample_sweeps_dict
-                    polymer_data[f'{polymer}'] = sample_data
-
-            # More dictionary stuff
-            material_stats_dict[f'{material}'] = polymer_stats_dict
-            material_sweeps_dict[f'{material}'] = polymer_sweeps_dict
-            material_data[f'{material}'] = polymer_data
+        # Material-level
+        material_stats_dict[f'{material}'] = polymer_stats_dict
+        material_sweeps_dict[f'{material}'] = polymer_sweeps_dict
+        material_data[f'{material}'] = polymer_data
 
     # save all the information to pkl file
     with open(path + '/material_stats_dict_all.pkl', 'wb') as file:
@@ -315,24 +322,34 @@ def memristor_devices(path,params,excel_path):
 
 
 
+    # Persist the processed cache
+    try:
+        with open(os.path.join('memristors', 'checked_files.pkl'), 'wb') as _cfw:
+            pickle.dump(checked_cache, _cfw)
+    except Exception as e:
+        logger.warning("Failed to save processed cache: %s", e)
 
+    logger.info("Completed analysis of %d materials", len(material_sweeps_dict))
     return material_stats_dict, material_sweeps_dict,material_data,file_info_dict
 
 
-def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,short_name,long_name):
+def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph, short_name, long_name,
+                  skip_half_sweeps: bool = False, save_parquet: bool = False):
     """ For all info from a single file this determines if a file is a single sweep or multiple sweep and does
      the appropriate action  """
-    print(filepath)
+    #print(filepath)
     file_info = f.extract_folder_names(filepath)
 
     # Read the information from the file
     try:
         # Pull voltage and current data from file
-        v_data, c_data = split_iv_sweep(filepath)
+        v_data, c_data,time = split_iv_sweep(filepath)
     except Exception as e:
         print(f"An error occurred: {e}")
         print("probably due too the file not being what it expects please check")
 
+    # print(filepath)
+    # print(v_data,c_data,time)
     # get positive and negative values of voltage and current data for equations later
     v_data_ps, c_data_ps = eq.filter_positive_values(v_data, c_data)
     v_data_ng, c_data_ng = eq.filter_negative_values(v_data, c_data)
@@ -378,6 +395,10 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
         slope = "no data"
 
     # if there is more than one loop adds
+    if num_sweeps == 0.5:
+        if skip_half_sweeps:
+            return None
+        # else fall-through continue as single-sweep like legacy behaviour
     if num_sweeps > 1:
         loops = True
         # Data processing for multiple sweeps
@@ -452,7 +473,8 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             for arr_v, arr_c in zip(split_v_data, split_c_data):
                 count += 1
                 # Plots all the graphs individually
-                folder_path = Plots.main_plot_loop(arr_v, arr_c, eq.absolute_val(arr_c), count, save_loc, re_save_graph, file_info,slope)
+                abs_arr_c = eq.absolute_val(arr_c)
+                folder_path = Plots.main_plot_loop(arr_v, arr_c, abs_arr_c, count, save_loc, re_save_graph, file_info, slope)
                 #Plots.images_in_row(arr_v, arr_c, absolute_val(arr_c) ,file_info, row_save)
 
             # Plots all the loops on one graph outside of the loop
@@ -467,15 +489,15 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             save_name_gif = "_" + file_name + ".gif"
             output_gif_loc = os.path.join(gif_save_loc, save_name_gif)
 
-            if does_it_exist(output_gif_loc,re_save_graph):
+            if re_save_graph or not os.path.exists(output_gif_loc):
                 Gifs.create_gif_from_folder(folder_path, output_gif_loc, 2, restart_duration=10)
 
             save_name_row = file_name + ".png"
             save_loc_images_in_folder = os.path.join(row_save,save_name_row)
-            if does_it_exist(save_loc_images_in_folder,re_save_graph):
+            if re_save_graph or not os.path.exists(save_loc_images_in_folder):
                 Plots.plot_images_in_folder(folder_path, save_loc_images_in_folder)
 
-            if num_sweeps >= 10:
+            if num_sweeps >= 5:
 
                 f.check_if_folder_exists(save_loc, "Dc-Endurance")
 
@@ -533,44 +555,46 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
                         f.check_if_folder_exists(os.path.join(save_loc,'Dc-Endurance'),'Data')
                         save_loc_dc_endurance_images = os.path.join(save_loc, 'Dc-Endurance')
 
-
-                        # Save DataFrame to CSV
+                        # Save Paths
                         csv_file = f'{file_name}_current_values_{v}V.csv'
-                        combined_df.to_csv(os.path.join(save_loc_dc_endurance_df,csv_file), index_label='Cycle')
+                        csv_path = os.path.join(save_loc_dc_endurance_df, csv_file)
+                        if re_save_graph or not os.path.exists(csv_path):
+                            combined_df.to_csv(csv_path, index_label='Cycle')
 
 
-                        # Plot the graphs and save the figure
-                        fig, ax = plt.subplots(2, 1, figsize=(10, 8))
+                            # Plot the graphs and save the figure
+                            fig, ax = plt.subplots(2, 1, figsize=(10, 8))
 
-                        # First subplot: Positive voltages
-                        ax[0].plot(combined_df.index, combined_df[f'Current_Forward_(OFF)_{v}V'], marker='o',
-                                   label=f'OFF Value {v}V')
-                        ax[0].plot(combined_df.index, combined_df[f'Current_Reverse_(ON)_{v}V'], marker='o',
-                                   label=f'ON Value {v}V')
-                        ax[0].set_xlabel('Cycle')
-                        ax[0].set_ylabel('Current (A)')
-                        ax[0].set_title(f'Current vs Cycle for {v}V {file_name}')
-                        ax[0].legend()
-                        ax[0].grid(True)
+                            # First subplot: Positive voltages
+                            ax[0].plot(combined_df.index, combined_df[f'Current_Forward_(OFF)_{v}V'], marker='o',
+                                       label=f'OFF Value {v}V')
+                            ax[0].plot(combined_df.index, combined_df[f'Current_Reverse_(ON)_{v}V'], marker='o',
+                                       label=f'ON Value {v}V')
+                            ax[0].set_xlabel('Cycle')
+                            ax[0].set_ylabel('Current (A)')
+                            ax[0].set_title(f'Current vs Cycle for {v}V {file_name}')
+                            ax[0].legend()
+                            ax[0].grid(True)
 
-                        # Second subplot: Negative voltages
-                        ax[1].plot(combined_df.index, combined_df[f'Current_Forward_(ON)_{-v}V'], marker='o',
-                                   label=f'ON Value {-v}V')
-                        ax[1].plot(combined_df.index, combined_df[f'Current_Reverse_(OFF)_{-v}V'], marker='o',
-                                   label=f'OFF Value {-v}V')
-                        ax[1].set_xlabel('Cycle')
-                        ax[1].set_ylabel('Current (A)')
-                        ax[1].set_title(f'Current vs Cycle for {-v}V')
-                        ax[1].legend()
-                        ax[1].grid(True)
+                            # Second subplot: Negative voltages
+                            ax[1].plot(combined_df.index, combined_df[f'Current_Forward_(ON)_{-v}V'], marker='o',
+                                       label=f'ON Value {-v}V')
+                            ax[1].plot(combined_df.index, combined_df[f'Current_Reverse_(OFF)_{-v}V'], marker='o',
+                                       label=f'OFF Value {-v}V')
+                            ax[1].set_xlabel('Cycle')
+                            ax[1].set_ylabel('Current (A)')
+                            ax[1].set_title(f'Current vs Cycle for {-v}V')
+                            ax[1].legend()
+                            ax[1].grid(True)
 
-                        # Adjust layout and save the plot
-                        fig.tight_layout()
-                        fig_file = os.path.join(save_loc_dc_endurance_images,f'{file_name}_plot_{v}V.png')
-                        plt.savefig(fig_file)
-                        plt.close(fig)  # Close the figure after saving to free up memory
+                            # Adjust layout and save the plot
+                            fig.tight_layout()
+                            fig_file = os.path.join(save_loc_dc_endurance_images,f'{file_name}_plot_{v}V.png')
+                            if re_save_graph or not os.path.exists(fig_file):
+                                plt.savefig(fig_file)
+                            plt.close(fig)
 
-                        # Create a final plot with all the voltages
+                            # Create a final plot with all the voltages
                     num_voltages = len(voltages)
                     fig, axs = plt.subplots(num_voltages, 2, figsize=(12, 4 * num_voltages))
 
@@ -602,8 +626,9 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
 
                     fig.tight_layout()
                     final_fig_file = os.path.join(save_loc_dc_endurance_images,f'_{file_name}_final_plot.png')
-                    plt.savefig(final_fig_file)
-                    plt.close(fig)  # Close the figure after saving
+                    if re_save_graph or not os.path.exists(final_fig_file):
+                        plt.savefig(final_fig_file)
+                    plt.close(fig)
 
                     return dfs
 
@@ -666,9 +691,15 @@ def file_analysis(filepath, plot_graph, save_df, device_path, re_save_graph,shor
             graph = None
 
         if save_df:
-            # save the sada frame
-            print(long_name)
+            # save the data frame
+            logger.info(long_name)
             df.to_csv(long_name, index=False)
+            if save_parquet:
+                try:
+                    parquet_path = os.path.splitext(long_name)[0] + '.parquet'
+                    df.to_parquet(parquet_path, index=False)
+                except Exception as e:
+                    logger.warning("Parquet export failed for %s: %s", long_name, e)
         areas_loops = None
         looped_array_info = None
     return num_sweeps, short_name, long_name, df, df_file_stats, graph
@@ -867,8 +898,8 @@ def area_under_curves(v_data, c_data):
     # blue - green
     # red - yellow
 
-    ps_area_enclosed = abs(sect1_area) - abs(sect2_area)
-    ng_area_enclosed = abs(sect4_area) - abs(sect3_area)
+    ps_area_enclosed = abs(sect2_area) - abs(sect1_area)
+    ng_area_enclosed = abs(sect3_area) - abs(sect4_area)
     area_enclosed = ps_area_enclosed + ng_area_enclosed
     norm_area_enclosed = area_enclosed / (abs(v_max) + abs(v_min))
 
@@ -963,48 +994,46 @@ def bounds(data):
     return max, min
 
 
-def check_for_loops(v_data):
+def check_for_loops(v_data) -> float:
     """
-    :param v_data:
-    :return: number of loops for given data set
+    Robust loop detection using zero-crossing events with tolerance to floating noise.
+    Returns 0.5 for half-sweeps, 1 for a single loop, or an estimated number for multi-loops.
     """
-    # looks at max voltage and min voltage if they are seen more than twice it classes it as a loop
-    # checks for the number of zeros 3 = single loop
-    num_max = 0
-    num_min = 0
-    num_zero = 0
-    max_v, min_v = bounds(v_data)
-    max_v_2 = max_v / 2
-    min_v_2 = min_v / 2
+    v_arr = np.asarray(v_data)
+    if v_arr.size == 0:
+        return 0
+    vmax = np.max(np.abs(v_arr))
+    if vmax == 0:
+        return 0
+    tol = max(1e-6, 1e-3 * vmax)
 
-    # 4 per sweep
-    for value in v_data:
-        if value == max_v_2:
-            num_max += 1
-        if value == min_v_2:
-            num_min += 1
-        if value == 0:
-            num_zero += 1
-    # print(num_min)
+    # Identify zero-crossing events (from negative to positive or vice versa)
+    signs = np.sign(v_arr)
+    # Treat small values within tolerance as zeros
+    signs[np.abs(v_arr) <= tol] = 0
+    # Collapse consecutive duplicates to count events
+    diffs = np.diff(signs)
+    # Count transitions that pass through zero or change sign
+    zero_events = np.sum(diffs != 0)
 
-    # print("num zero", num_zero)
-    if num_max + num_min == 4:
-        # print("single sweep")
-        return 1
-    if num_max + num_min == 2:
-        # print("half_sweep", num_max, num_min)
+    # Heuristic mapping to loops
+    if zero_events <= 1:
         return 0.5
-    else:
-        # print("multiloop", (num_max + num_min) / 4)
-        loops = (num_max + num_min) / 4
-        return loops
+    if zero_events <= 3:
+        return 1
+    # Approximate: each additional full sweep adds about 3 transitions
+    loops_est = max(1.0, round(zero_events / 3.0))
+    return float(loops_est)
 
 
 def split_iv_sweep(filepath):
     data = np.loadtxt(filepath, unpack=True, skiprows=1)
     voltage = data[0]
     current = data[1]
-    return voltage, current
+    # try:
+    #     time = data[2]
+    time = None
+    return voltage, current,time
 
 
 def check_sweep_type(filepath, output_file):
@@ -1057,6 +1086,7 @@ def check_sweep_type(filepath, output_file):
             ['vOLTAGE', 'cURRENT'],  # Pattern 2
             ['VSOURC - Plot 0', 'IMEAS - Plot 0'],
             ['VSOURC - Plot 0	IMEAS - Plot 0'],
+            ['Voltage', 'Current','Time'],  # Pattern 1
 
             # Add more patterns if needed
         ],

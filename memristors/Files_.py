@@ -5,7 +5,21 @@ import os
 
 """ any work on the file goes here"""
 
-def txt_file(file_name,file_path,device_path,total_files, list_of_file_stats, file_data, processed_files, short_name,long_name,num_of_sweeps=0,plot_graph=False, save_df=False,re_save_graph=False):
+def txt_file(file_name,
+             file_path,
+             device_path,
+             total_files,
+             list_of_file_stats,
+             file_data,
+             processed_files,
+             short_name,
+             long_name,
+             num_of_sweeps=0,
+             plot_graph=False,
+             save_df=False,
+             re_save_graph=False,
+             skip_half_sweeps=False,
+             save_parquet=False):
     # began changing this into function not sure yet
     """Loops through each file in the folder and analyses them using the
     functions here"""
@@ -24,7 +38,8 @@ def txt_file(file_name,file_path,device_path,total_files, list_of_file_stats, fi
 
         # Performs analysis on the file given returning the dataframe
         analysis_result = eq.file_analysis(file_path, plot_graph, save_df,
-                                           device_path, re_save_graph,short_name,long_name)
+                                           device_path, re_save_graph, short_name, long_name,
+                                           skip_half_sweeps=skip_half_sweeps, save_parquet=save_parquet)
 
         num_sweeps, short_name, long_name, data, file_stats, graph = analysis_result
 
